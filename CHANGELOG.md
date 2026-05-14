@@ -72,6 +72,17 @@ versioned in lockstep until 1.0.
   `test-better-matchers/diff`, and re-exports the color configuration
   (`ColorChoice`, `set_color_choice`, `color_choice`) and `diff_lines`
   (Iteration 2.4).
+- `test-better-matchers`: the logical combinators `not`, `all_of`, and
+  `any_of`. `not(m)` inverts a matcher; `all_of`/`any_of` take a tuple of
+  matchers (arities 2 through 8, via the `MatcherTuple` trait) under
+  conjunction and disjunction. `all_of`'s failure is the first failing
+  sub-matcher's, so it pinpoints the broken expectation; `any_of`'s describes
+  the whole disjunction. Each combinator builds its `Description` from its
+  children's through the `!`/`and`/`or` combinators on `Description`
+  (Iteration 3.1).
+- `test-better`: the facade crate re-exports the logical combinators (`not`,
+  `all_of`, `any_of`, `MatcherTuple`); the prelude gains `not`, `all_of`, and
+  `any_of` (Iteration 3.1).
 
 ### Notes
 

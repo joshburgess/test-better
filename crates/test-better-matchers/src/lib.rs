@@ -8,14 +8,16 @@
 //! - the primitive matchers [`eq`], [`ne`], [`lt`], [`le`], [`gt`], [`ge`],
 //!   [`is_true`], [`is_false`], and the test fixtures [`always_matches`] and
 //!   [`never_matches`];
+//! - the logical combinators [`not`], [`all_of`], and [`any_of`];
 //! - the [`expect!`](crate::expect) macro and its [`Subject`] type, the entry point for an
 //!   assertion;
 //! - the line-oriented [`diff_lines`] renderer, behind the default `diff`
 //!   feature.
 //!
-//! Later iterations add the matcher combinators (PROJECT_BUILD_PLAN.md
-//! §7-§8, Phases 2-3).
+//! Later iterations add the remaining matcher combinators
+//! (PROJECT_BUILD_PLAN.md §8, Phase 3).
 
+mod combinators;
 mod description;
 #[cfg(feature = "diff")]
 mod diff;
@@ -24,6 +26,7 @@ mod matcher;
 mod primitives;
 mod subject;
 
+pub use combinators::{MatcherTuple, all_of, any_of, not};
 pub use description::Description;
 #[cfg(feature = "diff")]
 pub use diff::diff_lines;
