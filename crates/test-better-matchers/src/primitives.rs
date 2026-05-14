@@ -37,14 +37,66 @@ macro_rules! comparison_matcher {
     };
 }
 
-comparison_matcher!(EqMatcher, PartialEq, ==, "equal to");
 comparison_matcher!(NeMatcher, PartialEq, !=, "not equal to");
 comparison_matcher!(LtMatcher, PartialOrd, <, "less than");
 comparison_matcher!(LeMatcher, PartialOrd, <=, "less than or equal to");
 comparison_matcher!(GtMatcher, PartialOrd, >, "greater than");
 comparison_matcher!(GeMatcher, PartialOrd, >=, "greater than or equal to");
 
+/// The matcher behind [`eq`]. Unlike the other comparison matchers it can
+/// attach a structural diff: when the expected and actual values' pretty
+/// (`{:#?}`) representations span multiple lines, a line-oriented diff is the
+/// readable way to show what changed.
+struct EqMatcher<T> {
+    expected: T,
+}
+
+impl<T> Matcher<T> for EqMatcher<T>
+where
+    T: PartialEq + fmt::Debug,
+{
+    fn check(&self, actual: &T) -> MatchResult {
+        if *actual == self.expected {
+            return MatchResult::pass();
+        }
+        let mut mismatch = Mismatch::new(self.description(), format!("{actual:?}"));
+        if let Some(diff) =
+            multi_line_diff(&format!("{:#?}", self.expected), &format!("{actual:#?}"))
+        {
+            mismatch = mismatch.with_diff(diff);
+        }
+        MatchResult::fail(mismatch)
+    }
+
+    fn description(&self) -> Description {
+        Description::text(format!("equal to {:?}", self.expected))
+    }
+}
+
+/// A line-oriented diff of two pretty-printed values, but only when at least
+/// one of them actually spans multiple lines: a diff of two single-line values
+/// is just noise next to the `expected:`/`actual:` lines.
+///
+/// With the `diff` feature off this is always `None`, so `eq` still works, it
+/// just never carries a diff.
+#[cfg(feature = "diff")]
+fn multi_line_diff(expected: &str, actual: &str) -> Option<String> {
+    if expected.contains('\n') || actual.contains('\n') {
+        Some(crate::diff::diff_lines(expected, actual))
+    } else {
+        None
+    }
+}
+
+#[cfg(not(feature = "diff"))]
+fn multi_line_diff(_expected: &str, _actual: &str) -> Option<String> {
+    None
+}
+
 /// Matches a value equal to `expected`.
+///
+/// On a mismatch where the values' pretty representations are multi-line (a
+/// struct, a collection), the failure carries a line-oriented diff.
 ///
 /// ```
 /// use test_better_matchers::{eq, Matcher};
@@ -187,6 +239,24 @@ mod tests {
         let failure = eq(4).check(&5).failure.expect("5 is not 4");
         assert_eq!(failure.expected.to_string(), "equal to 4");
         assert_eq!(failure.actual, "5");
+    }
+
+    #[test]
+    fn eq_omits_a_diff_for_single_line_values() {
+        let failure = eq(4).check(&5).failure.expect("5 is not 4");
+        assert!(failure.diff.is_none(), "{:?}", failure.diff);
+    }
+
+    #[cfg(feature = "diff")]
+    #[test]
+    fn eq_attaches_a_diff_when_the_pretty_repr_is_multi_line() {
+        let failure = eq(vec![1, 2, 3])
+            .check(&vec![1, 2, 4])
+            .failure
+            .expect("the vectors differ");
+        let diff = failure.diff.expect("multi-line pretty reprs get a diff");
+        assert!(diff.contains("-    3,"), "{diff}");
+        assert!(diff.contains("+    4,"), "{diff}");
     }
 
     #[test]

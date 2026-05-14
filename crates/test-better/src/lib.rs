@@ -13,9 +13,12 @@
 //! is the seam that hides that split from users.
 
 pub use test_better_core::{
-    ContextExt, ContextFrame, ErrorKind, OrFail, Payload, SourceLocation, StructuredContextFrame,
-    StructuredError, StructuredPayload, TestError, TestResult,
+    ColorChoice, ContextExt, ContextFrame, ErrorKind, OrFail, Payload, SourceLocation,
+    StructuredContextFrame, StructuredError, StructuredPayload, TestError, TestResult,
+    color_choice, set_color_choice,
 };
+#[cfg(feature = "diff")]
+pub use test_better_matchers::diff_lines;
 pub use test_better_matchers::{
     Description, MatchResult, Matcher, Mismatch, Subject, always_matches, eq, expect, ge, gt,
     is_false, is_true, le, lt, ne, never_matches,

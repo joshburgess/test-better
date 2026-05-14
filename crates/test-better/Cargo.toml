@@ -12,10 +12,15 @@ keywords.workspace = true
 
 [dependencies]
 test-better-core = { workspace = true }
+# The workspace pins this with `default-features = false`; this crate's own
+# `diff` feature is the single switch that turns the matcher diff renderer on.
 test-better-matchers = { workspace = true }
 
 [features]
-default = []
+default = ["diff"]
+# Forwards `test-better-matchers`'s `diff` feature: a line-oriented diff for
+# multi-line mismatches. On by default; opt out with `--no-default-features`.
+diff = ["test-better-matchers/diff"]
 # Forwards `test-better-core`'s `serde` feature: derives serde on the
 # structured-failure types (see that crate for details).
 serde = ["test-better-core/serde"]

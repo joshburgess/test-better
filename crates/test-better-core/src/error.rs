@@ -203,18 +203,19 @@ impl TestError {
 }
 
 impl fmt::Display for TestError {
+    /// Renders the failure as plain text, never colored (Iteration 2.4).
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        crate::render::render(self, f)
+        crate::render::render(self, f, false)
     }
 }
 
 impl fmt::Debug for TestError {
     /// Renders the full pretty failure message, so the stock `cargo test`
     /// harness (which prints returned errors with `{:?}`) is already useful
-    /// (PROJECT_BUILD_PLAN.md §6.1). Phase 2 adds optional ANSI color here;
-    /// `Display` stays plain.
+    /// (PROJECT_BUILD_PLAN.md §6.1). Unlike `Display`, this may emit ANSI
+    /// color, gated by [`crate::color::color_enabled`].
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        crate::render::render(self, f)
+        crate::render::render(self, f, crate::color::color_enabled())
     }
 }
 
@@ -256,6 +257,11 @@ mod tests {
 
     #[test]
     fn debug_matches_display() {
+        // `Debug` may colorize off the global `ColorChoice`; hold the lock so a
+        // concurrent color test cannot flip it mid-render.
+        let _guard = crate::color::TEST_LOCK
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         let error = sample_assertion();
         assert_eq!(format!("{error:?}"), format!("{error}"));
     }

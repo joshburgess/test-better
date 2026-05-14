@@ -58,6 +58,20 @@ versioned in lockstep until 1.0.
 - `test-better`: the facade crate now re-exports the matcher surface and the
   `expect!` macro; the prelude gains `expect!` and the matcher constructors
   (Iteration 2.3).
+- `test-better-core`: `ColorChoice` (`Auto`/`Always`/`Never`), `set_color_choice`,
+  and `color_choice`. The `TestError` renderer now takes a colorize flag:
+  `Debug` may emit ANSI color (honoring `NO_COLOR` and terminal detection under
+  `Auto`), while `Display` stays plain. Color ownership lives here, not in
+  `matchers` (Iteration 2.4).
+- `test-better-matchers`: the `diff_lines` line-oriented diff renderer, behind a
+  new default `diff` feature (backed by `similar`). `eq` now attaches a diff to
+  its mismatch when the values' pretty (`{:#?}`) representations span multiple
+  lines; `matchers` produces only the structured, uncolored diff text
+  (Iteration 2.4).
+- `test-better`: the facade crate gains a default `diff` feature forwarding to
+  `test-better-matchers/diff`, and re-exports the color configuration
+  (`ColorChoice`, `set_color_choice`, `color_choice`) and `diff_lines`
+  (Iteration 2.4).
 
 ### Notes
 

@@ -12,6 +12,15 @@ keywords.workspace = true
 
 [dependencies]
 test-better-core = { workspace = true }
+# Backs the `diff` feature's line-oriented diff renderer (Iteration 2.4).
+similar = { version = "2", optional = true }
+
+[features]
+# `diff` is on by default: a diff is the readable way to show a multi-line
+# mismatch. It is split out so a build that does not want the `similar`
+# dependency can opt out with `--no-default-features`.
+default = ["diff"]
+diff = ["dep:similar"]
 
 [dev-dependencies]
 # Drives the compile-fail test that a forgotten `?` on `expect!(..)` is a

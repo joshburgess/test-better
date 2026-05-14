@@ -12,6 +12,7 @@
 //!
 //! See PROJECT_BUILD_PLAN.md §6 (Phase 1).
 
+mod color;
 mod context;
 mod error;
 mod or_fail;
@@ -19,6 +20,7 @@ mod render;
 mod result;
 mod structured;
 
+pub use color::{ColorChoice, color_choice, set_color_choice};
 pub use context::ContextExt;
 pub use error::{ContextFrame, ErrorKind, Payload, TestError};
 pub use or_fail::OrFail;
