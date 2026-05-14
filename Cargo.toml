@@ -9,6 +9,7 @@ members = [
     "crates/test-better-property",
     "crates/test-better-snapshot",
     "crates/test-better-runner",
+    "examples/custom-matcher",
 ]
 
 # Shared package metadata. Every crate is versioned in lockstep until 1.0
@@ -25,6 +26,8 @@ keywords = ["testing", "assertions", "matchers", "expect"]
 
 # Internal crates are referenced through the workspace so versions stay in lockstep.
 [workspace.dependencies]
+# The facade crate, depended on by the workspace's own examples.
+test-better = { version = "0.0.0", path = "crates/test-better" }
 test-better-core = { version = "0.0.0", path = "crates/test-better-core" }
 # `default-features = false` here so a dependent crate's own feature set is the
 # single switch for the matcher `diff` feature (the facade re-exposes it).

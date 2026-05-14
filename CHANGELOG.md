@@ -136,6 +136,19 @@ versioned in lockstep until 1.0.
   and `matches_variant!`; the prelude gains them. The macros' generated code
   refers to `::test_better`, so they are usable through the facade only
   (Iteration 3.7).
+- `test-better-matchers`: the `define_matcher!` declarative macro, the shortcut
+  for the common custom-matcher case. It takes a name, optional constructor
+  parameters, a target type, an `expects:` description, and a `matches:`
+  predicate, and expands to a matcher type, its `Matcher` impl, and a
+  constructor function. Anything richer (a structured diff, an inner matcher) is
+  still written by hand as an `impl Matcher<T>` (Iteration 3.8).
+- `test-better`: the facade crate re-exports `define_matcher!`; the prelude
+  gains it. A new `cookbook` module documents how to write custom matchers, both
+  with `define_matcher!` and by hand (Iteration 3.8).
+- `examples/custom-matcher/`: a new workspace example crate, the runnable
+  companion to the `cookbook` module: a `define_matcher!` matcher, a
+  hand-written `impl Matcher<T>`, and a matcher that takes an inner matcher
+  (Iteration 3.8).
 
 ### Notes
 

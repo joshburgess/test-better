@@ -25,10 +25,13 @@ pub use test_better_matchers::matches_regex;
 pub use test_better_matchers::{
     ContainsAll, Description, Float, MatchResult, Matcher, MatcherTuple, Mismatch, Sequence,
     Subject, all_of, always_matches, any_of, at_least_one, between, close_to, contains,
-    contains_all, contains_in_order, contains_str, ends_with, eq, err, every, expect, ge, gt,
-    have_len, is_empty, is_false, is_finite, is_nan, is_not_empty, is_true, le, lt, ne,
-    never_matches, none, not, ok, satisfies, some, starts_with,
+    contains_all, contains_in_order, contains_str, define_matcher, ends_with, eq, err, every,
+    expect, ge, gt, have_len, is_empty, is_false, is_finite, is_nan, is_not_empty, is_true, le, lt,
+    ne, never_matches, none, not, ok, satisfies, some, starts_with,
 };
+
+/// How to write a custom matcher: see the [`cookbook`] module.
+pub mod cookbook;
 
 /// The one `use` a test file should need: `use test_better::prelude::*;`.
 ///
@@ -43,9 +46,9 @@ pub use test_better_matchers::{
 ///
 /// `#[macro_export]` places a macro at the crate root, not inside the module it
 /// is written in, so a glob import of this module would *not* pick it up unless
-/// the macro is named here explicitly. That is why `expect` appears below with
-/// `pub use crate::expect;`; later phases add their `#[macro_export]` macros the
-/// same way.
+/// the macro is named here explicitly. That is why `expect` and
+/// `define_matcher` appear below with `pub use crate::...;`; later phases add
+/// their `#[macro_export]` macros the same way.
 ///
 /// Procedural macros (`matches_struct!`, `matches_tuple!`, `matches_variant!`)
 /// are different: they are ordinary items of `test-better-macros`, so a plain
@@ -63,5 +66,5 @@ pub mod prelude {
 
     pub use test_better_macros::{matches_struct, matches_tuple, matches_variant};
 
-    pub use crate::expect;
+    pub use crate::{define_matcher, expect};
 }

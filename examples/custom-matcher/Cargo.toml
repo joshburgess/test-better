@@ -1,0 +1,16 @@
+[package]
+name = "custom-matcher-example"
+description = "Worked examples of writing custom matchers for `test-better`."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+[dependencies]
+test-better = { workspace = true }
+
+[lints]
+workspace = true

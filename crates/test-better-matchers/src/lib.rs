@@ -20,6 +20,8 @@
 //!   [`is_finite`], generic over the sealed [`Float`] trait;
 //! - the [`satisfies`] escape hatch, a matcher built from an arbitrary
 //!   named predicate;
+//! - the [`define_matcher!`](crate::define_matcher) macro, the declarative
+//!   shortcut for the common custom-matcher case;
 //! - the [`expect!`](crate::expect) macro and its [`Subject`] type, the entry point for an
 //!   assertion;
 //! - the line-oriented [`diff_lines`] renderer, behind the default `diff`
@@ -30,6 +32,7 @@
 
 mod collections;
 mod combinators;
+mod define;
 mod description;
 #[cfg(feature = "diff")]
 mod diff;
@@ -60,4 +63,5 @@ pub use satisfies::satisfies;
 pub use strings::matches_regex;
 pub use strings::{contains_str, ends_with, starts_with};
 pub use subject::Subject;
-// `expect!` is `#[macro_export]`, so it already lives at the crate root.
+// `expect!` and `define_matcher!` are `#[macro_export]`, so they already live
+// at the crate root.
