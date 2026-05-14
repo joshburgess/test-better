@@ -65,6 +65,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn some<T, M>(inner: M) -> impl Matcher<Option<T>>
 where
     M: Matcher<T>,
@@ -106,6 +107,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn none<T>() -> impl Matcher<Option<T>>
 where
     T: fmt::Debug,
@@ -153,6 +155,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn ok<T, E, M>(inner: M) -> impl Matcher<Result<T, E>>
 where
     M: Matcher<T>,
@@ -201,6 +204,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn err<T, E, M>(inner: M) -> impl Matcher<Result<T, E>>
 where
     M: Matcher<E>,

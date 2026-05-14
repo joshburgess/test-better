@@ -184,6 +184,7 @@ where
 /// # Ok(())
 /// # }
 /// ```
+#[must_use]
 pub fn any<T>() -> impl Strategy<T>
 where
     T: proptest::arbitrary::Arbitrary,

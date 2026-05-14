@@ -61,6 +61,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn satisfies<T, F>(name: &'static str, pred: F) -> impl Matcher<T>
 where
     T: fmt::Debug,

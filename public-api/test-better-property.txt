@@ -1,0 +1,155 @@
+pub mod test_better_property
+pub mod test_better_property::quickcheck_bridge
+pub struct test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T: core::clone::Clone> core::clone::Clone for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+pub fn test_better_property::quickcheck_bridge::ArbitraryStrategy<T>::clone(&self) -> test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T: core::fmt::Debug> core::fmt::Debug for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+pub fn test_better_property::quickcheck_bridge::ArbitraryStrategy<T>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<T: core::marker::Copy> core::marker::Copy for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T: quickcheck::arbitrary::Arbitrary> test_better_property::Strategy<T> for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+pub type test_better_property::quickcheck_bridge::ArbitraryStrategy<T>::Tree = test_better_property::quickcheck_bridge::QuickcheckTree<T>
+pub fn test_better_property::quickcheck_bridge::ArbitraryStrategy<T>::new_tree(&self, _runner: &mut test_better_property::Runner) -> core::result::Result<Self::Tree, test_better_property::GenError>
+impl<T> core::marker::Freeze for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T> core::marker::Send for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T> core::marker::Sync for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T> core::marker::Unpin for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T> core::marker::UnsafeUnpin for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T> core::panic::unwind_safe::UnwindSafe for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+pub struct test_better_property::quickcheck_bridge::QuickcheckTree<T>
+impl<T: quickcheck::arbitrary::Arbitrary> test_better_property::ValueTree<T> for test_better_property::quickcheck_bridge::QuickcheckTree<T>
+pub fn test_better_property::quickcheck_bridge::QuickcheckTree<T>::complicate(&mut self) -> bool
+pub fn test_better_property::quickcheck_bridge::QuickcheckTree<T>::current(&self) -> T
+pub fn test_better_property::quickcheck_bridge::QuickcheckTree<T>::simplify(&mut self) -> bool
+impl<T> core::marker::Freeze for test_better_property::quickcheck_bridge::QuickcheckTree<T> where T: core::marker::Freeze
+impl<T> !core::marker::Send for test_better_property::quickcheck_bridge::QuickcheckTree<T>
+impl<T> !core::marker::Sync for test_better_property::quickcheck_bridge::QuickcheckTree<T>
+impl<T> core::marker::Unpin for test_better_property::quickcheck_bridge::QuickcheckTree<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for test_better_property::quickcheck_bridge::QuickcheckTree<T> where T: core::marker::UnsafeUnpin
+impl<T> !core::panic::unwind_safe::RefUnwindSafe for test_better_property::quickcheck_bridge::QuickcheckTree<T>
+impl<T> !core::panic::unwind_safe::UnwindSafe for test_better_property::quickcheck_bridge::QuickcheckTree<T>
+pub fn test_better_property::quickcheck_bridge::arbitrary<T: quickcheck::arbitrary::Arbitrary>() -> test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+pub macro test_better_property::property!
+pub struct test_better_property::ArbitraryStrategy<T>
+impl<T: core::clone::Clone> core::clone::Clone for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+pub fn test_better_property::quickcheck_bridge::ArbitraryStrategy<T>::clone(&self) -> test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T: core::fmt::Debug> core::fmt::Debug for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+pub fn test_better_property::quickcheck_bridge::ArbitraryStrategy<T>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<T: core::marker::Copy> core::marker::Copy for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T: quickcheck::arbitrary::Arbitrary> test_better_property::Strategy<T> for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+pub type test_better_property::quickcheck_bridge::ArbitraryStrategy<T>::Tree = test_better_property::quickcheck_bridge::QuickcheckTree<T>
+pub fn test_better_property::quickcheck_bridge::ArbitraryStrategy<T>::new_tree(&self, _runner: &mut test_better_property::Runner) -> core::result::Result<Self::Tree, test_better_property::GenError>
+impl<T> core::marker::Freeze for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T> core::marker::Send for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T> core::marker::Sync for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T> core::marker::Unpin for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T> core::marker::UnsafeUnpin for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+impl<T> core::panic::unwind_safe::UnwindSafe for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+pub struct test_better_property::Config
+pub test_better_property::Config::cases: u32
+impl core::clone::Clone for test_better_property::Config
+pub fn test_better_property::Config::clone(&self) -> test_better_property::Config
+impl core::default::Default for test_better_property::Config
+pub fn test_better_property::Config::default() -> Self
+impl core::fmt::Debug for test_better_property::Config
+pub fn test_better_property::Config::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for test_better_property::Config
+impl core::marker::Freeze for test_better_property::Config
+impl core::marker::Send for test_better_property::Config
+impl core::marker::Sync for test_better_property::Config
+impl core::marker::Unpin for test_better_property::Config
+impl core::marker::UnsafeUnpin for test_better_property::Config
+impl core::panic::unwind_safe::RefUnwindSafe for test_better_property::Config
+impl core::panic::unwind_safe::UnwindSafe for test_better_property::Config
+pub struct test_better_property::GenError(_)
+impl core::clone::Clone for test_better_property::GenError
+pub fn test_better_property::GenError::clone(&self) -> test_better_property::GenError
+impl core::error::Error for test_better_property::GenError
+impl core::fmt::Debug for test_better_property::GenError
+pub fn test_better_property::GenError::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for test_better_property::GenError
+pub fn test_better_property::GenError::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for test_better_property::GenError
+impl core::marker::Send for test_better_property::GenError
+impl core::marker::Sync for test_better_property::GenError
+impl core::marker::Unpin for test_better_property::GenError
+impl core::marker::UnsafeUnpin for test_better_property::GenError
+impl core::panic::unwind_safe::RefUnwindSafe for test_better_property::GenError
+impl core::panic::unwind_safe::UnwindSafe for test_better_property::GenError
+pub struct test_better_property::PropertyFailure<T>
+pub test_better_property::PropertyFailure::cases: u32
+pub test_better_property::PropertyFailure::failure: test_better_core::error::TestError
+pub test_better_property::PropertyFailure::original: T
+pub test_better_property::PropertyFailure::shrunk: T
+impl<T: core::fmt::Debug> core::fmt::Debug for test_better_property::PropertyFailure<T>
+pub fn test_better_property::PropertyFailure<T>::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<T> core::marker::Freeze for test_better_property::PropertyFailure<T> where T: core::marker::Freeze
+impl<T> core::marker::Send for test_better_property::PropertyFailure<T> where T: core::marker::Send
+impl<T> core::marker::Sync for test_better_property::PropertyFailure<T> where T: core::marker::Sync
+impl<T> core::marker::Unpin for test_better_property::PropertyFailure<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for test_better_property::PropertyFailure<T> where T: core::marker::UnsafeUnpin
+impl<T> !core::panic::unwind_safe::RefUnwindSafe for test_better_property::PropertyFailure<T>
+impl<T> !core::panic::unwind_safe::UnwindSafe for test_better_property::PropertyFailure<T>
+pub struct test_better_property::ProptestTree<VT>(_)
+impl<VT, T> test_better_property::ValueTree<T> for test_better_property::ProptestTree<VT> where VT: proptest::strategy::traits::ValueTree<Value = T>
+pub fn test_better_property::ProptestTree<VT>::complicate(&mut self) -> bool
+pub fn test_better_property::ProptestTree<VT>::current(&self) -> T
+pub fn test_better_property::ProptestTree<VT>::simplify(&mut self) -> bool
+impl<VT> core::marker::Freeze for test_better_property::ProptestTree<VT> where VT: core::marker::Freeze
+impl<VT> core::marker::Send for test_better_property::ProptestTree<VT> where VT: core::marker::Send
+impl<VT> core::marker::Sync for test_better_property::ProptestTree<VT> where VT: core::marker::Sync
+impl<VT> core::marker::Unpin for test_better_property::ProptestTree<VT> where VT: core::marker::Unpin
+impl<VT> core::marker::UnsafeUnpin for test_better_property::ProptestTree<VT> where VT: core::marker::UnsafeUnpin
+impl<VT> core::panic::unwind_safe::RefUnwindSafe for test_better_property::ProptestTree<VT> where VT: core::panic::unwind_safe::RefUnwindSafe
+impl<VT> core::panic::unwind_safe::UnwindSafe for test_better_property::ProptestTree<VT> where VT: core::panic::unwind_safe::UnwindSafe
+pub struct test_better_property::QuickcheckTree<T>
+impl<T: quickcheck::arbitrary::Arbitrary> test_better_property::ValueTree<T> for test_better_property::quickcheck_bridge::QuickcheckTree<T>
+pub fn test_better_property::quickcheck_bridge::QuickcheckTree<T>::complicate(&mut self) -> bool
+pub fn test_better_property::quickcheck_bridge::QuickcheckTree<T>::current(&self) -> T
+pub fn test_better_property::quickcheck_bridge::QuickcheckTree<T>::simplify(&mut self) -> bool
+impl<T> core::marker::Freeze for test_better_property::quickcheck_bridge::QuickcheckTree<T> where T: core::marker::Freeze
+impl<T> !core::marker::Send for test_better_property::quickcheck_bridge::QuickcheckTree<T>
+impl<T> !core::marker::Sync for test_better_property::quickcheck_bridge::QuickcheckTree<T>
+impl<T> core::marker::Unpin for test_better_property::quickcheck_bridge::QuickcheckTree<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for test_better_property::quickcheck_bridge::QuickcheckTree<T> where T: core::marker::UnsafeUnpin
+impl<T> !core::panic::unwind_safe::RefUnwindSafe for test_better_property::quickcheck_bridge::QuickcheckTree<T>
+impl<T> !core::panic::unwind_safe::UnwindSafe for test_better_property::quickcheck_bridge::QuickcheckTree<T>
+pub struct test_better_property::Runner
+impl test_better_property::Runner
+pub fn test_better_property::Runner::deterministic() -> Self
+pub fn test_better_property::Runner::randomized() -> Self
+impl core::default::Default for test_better_property::Runner
+pub fn test_better_property::Runner::default() -> Self
+impl core::marker::Freeze for test_better_property::Runner
+impl core::marker::Send for test_better_property::Runner
+impl core::marker::Sync for test_better_property::Runner
+impl core::marker::Unpin for test_better_property::Runner
+impl core::marker::UnsafeUnpin for test_better_property::Runner
+impl !core::panic::unwind_safe::RefUnwindSafe for test_better_property::Runner
+impl !core::panic::unwind_safe::UnwindSafe for test_better_property::Runner
+pub trait test_better_property::Strategy<T>
+pub type test_better_property::Strategy::Tree: test_better_property::ValueTree<T>
+pub fn test_better_property::Strategy::new_tree(&self, runner: &mut test_better_property::Runner) -> core::result::Result<Self::Tree, test_better_property::GenError>
+impl<S, T> test_better_property::Strategy<T> for S where S: proptest::strategy::traits::Strategy<Value = T>
+pub type S::Tree = test_better_property::ProptestTree<<S as proptest::strategy::traits::Strategy>::Tree>
+pub fn S::new_tree(&self, runner: &mut test_better_property::Runner) -> core::result::Result<Self::Tree, test_better_property::GenError>
+impl<T: quickcheck::arbitrary::Arbitrary> test_better_property::Strategy<T> for test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+pub type test_better_property::quickcheck_bridge::ArbitraryStrategy<T>::Tree = test_better_property::quickcheck_bridge::QuickcheckTree<T>
+pub fn test_better_property::quickcheck_bridge::ArbitraryStrategy<T>::new_tree(&self, _runner: &mut test_better_property::Runner) -> core::result::Result<Self::Tree, test_better_property::GenError>
+pub trait test_better_property::ValueTree<T>
+pub fn test_better_property::ValueTree::complicate(&mut self) -> bool
+pub fn test_better_property::ValueTree::current(&self) -> T
+pub fn test_better_property::ValueTree::simplify(&mut self) -> bool
+impl<T: quickcheck::arbitrary::Arbitrary> test_better_property::ValueTree<T> for test_better_property::quickcheck_bridge::QuickcheckTree<T>
+pub fn test_better_property::quickcheck_bridge::QuickcheckTree<T>::complicate(&mut self) -> bool
+pub fn test_better_property::quickcheck_bridge::QuickcheckTree<T>::current(&self) -> T
+pub fn test_better_property::quickcheck_bridge::QuickcheckTree<T>::simplify(&mut self) -> bool
+impl<VT, T> test_better_property::ValueTree<T> for test_better_property::ProptestTree<VT> where VT: proptest::strategy::traits::ValueTree<Value = T>
+pub fn test_better_property::ProptestTree<VT>::complicate(&mut self) -> bool
+pub fn test_better_property::ProptestTree<VT>::current(&self) -> T
+pub fn test_better_property::ProptestTree<VT>::simplify(&mut self) -> bool
+pub fn test_better_property::any<T>() -> impl test_better_property::Strategy<T> where T: proptest::arbitrary::traits::Arbitrary
+pub fn test_better_property::arbitrary<T: quickcheck::arbitrary::Arbitrary>() -> test_better_property::quickcheck_bridge::ArbitraryStrategy<T>
+pub fn test_better_property::check<T, S, F>(strategy: S, property: F) -> core::result::Result<(), test_better_property::PropertyFailure<T>> where S: test_better_property::Strategy<T>, T: core::clone::Clone, F: core::ops::function::FnMut(T) -> test_better_core::result::TestResult
+pub fn test_better_property::check_with<T, S, F>(config: test_better_property::Config, runner: &mut test_better_property::Runner, strategy: S, property: F) -> core::result::Result<(), test_better_property::PropertyFailure<T>> where S: test_better_property::Strategy<T>, T: core::clone::Clone, F: core::ops::function::FnMut(T) -> test_better_core::result::TestResult

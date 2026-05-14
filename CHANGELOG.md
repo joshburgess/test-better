@@ -355,6 +355,16 @@ versioned in lockstep until 1.0.
   stderr while the build runs, gated on stderr being a TTY. New public surface:
   `RunSummary`, `ProgressEvent`, `progress_event`, and a `summary` field on
   `GroupedReport` (Iteration 9.3).
+- Public API review: every workspace crate's public surface is now captured as
+  a committed `public-api/<crate>.txt` snapshot, generated with
+  `cargo-public-api`. A `public-api` CI job and `scripts/check-public-api.sh`
+  fail if the live surface drifts from the committed snapshot, so an
+  unintended API change cannot land unreviewed. `#[must_use]` was added to the
+  matcher constructors (`eq`, `contains`, `all_of`, ...), the property
+  `Strategy` constructor `any`, and `test-better-runner`'s `scan_output`: each
+  returns a pure value that is a bug to discard. No items were added or
+  removed; this iteration is additive attributes plus the snapshot tooling
+  (Iteration 10.1).
 
 ### Notes
 
@@ -651,3 +661,15 @@ versioned in lockstep until 1.0.
   failing, one ignored, dependency-free). The live progress counter's TTY path
   is not covered by an automated test (it requires a pseudo-terminal); its pure
   pieces, `progress_event` and `parse_result_line`, are unit-tested instead.
+- Iteration 10.1's `public-api` snapshots are generated with `--all-features`
+  and `--simplified`: the auto-trait and blanket `impl` noise rustdoc emits
+  (`Send`, `Sync`, `RefUnwindSafe`, ...) is dropped so a diff shows only
+  intentional surface. The snapshot text is toolchain-stable and committed
+  under `public-api/`, but generating it needs `cargo-public-api` and a
+  `nightly` toolchain (it drives nightly rustdoc for the JSON it reads); the
+  CI job installs both. The walk found no internal-but-public items to hide:
+  `run_property`/`render_failure` were already `#[doc(hidden)]`, the `Float`
+  trait is already sealed, and `Subject::new` stays public-but-documented as
+  the `expect!` entry point. The only changes were `#[must_use]` attributes,
+  which `cargo-public-api` does not surface, so the snapshots capture the
+  surface as it stood once the review was complete.

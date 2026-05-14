@@ -54,6 +54,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn not<T, M>(matcher: M) -> impl Matcher<T>
 where
     T: ?Sized + fmt::Debug,
@@ -180,6 +181,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn all_of<T, Tup>(matchers: Tup) -> impl Matcher<T>
 where
     T: ?Sized,
@@ -221,6 +223,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn any_of<T, Tup>(matchers: Tup) -> impl Matcher<T>
 where
     T: ?Sized,

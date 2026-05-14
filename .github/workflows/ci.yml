@@ -103,3 +103,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: ./scripts/check-test-api.sh
+
+  # PROJECT_BUILD_PLAN.md Iteration 10.1: every crate's public surface is
+  # captured as a committed `public-api/<crate>.txt` snapshot. This job fails
+  # if the live surface has drifted, so an unintended API change cannot land
+  # without showing up in review.
+  public-api:
+    name: public-api
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.95.0"
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install cargo-public-api --locked
+      - run: ./scripts/check-public-api.sh

@@ -50,6 +50,7 @@ impl<T: ?Sized> Matcher<T> for NeverMatches {
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn always_matches<T: ?Sized>() -> impl Matcher<T> {
     AlwaysMatches
 }
@@ -65,6 +66,7 @@ pub fn always_matches<T: ?Sized>() -> impl Matcher<T> {
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn never_matches<T: ?Sized>() -> impl Matcher<T> {
     NeverMatches
 }

@@ -97,6 +97,7 @@ impl<F: Float> Matcher<F> for CloseToMatcher<F> {
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn close_to<F: Float>(value: F, tolerance: F) -> impl Matcher<F> {
     CloseToMatcher { value, tolerance }
 }
@@ -135,6 +136,7 @@ impl<F: Float> Matcher<F> for BetweenMatcher<F> {
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn between<F: Float>(low: F, high: F) -> impl Matcher<F> {
     BetweenMatcher { low, high }
 }
@@ -171,6 +173,7 @@ impl<F: Float> Matcher<F> for IsNanMatcher {
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn is_nan<F: Float>() -> impl Matcher<F> {
     IsNanMatcher
 }
@@ -207,6 +210,7 @@ impl<F: Float> Matcher<F> for IsFiniteMatcher {
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn is_finite<F: Float>() -> impl Matcher<F> {
     IsFiniteMatcher
 }

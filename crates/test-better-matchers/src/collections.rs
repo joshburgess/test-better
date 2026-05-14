@@ -123,6 +123,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn have_len<C>(n: usize) -> impl Matcher<C>
 where
     C: Sequence + ?Sized,
@@ -179,6 +180,7 @@ impl EmptyMatcher {
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn is_empty<C>() -> impl Matcher<C>
 where
     C: Sequence + ?Sized,
@@ -197,6 +199,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn is_not_empty<C>() -> impl Matcher<C>
 where
     C: Sequence + ?Sized,
@@ -247,6 +250,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn contains<C, M>(matcher: M) -> impl Matcher<C>
 where
     C: Sequence + ?Sized,
@@ -273,6 +277,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn at_least_one<C, M>(matcher: M) -> impl Matcher<C>
 where
     C: Sequence + ?Sized,
@@ -329,6 +334,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn every<C, M>(matcher: M) -> impl Matcher<C>
 where
     C: Sequence + ?Sized,
@@ -396,6 +402,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn contains_in_order<C, M, const N: usize>(matchers: [M; N]) -> impl Matcher<C>
 where
     C: Sequence + ?Sized,
@@ -500,6 +507,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn contains_all<C, Tup>(matchers: Tup) -> impl Matcher<C>
 where
     C: Sequence + ?Sized,

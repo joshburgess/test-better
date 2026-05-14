@@ -84,6 +84,7 @@ str_predicate_matcher!(EndsWithMatcher, ends_with, "a string ending with");
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn contains_str<T>(needle: impl Into<String>) -> impl Matcher<T>
 where
     T: AsRef<str> + fmt::Debug + ?Sized,
@@ -104,6 +105,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn starts_with<T>(prefix: impl Into<String>) -> impl Matcher<T>
 where
     T: AsRef<str> + fmt::Debug + ?Sized,
@@ -124,6 +126,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn ends_with<T>(suffix: impl Into<String>) -> impl Matcher<T>
 where
     T: AsRef<str> + fmt::Debug + ?Sized,
@@ -196,6 +199,7 @@ where
 /// }
 /// ```
 #[cfg(feature = "regex")]
+#[must_use]
 pub fn matches_regex<T>(pattern: impl Into<String>) -> impl Matcher<T>
 where
     T: AsRef<str> + fmt::Debug + ?Sized,

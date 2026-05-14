@@ -1,0 +1,157 @@
+pub mod test_better_snapshot
+pub enum test_better_snapshot::AcceptError
+pub test_better_snapshot::AcceptError::Io
+pub test_better_snapshot::AcceptError::Io::path: std::path::PathBuf
+pub test_better_snapshot::AcceptError::Io::source: std::io::error::Error
+pub test_better_snapshot::AcceptError::MalformedPatch
+pub test_better_snapshot::AcceptError::MalformedPatch::message: alloc::string::String
+pub test_better_snapshot::AcceptError::MalformedPatch::path: std::path::PathBuf
+pub test_better_snapshot::AcceptError::NoCall
+pub test_better_snapshot::AcceptError::NoCall::line: u32
+pub test_better_snapshot::AcceptError::NoCall::path: std::path::PathBuf
+pub test_better_snapshot::AcceptError::NotAStringLiteral
+pub test_better_snapshot::AcceptError::NotAStringLiteral::line: u32
+pub test_better_snapshot::AcceptError::NotAStringLiteral::path: std::path::PathBuf
+pub test_better_snapshot::AcceptError::Parse
+pub test_better_snapshot::AcceptError::Parse::message: alloc::string::String
+pub test_better_snapshot::AcceptError::Parse::path: std::path::PathBuf
+impl core::error::Error for test_better_snapshot::AcceptError
+pub fn test_better_snapshot::AcceptError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for test_better_snapshot::AcceptError
+pub fn test_better_snapshot::AcceptError::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for test_better_snapshot::AcceptError
+pub fn test_better_snapshot::AcceptError::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for test_better_snapshot::AcceptError
+impl core::marker::Send for test_better_snapshot::AcceptError
+impl core::marker::Sync for test_better_snapshot::AcceptError
+impl core::marker::Unpin for test_better_snapshot::AcceptError
+impl core::marker::UnsafeUnpin for test_better_snapshot::AcceptError
+impl !core::panic::unwind_safe::RefUnwindSafe for test_better_snapshot::AcceptError
+impl !core::panic::unwind_safe::UnwindSafe for test_better_snapshot::AcceptError
+pub enum test_better_snapshot::SnapshotFailure
+pub test_better_snapshot::SnapshotFailure::Io
+pub test_better_snapshot::SnapshotFailure::Io::action: &'static str
+pub test_better_snapshot::SnapshotFailure::Io::path: std::path::PathBuf
+pub test_better_snapshot::SnapshotFailure::Io::source: std::io::error::Error
+pub test_better_snapshot::SnapshotFailure::Mismatch
+pub test_better_snapshot::SnapshotFailure::Mismatch::actual: alloc::string::String
+pub test_better_snapshot::SnapshotFailure::Mismatch::expected: alloc::string::String
+pub test_better_snapshot::SnapshotFailure::Mismatch::path: std::path::PathBuf
+pub test_better_snapshot::SnapshotFailure::Missing
+pub test_better_snapshot::SnapshotFailure::Missing::path: std::path::PathBuf
+impl core::error::Error for test_better_snapshot::SnapshotFailure
+pub fn test_better_snapshot::SnapshotFailure::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for test_better_snapshot::SnapshotFailure
+pub fn test_better_snapshot::SnapshotFailure::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for test_better_snapshot::SnapshotFailure
+pub fn test_better_snapshot::SnapshotFailure::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for test_better_snapshot::SnapshotFailure
+impl core::marker::Send for test_better_snapshot::SnapshotFailure
+impl core::marker::Sync for test_better_snapshot::SnapshotFailure
+impl core::marker::Unpin for test_better_snapshot::SnapshotFailure
+impl core::marker::UnsafeUnpin for test_better_snapshot::SnapshotFailure
+impl !core::panic::unwind_safe::RefUnwindSafe for test_better_snapshot::SnapshotFailure
+impl !core::panic::unwind_safe::UnwindSafe for test_better_snapshot::SnapshotFailure
+pub enum test_better_snapshot::SnapshotMode
+pub test_better_snapshot::SnapshotMode::Compare
+pub test_better_snapshot::SnapshotMode::Update
+impl test_better_snapshot::SnapshotMode
+pub fn test_better_snapshot::SnapshotMode::from_env() -> Self
+impl core::clone::Clone for test_better_snapshot::SnapshotMode
+pub fn test_better_snapshot::SnapshotMode::clone(&self) -> test_better_snapshot::SnapshotMode
+impl core::cmp::Eq for test_better_snapshot::SnapshotMode
+impl core::cmp::PartialEq for test_better_snapshot::SnapshotMode
+pub fn test_better_snapshot::SnapshotMode::eq(&self, other: &test_better_snapshot::SnapshotMode) -> bool
+impl core::fmt::Debug for test_better_snapshot::SnapshotMode
+pub fn test_better_snapshot::SnapshotMode::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for test_better_snapshot::SnapshotMode
+impl core::marker::StructuralPartialEq for test_better_snapshot::SnapshotMode
+impl core::marker::Freeze for test_better_snapshot::SnapshotMode
+impl core::marker::Send for test_better_snapshot::SnapshotMode
+impl core::marker::Sync for test_better_snapshot::SnapshotMode
+impl core::marker::Unpin for test_better_snapshot::SnapshotMode
+impl core::marker::UnsafeUnpin for test_better_snapshot::SnapshotMode
+impl core::panic::unwind_safe::RefUnwindSafe for test_better_snapshot::SnapshotMode
+impl core::panic::unwind_safe::UnwindSafe for test_better_snapshot::SnapshotMode
+pub struct test_better_snapshot::Applied
+pub test_better_snapshot::Applied::file: std::path::PathBuf
+pub test_better_snapshot::Applied::patches: usize
+impl core::clone::Clone for test_better_snapshot::Applied
+pub fn test_better_snapshot::Applied::clone(&self) -> test_better_snapshot::Applied
+impl core::cmp::Eq for test_better_snapshot::Applied
+impl core::cmp::PartialEq for test_better_snapshot::Applied
+pub fn test_better_snapshot::Applied::eq(&self, other: &test_better_snapshot::Applied) -> bool
+impl core::fmt::Debug for test_better_snapshot::Applied
+pub fn test_better_snapshot::Applied::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for test_better_snapshot::Applied
+impl core::marker::Freeze for test_better_snapshot::Applied
+impl core::marker::Send for test_better_snapshot::Applied
+impl core::marker::Sync for test_better_snapshot::Applied
+impl core::marker::Unpin for test_better_snapshot::Applied
+impl core::marker::UnsafeUnpin for test_better_snapshot::Applied
+impl core::panic::unwind_safe::RefUnwindSafe for test_better_snapshot::Applied
+impl core::panic::unwind_safe::UnwindSafe for test_better_snapshot::Applied
+pub struct test_better_snapshot::InlineLocation
+pub test_better_snapshot::InlineLocation::column: u32
+pub test_better_snapshot::InlineLocation::file: alloc::string::String
+pub test_better_snapshot::InlineLocation::line: u32
+impl core::clone::Clone for test_better_snapshot::InlineLocation
+pub fn test_better_snapshot::InlineLocation::clone(&self) -> test_better_snapshot::InlineLocation
+impl core::cmp::Eq for test_better_snapshot::InlineLocation
+impl core::cmp::PartialEq for test_better_snapshot::InlineLocation
+pub fn test_better_snapshot::InlineLocation::eq(&self, other: &test_better_snapshot::InlineLocation) -> bool
+impl core::fmt::Debug for test_better_snapshot::InlineLocation
+pub fn test_better_snapshot::InlineLocation::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for test_better_snapshot::InlineLocation
+impl core::marker::Freeze for test_better_snapshot::InlineLocation
+impl core::marker::Send for test_better_snapshot::InlineLocation
+impl core::marker::Sync for test_better_snapshot::InlineLocation
+impl core::marker::Unpin for test_better_snapshot::InlineLocation
+impl core::marker::UnsafeUnpin for test_better_snapshot::InlineLocation
+impl core::panic::unwind_safe::RefUnwindSafe for test_better_snapshot::InlineLocation
+impl core::panic::unwind_safe::UnwindSafe for test_better_snapshot::InlineLocation
+pub struct test_better_snapshot::InlineSnapshotFailure
+pub test_better_snapshot::InlineSnapshotFailure::actual: alloc::string::String
+pub test_better_snapshot::InlineSnapshotFailure::expected: alloc::string::String
+impl core::error::Error for test_better_snapshot::InlineSnapshotFailure
+impl core::fmt::Debug for test_better_snapshot::InlineSnapshotFailure
+pub fn test_better_snapshot::InlineSnapshotFailure::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for test_better_snapshot::InlineSnapshotFailure
+pub fn test_better_snapshot::InlineSnapshotFailure::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for test_better_snapshot::InlineSnapshotFailure
+impl core::marker::Send for test_better_snapshot::InlineSnapshotFailure
+impl core::marker::Sync for test_better_snapshot::InlineSnapshotFailure
+impl core::marker::Unpin for test_better_snapshot::InlineSnapshotFailure
+impl core::marker::UnsafeUnpin for test_better_snapshot::InlineSnapshotFailure
+impl core::panic::unwind_safe::RefUnwindSafe for test_better_snapshot::InlineSnapshotFailure
+impl core::panic::unwind_safe::UnwindSafe for test_better_snapshot::InlineSnapshotFailure
+pub struct test_better_snapshot::Redactions
+impl test_better_snapshot::Redactions
+pub fn test_better_snapshot::Redactions::apply(&self, input: &str) -> alloc::string::String
+pub fn test_better_snapshot::Redactions::is_empty(&self) -> bool
+pub fn test_better_snapshot::Redactions::new() -> Self
+pub fn test_better_snapshot::Redactions::redact_rfc3339_timestamps(self) -> Self
+pub fn test_better_snapshot::Redactions::redact_uuids(self) -> Self
+pub fn test_better_snapshot::Redactions::redact_with(self, rule: impl core::ops::function::Fn(&str) -> alloc::string::String + core::marker::Send + core::marker::Sync + 'static) -> Self
+pub fn test_better_snapshot::Redactions::replace(self, needle: impl core::convert::Into<alloc::string::String>, placeholder: impl core::convert::Into<alloc::string::String>) -> Self
+impl core::default::Default for test_better_snapshot::Redactions
+pub fn test_better_snapshot::Redactions::default() -> test_better_snapshot::Redactions
+impl core::fmt::Debug for test_better_snapshot::Redactions
+pub fn test_better_snapshot::Redactions::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for test_better_snapshot::Redactions
+impl core::marker::Send for test_better_snapshot::Redactions
+impl core::marker::Sync for test_better_snapshot::Redactions
+impl core::marker::Unpin for test_better_snapshot::Redactions
+impl core::marker::UnsafeUnpin for test_better_snapshot::Redactions
+impl !core::panic::unwind_safe::RefUnwindSafe for test_better_snapshot::Redactions
+impl !core::panic::unwind_safe::UnwindSafe for test_better_snapshot::Redactions
+pub fn test_better_snapshot::apply_inline_patch(path: &std::path::Path, source: &str, line: u32, column: u32, new_value: &str) -> core::result::Result<alloc::string::String, test_better_snapshot::AcceptError>
+pub fn test_better_snapshot::apply_patches_from(pending_dir: &std::path::Path, workspace_root: &std::path::Path) -> core::result::Result<alloc::vec::Vec<test_better_snapshot::Applied>, test_better_snapshot::AcceptError>
+pub fn test_better_snapshot::apply_pending_patches() -> core::result::Result<alloc::vec::Vec<test_better_snapshot::Applied>, test_better_snapshot::AcceptError>
+pub fn test_better_snapshot::assert_inline_snapshot(actual: &str, raw: &str, location: &test_better_snapshot::InlineLocation, mode: test_better_snapshot::SnapshotMode) -> core::result::Result<(), test_better_snapshot::InlineSnapshotFailure>
+pub fn test_better_snapshot::assert_snapshot(module_path: &str, name: &str, actual: &str) -> core::result::Result<(), test_better_snapshot::SnapshotFailure>
+pub fn test_better_snapshot::assert_snapshot_in(dir: &std::path::Path, module_path: &str, name: &str, actual: &str, mode: test_better_snapshot::SnapshotMode) -> core::result::Result<(), test_better_snapshot::SnapshotFailure>
+pub fn test_better_snapshot::normalize_inline_literal(raw: &str) -> alloc::string::String
+pub fn test_better_snapshot::parse_pending_patch(body: &str) -> std::io::error::Result<(test_better_snapshot::InlineLocation, alloc::string::String)>
+pub fn test_better_snapshot::pending_patch_dir() -> std::io::error::Result<std::path::PathBuf>
+pub fn test_better_snapshot::snapshot_path(dir: &std::path::Path, module_path: &str, name: &str) -> std::path::PathBuf

@@ -108,6 +108,7 @@ fn multi_line_diff(_expected: &str, _actual: &str) -> Option<String> {
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn eq<T>(expected: T) -> impl Matcher<T>
 where
     T: PartialEq + fmt::Debug,
@@ -127,6 +128,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn ne<T>(expected: T) -> impl Matcher<T>
 where
     T: PartialEq + fmt::Debug,
@@ -146,6 +148,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn lt<T>(expected: T) -> impl Matcher<T>
 where
     T: PartialOrd + fmt::Debug,
@@ -165,6 +168,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn le<T>(expected: T) -> impl Matcher<T>
 where
     T: PartialOrd + fmt::Debug,
@@ -184,6 +188,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn gt<T>(expected: T) -> impl Matcher<T>
 where
     T: PartialOrd + fmt::Debug,
@@ -203,6 +208,7 @@ where
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn ge<T>(expected: T) -> impl Matcher<T>
 where
     T: PartialOrd + fmt::Debug,
@@ -241,6 +247,7 @@ impl Matcher<bool> for BoolMatcher {
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn is_true() -> impl Matcher<bool> {
     BoolMatcher { expected: true }
 }
@@ -257,6 +264,7 @@ pub fn is_true() -> impl Matcher<bool> {
 ///     Ok(())
 /// }
 /// ```
+#[must_use]
 pub fn is_false() -> impl Matcher<bool> {
     BoolMatcher { expected: false }
 }

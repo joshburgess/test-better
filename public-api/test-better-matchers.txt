@@ -1,0 +1,257 @@
+pub mod test_better_matchers
+pub use test_better_matchers::Backoff
+pub use test_better_matchers::Elapsed
+pub use test_better_matchers::RuntimeAvailable
+pub use test_better_matchers::eventually
+pub use test_better_matchers::eventually_blocking
+pub use test_better_matchers::eventually_blocking_with
+pub use test_better_matchers::eventually_with
+pub macro test_better_matchers::define_matcher!
+pub macro test_better_matchers::expect!
+pub struct test_better_matchers::Description
+impl test_better_matchers::Description
+pub fn test_better_matchers::Description::and(self, other: test_better_matchers::Description) -> Self
+pub fn test_better_matchers::Description::labeled(header: impl core::convert::Into<alloc::borrow::Cow<'static, str>>, child: test_better_matchers::Description) -> Self
+pub fn test_better_matchers::Description::or(self, other: test_better_matchers::Description) -> Self
+pub fn test_better_matchers::Description::text(text: impl core::convert::Into<alloc::borrow::Cow<'static, str>>) -> Self
+impl core::clone::Clone for test_better_matchers::Description
+pub fn test_better_matchers::Description::clone(&self) -> test_better_matchers::Description
+impl core::cmp::Eq for test_better_matchers::Description
+impl core::cmp::PartialEq for test_better_matchers::Description
+pub fn test_better_matchers::Description::eq(&self, other: &test_better_matchers::Description) -> bool
+impl core::fmt::Debug for test_better_matchers::Description
+pub fn test_better_matchers::Description::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for test_better_matchers::Description
+pub fn test_better_matchers::Description::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for test_better_matchers::Description
+impl core::ops::bit::Not for test_better_matchers::Description
+pub type test_better_matchers::Description::Output = test_better_matchers::Description
+pub fn test_better_matchers::Description::not(self) -> test_better_matchers::Description
+impl core::marker::Freeze for test_better_matchers::Description
+impl core::marker::Send for test_better_matchers::Description
+impl core::marker::Sync for test_better_matchers::Description
+impl core::marker::Unpin for test_better_matchers::Description
+impl core::marker::UnsafeUnpin for test_better_matchers::Description
+impl core::panic::unwind_safe::RefUnwindSafe for test_better_matchers::Description
+impl core::panic::unwind_safe::UnwindSafe for test_better_matchers::Description
+pub struct test_better_matchers::MatchResult
+pub test_better_matchers::MatchResult::failure: core::option::Option<test_better_matchers::Mismatch>
+pub test_better_matchers::MatchResult::matched: bool
+impl test_better_matchers::MatchResult
+pub fn test_better_matchers::MatchResult::fail(mismatch: test_better_matchers::Mismatch) -> Self
+pub fn test_better_matchers::MatchResult::pass() -> Self
+impl core::clone::Clone for test_better_matchers::MatchResult
+pub fn test_better_matchers::MatchResult::clone(&self) -> test_better_matchers::MatchResult
+impl core::fmt::Debug for test_better_matchers::MatchResult
+pub fn test_better_matchers::MatchResult::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for test_better_matchers::MatchResult
+impl core::marker::Send for test_better_matchers::MatchResult
+impl core::marker::Sync for test_better_matchers::MatchResult
+impl core::marker::Unpin for test_better_matchers::MatchResult
+impl core::marker::UnsafeUnpin for test_better_matchers::MatchResult
+impl core::panic::unwind_safe::RefUnwindSafe for test_better_matchers::MatchResult
+impl core::panic::unwind_safe::UnwindSafe for test_better_matchers::MatchResult
+pub struct test_better_matchers::Mismatch
+pub test_better_matchers::Mismatch::actual: alloc::string::String
+pub test_better_matchers::Mismatch::diff: core::option::Option<alloc::string::String>
+pub test_better_matchers::Mismatch::expected: test_better_matchers::Description
+impl test_better_matchers::Mismatch
+pub fn test_better_matchers::Mismatch::new(expected: test_better_matchers::Description, actual: impl core::convert::Into<alloc::string::String>) -> Self
+pub fn test_better_matchers::Mismatch::with_diff(self, diff: impl core::convert::Into<alloc::string::String>) -> Self
+impl core::clone::Clone for test_better_matchers::Mismatch
+pub fn test_better_matchers::Mismatch::clone(&self) -> test_better_matchers::Mismatch
+impl core::fmt::Debug for test_better_matchers::Mismatch
+pub fn test_better_matchers::Mismatch::fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for test_better_matchers::Mismatch
+impl core::marker::Send for test_better_matchers::Mismatch
+impl core::marker::Sync for test_better_matchers::Mismatch
+impl core::marker::Unpin for test_better_matchers::Mismatch
+impl core::marker::UnsafeUnpin for test_better_matchers::Mismatch
+impl core::panic::unwind_safe::RefUnwindSafe for test_better_matchers::Mismatch
+impl core::panic::unwind_safe::UnwindSafe for test_better_matchers::Mismatch
+pub struct test_better_matchers::SoftAsserter
+impl test_better_matchers::SoftAsserter
+pub fn test_better_matchers::SoftAsserter::check(&mut self, result: test_better_core::result::TestResult)
+pub fn test_better_matchers::SoftAsserter::context(&mut self, message: impl core::convert::Into<alloc::borrow::Cow<'static, str>>) -> test_better_matchers::SoftScope<'_>
+pub fn test_better_matchers::SoftAsserter::expect<T, M>(&mut self, actual: &T, matcher: M) where T: ?core::marker::Sized, M: test_better_matchers::Matcher<T>
+pub fn test_better_matchers::SoftAsserter::new() -> Self
+impl core::default::Default for test_better_matchers::SoftAsserter
+pub fn test_better_matchers::SoftAsserter::default() -> test_better_matchers::SoftAsserter
+impl core::marker::Freeze for test_better_matchers::SoftAsserter
+impl core::marker::Send for test_better_matchers::SoftAsserter
+impl core::marker::Sync for test_better_matchers::SoftAsserter
+impl core::marker::Unpin for test_better_matchers::SoftAsserter
+impl core::marker::UnsafeUnpin for test_better_matchers::SoftAsserter
+impl !core::panic::unwind_safe::RefUnwindSafe for test_better_matchers::SoftAsserter
+impl !core::panic::unwind_safe::UnwindSafe for test_better_matchers::SoftAsserter
+pub struct test_better_matchers::SoftScope<'a>
+impl test_better_matchers::SoftScope<'_>
+pub fn test_better_matchers::SoftScope<'_>::check(&mut self, result: test_better_core::result::TestResult)
+pub fn test_better_matchers::SoftScope<'_>::context(&mut self, message: impl core::convert::Into<alloc::borrow::Cow<'static, str>>) -> test_better_matchers::SoftScope<'_>
+pub fn test_better_matchers::SoftScope<'_>::expect<T, M>(&mut self, actual: &T, matcher: M) where T: ?core::marker::Sized, M: test_better_matchers::Matcher<T>
+impl core::ops::drop::Drop for test_better_matchers::SoftScope<'_>
+pub fn test_better_matchers::SoftScope<'_>::drop(&mut self)
+impl<'a> core::marker::Freeze for test_better_matchers::SoftScope<'a>
+impl<'a> core::marker::Send for test_better_matchers::SoftScope<'a>
+impl<'a> core::marker::Sync for test_better_matchers::SoftScope<'a>
+impl<'a> core::marker::Unpin for test_better_matchers::SoftScope<'a>
+impl<'a> core::marker::UnsafeUnpin for test_better_matchers::SoftScope<'a>
+impl<'a> !core::panic::unwind_safe::RefUnwindSafe for test_better_matchers::SoftScope<'a>
+impl<'a> !core::panic::unwind_safe::UnwindSafe for test_better_matchers::SoftScope<'a>
+pub struct test_better_matchers::Subject<T>
+impl<T> test_better_matchers::Subject<T>
+pub fn test_better_matchers::Subject<T>::new(actual: T, expr: &'static str, module_path: &'static str) -> Self
+pub fn test_better_matchers::Subject<T>::resolves_to<M>(self, matcher: M) -> impl core::future::future::Future<Output = test_better_core::result::TestResult> where T: core::future::future::Future, M: test_better_matchers::Matcher<<T as core::future::future::Future>::Output>
+pub fn test_better_matchers::Subject<T>::to<M>(self, matcher: M) -> test_better_core::result::TestResult where M: test_better_matchers::Matcher<T>
+pub fn test_better_matchers::Subject<T>::to_complete_within(self, limit: core::time::Duration) -> impl core::future::future::Future<Output = test_better_core::result::TestResult> where T: core::future::future::Future + test_better_async::RuntimeAvailable
+pub fn test_better_matchers::Subject<T>::to_match_inline_snapshot(self, expected: &str) -> test_better_core::result::TestResult where T: core::fmt::Display
+pub fn test_better_matchers::Subject<T>::to_match_inline_snapshot_with(self, expected: &str, redactions: &test_better_snapshot::redact::Redactions) -> test_better_core::result::TestResult where T: core::fmt::Display
+pub fn test_better_matchers::Subject<T>::to_match_snapshot(self, name: &str) -> test_better_core::result::TestResult where T: core::fmt::Display
+pub fn test_better_matchers::Subject<T>::to_match_snapshot_with(self, name: &str, redactions: &test_better_snapshot::redact::Redactions) -> test_better_core::result::TestResult where T: core::fmt::Display
+pub fn test_better_matchers::Subject<T>::to_not<M>(self, matcher: M) -> test_better_core::result::TestResult where M: test_better_matchers::Matcher<T>
+impl<T> core::marker::Freeze for test_better_matchers::Subject<T> where T: core::marker::Freeze
+impl<T> core::marker::Send for test_better_matchers::Subject<T> where T: core::marker::Send
+impl<T> core::marker::Sync for test_better_matchers::Subject<T> where T: core::marker::Sync
+impl<T> core::marker::Unpin for test_better_matchers::Subject<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for test_better_matchers::Subject<T> where T: core::marker::UnsafeUnpin
+impl<T> core::panic::unwind_safe::RefUnwindSafe for test_better_matchers::Subject<T> where T: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for test_better_matchers::Subject<T> where T: core::panic::unwind_safe::UnwindSafe
+pub trait test_better_matchers::ContainsAll<Item>
+pub fn test_better_matchers::ContainsAll::describe(&self) -> test_better_matchers::Description
+pub fn test_better_matchers::ContainsAll::first_unsatisfied(&self, items: &[&Item]) -> core::option::Option<test_better_matchers::Description>
+impl<Item, M1, M2, M3, M4, M5, M6, M7, M8> test_better_matchers::ContainsAll<Item> for (M1, M2, M3, M4, M5, M6, M7, M8) where M1: test_better_matchers::Matcher<Item>, M2: test_better_matchers::Matcher<Item>, M3: test_better_matchers::Matcher<Item>, M4: test_better_matchers::Matcher<Item>, M5: test_better_matchers::Matcher<Item>, M6: test_better_matchers::Matcher<Item>, M7: test_better_matchers::Matcher<Item>, M8: test_better_matchers::Matcher<Item>
+pub fn (M1, M2, M3, M4, M5, M6, M7, M8)::describe(&self) -> test_better_matchers::Description
+pub fn (M1, M2, M3, M4, M5, M6, M7, M8)::first_unsatisfied(&self, items: &[&Item]) -> core::option::Option<test_better_matchers::Description>
+impl<Item, M1, M2, M3, M4, M5, M6, M7> test_better_matchers::ContainsAll<Item> for (M1, M2, M3, M4, M5, M6, M7) where M1: test_better_matchers::Matcher<Item>, M2: test_better_matchers::Matcher<Item>, M3: test_better_matchers::Matcher<Item>, M4: test_better_matchers::Matcher<Item>, M5: test_better_matchers::Matcher<Item>, M6: test_better_matchers::Matcher<Item>, M7: test_better_matchers::Matcher<Item>
+pub fn (M1, M2, M3, M4, M5, M6, M7)::describe(&self) -> test_better_matchers::Description
+pub fn (M1, M2, M3, M4, M5, M6, M7)::first_unsatisfied(&self, items: &[&Item]) -> core::option::Option<test_better_matchers::Description>
+impl<Item, M1, M2, M3, M4, M5, M6> test_better_matchers::ContainsAll<Item> for (M1, M2, M3, M4, M5, M6) where M1: test_better_matchers::Matcher<Item>, M2: test_better_matchers::Matcher<Item>, M3: test_better_matchers::Matcher<Item>, M4: test_better_matchers::Matcher<Item>, M5: test_better_matchers::Matcher<Item>, M6: test_better_matchers::Matcher<Item>
+pub fn (M1, M2, M3, M4, M5, M6)::describe(&self) -> test_better_matchers::Description
+pub fn (M1, M2, M3, M4, M5, M6)::first_unsatisfied(&self, items: &[&Item]) -> core::option::Option<test_better_matchers::Description>
+impl<Item, M1, M2, M3, M4, M5> test_better_matchers::ContainsAll<Item> for (M1, M2, M3, M4, M5) where M1: test_better_matchers::Matcher<Item>, M2: test_better_matchers::Matcher<Item>, M3: test_better_matchers::Matcher<Item>, M4: test_better_matchers::Matcher<Item>, M5: test_better_matchers::Matcher<Item>
+pub fn (M1, M2, M3, M4, M5)::describe(&self) -> test_better_matchers::Description
+pub fn (M1, M2, M3, M4, M5)::first_unsatisfied(&self, items: &[&Item]) -> core::option::Option<test_better_matchers::Description>
+impl<Item, M1, M2, M3, M4> test_better_matchers::ContainsAll<Item> for (M1, M2, M3, M4) where M1: test_better_matchers::Matcher<Item>, M2: test_better_matchers::Matcher<Item>, M3: test_better_matchers::Matcher<Item>, M4: test_better_matchers::Matcher<Item>
+pub fn (M1, M2, M3, M4)::describe(&self) -> test_better_matchers::Description
+pub fn (M1, M2, M3, M4)::first_unsatisfied(&self, items: &[&Item]) -> core::option::Option<test_better_matchers::Description>
+impl<Item, M1, M2, M3> test_better_matchers::ContainsAll<Item> for (M1, M2, M3) where M1: test_better_matchers::Matcher<Item>, M2: test_better_matchers::Matcher<Item>, M3: test_better_matchers::Matcher<Item>
+pub fn (M1, M2, M3)::describe(&self) -> test_better_matchers::Description
+pub fn (M1, M2, M3)::first_unsatisfied(&self, items: &[&Item]) -> core::option::Option<test_better_matchers::Description>
+impl<Item, M1, M2> test_better_matchers::ContainsAll<Item> for (M1, M2) where M1: test_better_matchers::Matcher<Item>, M2: test_better_matchers::Matcher<Item>
+pub fn (M1, M2)::describe(&self) -> test_better_matchers::Description
+pub fn (M1, M2)::first_unsatisfied(&self, items: &[&Item]) -> core::option::Option<test_better_matchers::Description>
+pub trait test_better_matchers::Float: test_better_matchers::numeric::sealed::Sealed + core::marker::Copy + core::cmp::PartialOrd + core::fmt::Debug
+pub fn test_better_matchers::Float::abs_diff(self, other: Self) -> Self
+pub fn test_better_matchers::Float::float_is_finite(self) -> bool
+pub fn test_better_matchers::Float::float_is_nan(self) -> bool
+impl test_better_matchers::Float for f32
+pub fn f32::abs_diff(self, other: Self) -> Self
+pub fn f32::float_is_finite(self) -> bool
+pub fn f32::float_is_nan(self) -> bool
+impl test_better_matchers::Float for f64
+pub fn f64::abs_diff(self, other: Self) -> Self
+pub fn f64::float_is_finite(self) -> bool
+pub fn f64::float_is_nan(self) -> bool
+pub trait test_better_matchers::Matcher<T: ?core::marker::Sized>
+pub fn test_better_matchers::Matcher::check(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn test_better_matchers::Matcher::description(&self) -> test_better_matchers::Description
+pub trait test_better_matchers::MatcherTuple<T: ?core::marker::Sized>
+pub fn test_better_matchers::MatcherTuple::check_all(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn test_better_matchers::MatcherTuple::check_any(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn test_better_matchers::MatcherTuple::describe_all(&self) -> test_better_matchers::Description
+pub fn test_better_matchers::MatcherTuple::describe_any(&self) -> test_better_matchers::Description
+impl<T, M1, M2, M3, M4, M5, M6, M7, M8> test_better_matchers::MatcherTuple<T> for (M1, M2, M3, M4, M5, M6, M7, M8) where T: ?core::marker::Sized, M1: test_better_matchers::Matcher<T>, M2: test_better_matchers::Matcher<T>, M3: test_better_matchers::Matcher<T>, M4: test_better_matchers::Matcher<T>, M5: test_better_matchers::Matcher<T>, M6: test_better_matchers::Matcher<T>, M7: test_better_matchers::Matcher<T>, M8: test_better_matchers::Matcher<T>
+pub fn (M1, M2, M3, M4, M5, M6, M7, M8)::check_all(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn (M1, M2, M3, M4, M5, M6, M7, M8)::check_any(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn (M1, M2, M3, M4, M5, M6, M7, M8)::describe_all(&self) -> test_better_matchers::Description
+pub fn (M1, M2, M3, M4, M5, M6, M7, M8)::describe_any(&self) -> test_better_matchers::Description
+impl<T, M1, M2, M3, M4, M5, M6, M7> test_better_matchers::MatcherTuple<T> for (M1, M2, M3, M4, M5, M6, M7) where T: ?core::marker::Sized, M1: test_better_matchers::Matcher<T>, M2: test_better_matchers::Matcher<T>, M3: test_better_matchers::Matcher<T>, M4: test_better_matchers::Matcher<T>, M5: test_better_matchers::Matcher<T>, M6: test_better_matchers::Matcher<T>, M7: test_better_matchers::Matcher<T>
+pub fn (M1, M2, M3, M4, M5, M6, M7)::check_all(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn (M1, M2, M3, M4, M5, M6, M7)::check_any(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn (M1, M2, M3, M4, M5, M6, M7)::describe_all(&self) -> test_better_matchers::Description
+pub fn (M1, M2, M3, M4, M5, M6, M7)::describe_any(&self) -> test_better_matchers::Description
+impl<T, M1, M2, M3, M4, M5, M6> test_better_matchers::MatcherTuple<T> for (M1, M2, M3, M4, M5, M6) where T: ?core::marker::Sized, M1: test_better_matchers::Matcher<T>, M2: test_better_matchers::Matcher<T>, M3: test_better_matchers::Matcher<T>, M4: test_better_matchers::Matcher<T>, M5: test_better_matchers::Matcher<T>, M6: test_better_matchers::Matcher<T>
+pub fn (M1, M2, M3, M4, M5, M6)::check_all(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn (M1, M2, M3, M4, M5, M6)::check_any(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn (M1, M2, M3, M4, M5, M6)::describe_all(&self) -> test_better_matchers::Description
+pub fn (M1, M2, M3, M4, M5, M6)::describe_any(&self) -> test_better_matchers::Description
+impl<T, M1, M2, M3, M4, M5> test_better_matchers::MatcherTuple<T> for (M1, M2, M3, M4, M5) where T: ?core::marker::Sized, M1: test_better_matchers::Matcher<T>, M2: test_better_matchers::Matcher<T>, M3: test_better_matchers::Matcher<T>, M4: test_better_matchers::Matcher<T>, M5: test_better_matchers::Matcher<T>
+pub fn (M1, M2, M3, M4, M5)::check_all(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn (M1, M2, M3, M4, M5)::check_any(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn (M1, M2, M3, M4, M5)::describe_all(&self) -> test_better_matchers::Description
+pub fn (M1, M2, M3, M4, M5)::describe_any(&self) -> test_better_matchers::Description
+impl<T, M1, M2, M3, M4> test_better_matchers::MatcherTuple<T> for (M1, M2, M3, M4) where T: ?core::marker::Sized, M1: test_better_matchers::Matcher<T>, M2: test_better_matchers::Matcher<T>, M3: test_better_matchers::Matcher<T>, M4: test_better_matchers::Matcher<T>
+pub fn (M1, M2, M3, M4)::check_all(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn (M1, M2, M3, M4)::check_any(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn (M1, M2, M3, M4)::describe_all(&self) -> test_better_matchers::Description
+pub fn (M1, M2, M3, M4)::describe_any(&self) -> test_better_matchers::Description
+impl<T, M1, M2, M3> test_better_matchers::MatcherTuple<T> for (M1, M2, M3) where T: ?core::marker::Sized, M1: test_better_matchers::Matcher<T>, M2: test_better_matchers::Matcher<T>, M3: test_better_matchers::Matcher<T>
+pub fn (M1, M2, M3)::check_all(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn (M1, M2, M3)::check_any(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn (M1, M2, M3)::describe_all(&self) -> test_better_matchers::Description
+pub fn (M1, M2, M3)::describe_any(&self) -> test_better_matchers::Description
+impl<T, M1, M2> test_better_matchers::MatcherTuple<T> for (M1, M2) where T: ?core::marker::Sized, M1: test_better_matchers::Matcher<T>, M2: test_better_matchers::Matcher<T>
+pub fn (M1, M2)::check_all(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn (M1, M2)::check_any(&self, actual: &T) -> test_better_matchers::MatchResult
+pub fn (M1, M2)::describe_all(&self) -> test_better_matchers::Description
+pub fn (M1, M2)::describe_any(&self) -> test_better_matchers::Description
+pub trait test_better_matchers::Sequence
+pub type test_better_matchers::Sequence::Item
+pub fn test_better_matchers::Sequence::sequence_items(&self) -> alloc::vec::Vec<&Self::Item>
+impl<S: test_better_matchers::Sequence + ?core::marker::Sized> test_better_matchers::Sequence for &S
+pub type &S::Item = <S as test_better_matchers::Sequence>::Item
+pub fn &S::sequence_items(&self) -> alloc::vec::Vec<&<S as test_better_matchers::Sequence>::Item>
+impl<T, const N: usize> test_better_matchers::Sequence for [T; N]
+pub type [T; N]::Item = T
+pub fn [T; N]::sequence_items(&self) -> alloc::vec::Vec<&T>
+impl<T> test_better_matchers::Sequence for [T]
+pub type [T]::Item = T
+pub fn [T]::sequence_items(&self) -> alloc::vec::Vec<&T>
+impl<T> test_better_matchers::Sequence for alloc::collections::btree::set::BTreeSet<T>
+pub type alloc::collections::btree::set::BTreeSet<T>::Item = T
+pub fn alloc::collections::btree::set::BTreeSet<T>::sequence_items(&self) -> alloc::vec::Vec<&T>
+impl<T> test_better_matchers::Sequence for alloc::collections::vec_deque::VecDeque<T>
+pub type alloc::collections::vec_deque::VecDeque<T>::Item = T
+pub fn alloc::collections::vec_deque::VecDeque<T>::sequence_items(&self) -> alloc::vec::Vec<&T>
+impl<T> test_better_matchers::Sequence for alloc::vec::Vec<T>
+pub type alloc::vec::Vec<T>::Item = T
+pub fn alloc::vec::Vec<T>::sequence_items(&self) -> alloc::vec::Vec<&T>
+impl<T> test_better_matchers::Sequence for std::collections::hash::set::HashSet<T>
+pub type std::collections::hash::set::HashSet<T>::Item = T
+pub fn std::collections::hash::set::HashSet<T>::sequence_items(&self) -> alloc::vec::Vec<&T>
+pub fn test_better_matchers::all_of<T, Tup>(matchers: Tup) -> impl test_better_matchers::Matcher<T> where T: ?core::marker::Sized, Tup: test_better_matchers::MatcherTuple<T>
+pub fn test_better_matchers::always_matches<T: ?core::marker::Sized>() -> impl test_better_matchers::Matcher<T>
+pub fn test_better_matchers::any_of<T, Tup>(matchers: Tup) -> impl test_better_matchers::Matcher<T> where T: ?core::marker::Sized, Tup: test_better_matchers::MatcherTuple<T>
+pub fn test_better_matchers::at_least_one<C, M>(matcher: M) -> impl test_better_matchers::Matcher<C> where C: test_better_matchers::Sequence + ?core::marker::Sized, <C as test_better_matchers::Sequence>::Item: core::fmt::Debug, M: test_better_matchers::Matcher<<C as test_better_matchers::Sequence>::Item>
+pub fn test_better_matchers::between<F: test_better_matchers::Float>(low: F, high: F) -> impl test_better_matchers::Matcher<F>
+pub fn test_better_matchers::close_to<F: test_better_matchers::Float>(value: F, tolerance: F) -> impl test_better_matchers::Matcher<F>
+pub fn test_better_matchers::contains<C, M>(matcher: M) -> impl test_better_matchers::Matcher<C> where C: test_better_matchers::Sequence + ?core::marker::Sized, <C as test_better_matchers::Sequence>::Item: core::fmt::Debug, M: test_better_matchers::Matcher<<C as test_better_matchers::Sequence>::Item>
+pub fn test_better_matchers::contains_all<C, Tup>(matchers: Tup) -> impl test_better_matchers::Matcher<C> where C: test_better_matchers::Sequence + ?core::marker::Sized, <C as test_better_matchers::Sequence>::Item: core::fmt::Debug, Tup: test_better_matchers::ContainsAll<<C as test_better_matchers::Sequence>::Item>
+pub fn test_better_matchers::contains_in_order<C, M, const N: usize>(matchers: [M; N]) -> impl test_better_matchers::Matcher<C> where C: test_better_matchers::Sequence + ?core::marker::Sized, <C as test_better_matchers::Sequence>::Item: core::fmt::Debug, M: test_better_matchers::Matcher<<C as test_better_matchers::Sequence>::Item>
+pub fn test_better_matchers::contains_str<T>(needle: impl core::convert::Into<alloc::string::String>) -> impl test_better_matchers::Matcher<T> where T: core::convert::AsRef<str> + core::fmt::Debug + ?core::marker::Sized
+pub fn test_better_matchers::diff_lines(expected: &str, actual: &str) -> alloc::string::String
+pub fn test_better_matchers::ends_with<T>(suffix: impl core::convert::Into<alloc::string::String>) -> impl test_better_matchers::Matcher<T> where T: core::convert::AsRef<str> + core::fmt::Debug + ?core::marker::Sized
+pub fn test_better_matchers::eq<T>(expected: T) -> impl test_better_matchers::Matcher<T> where T: core::cmp::PartialEq + core::fmt::Debug
+pub fn test_better_matchers::err<T, E, M>(inner: M) -> impl test_better_matchers::Matcher<core::result::Result<T, E>> where M: test_better_matchers::Matcher<E>, T: core::fmt::Debug
+pub fn test_better_matchers::every<C, M>(matcher: M) -> impl test_better_matchers::Matcher<C> where C: test_better_matchers::Sequence + ?core::marker::Sized, <C as test_better_matchers::Sequence>::Item: core::fmt::Debug, M: test_better_matchers::Matcher<<C as test_better_matchers::Sequence>::Item>
+pub fn test_better_matchers::ge<T>(expected: T) -> impl test_better_matchers::Matcher<T> where T: core::cmp::PartialOrd + core::fmt::Debug
+pub fn test_better_matchers::gt<T>(expected: T) -> impl test_better_matchers::Matcher<T> where T: core::cmp::PartialOrd + core::fmt::Debug
+pub fn test_better_matchers::have_len<C>(n: usize) -> impl test_better_matchers::Matcher<C> where C: test_better_matchers::Sequence + ?core::marker::Sized
+pub fn test_better_matchers::is_empty<C>() -> impl test_better_matchers::Matcher<C> where C: test_better_matchers::Sequence + ?core::marker::Sized
+pub fn test_better_matchers::is_false() -> impl test_better_matchers::Matcher<bool>
+pub fn test_better_matchers::is_finite<F: test_better_matchers::Float>() -> impl test_better_matchers::Matcher<F>
+pub fn test_better_matchers::is_nan<F: test_better_matchers::Float>() -> impl test_better_matchers::Matcher<F>
+pub fn test_better_matchers::is_not_empty<C>() -> impl test_better_matchers::Matcher<C> where C: test_better_matchers::Sequence + ?core::marker::Sized
+pub fn test_better_matchers::is_true() -> impl test_better_matchers::Matcher<bool>
+pub fn test_better_matchers::le<T>(expected: T) -> impl test_better_matchers::Matcher<T> where T: core::cmp::PartialOrd + core::fmt::Debug
+pub fn test_better_matchers::lt<T>(expected: T) -> impl test_better_matchers::Matcher<T> where T: core::cmp::PartialOrd + core::fmt::Debug
+pub fn test_better_matchers::matches_regex<T>(pattern: impl core::convert::Into<alloc::string::String>) -> impl test_better_matchers::Matcher<T> where T: core::convert::AsRef<str> + core::fmt::Debug + ?core::marker::Sized
+pub fn test_better_matchers::ne<T>(expected: T) -> impl test_better_matchers::Matcher<T> where T: core::cmp::PartialEq + core::fmt::Debug
+pub fn test_better_matchers::never_matches<T: ?core::marker::Sized>() -> impl test_better_matchers::Matcher<T>
+pub fn test_better_matchers::none<T>() -> impl test_better_matchers::Matcher<core::option::Option<T>> where T: core::fmt::Debug
+pub fn test_better_matchers::not<T, M>(matcher: M) -> impl test_better_matchers::Matcher<T> where T: ?core::marker::Sized + core::fmt::Debug, M: test_better_matchers::Matcher<T>
+pub fn test_better_matchers::ok<T, E, M>(inner: M) -> impl test_better_matchers::Matcher<core::result::Result<T, E>> where M: test_better_matchers::Matcher<T>, E: core::fmt::Debug
+pub fn test_better_matchers::satisfies<T, F>(name: &'static str, pred: F) -> impl test_better_matchers::Matcher<T> where T: core::fmt::Debug, F: core::ops::function::Fn(&T) -> bool
+pub fn test_better_matchers::soft<F>(f: F) -> test_better_core::result::TestResult where F: core::ops::function::FnOnce(&mut test_better_matchers::SoftAsserter)
+pub fn test_better_matchers::some<T, M>(inner: M) -> impl test_better_matchers::Matcher<core::option::Option<T>> where M: test_better_matchers::Matcher<T>
+pub fn test_better_matchers::starts_with<T>(prefix: impl core::convert::Into<alloc::string::String>) -> impl test_better_matchers::Matcher<T> where T: core::convert::AsRef<str> + core::fmt::Debug + ?core::marker::Sized

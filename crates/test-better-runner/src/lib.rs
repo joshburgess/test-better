@@ -210,6 +210,7 @@ pub struct GroupedReport {
 /// inside one attaches a structured error to that test. Any test that opened a
 /// section but emitted no parseable marker is recorded as unstructured. Each
 /// `test result:` line is parsed and its counts added into the summary.
+#[must_use]
 pub fn scan_output<L, E>(lines: L, mut echo: E) -> GroupedReport
 where
     L: IntoIterator<Item = String>,
@@ -593,7 +594,7 @@ mod tests {
         ];
 
         let mut echoed: Vec<String> = Vec::new();
-        scan_output(lines, |line| echoed.push(line.to_string()));
+        let _ = scan_output(lines, |line| echoed.push(line.to_string()));
 
         // The marker line is swallowed; everything else passes through.
         expect!(echoed).to(eq(vec![
