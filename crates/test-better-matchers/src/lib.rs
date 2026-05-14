@@ -18,6 +18,8 @@
 //!   (behind the `regex` feature) `matches_regex`;
 //! - the numeric matchers [`close_to`], [`between`], [`is_nan`], and
 //!   [`is_finite`], generic over the sealed [`Float`] trait;
+//! - the [`satisfies`] escape hatch, a matcher built from an arbitrary
+//!   named predicate;
 //! - the [`expect!`](crate::expect) macro and its [`Subject`] type, the entry point for an
 //!   assertion;
 //! - the line-oriented [`diff_lines`] renderer, behind the default `diff`
@@ -36,6 +38,7 @@ mod matcher;
 mod numeric;
 mod option_result;
 mod primitives;
+mod satisfies;
 mod strings;
 mod subject;
 
@@ -52,6 +55,7 @@ pub use matcher::{MatchResult, Matcher, Mismatch};
 pub use numeric::{Float, between, close_to, is_finite, is_nan};
 pub use option_result::{err, none, ok, some};
 pub use primitives::{eq, ge, gt, is_false, is_true, le, lt, ne};
+pub use satisfies::satisfies;
 #[cfg(feature = "regex")]
 pub use strings::matches_regex;
 pub use strings::{contains_str, ends_with, starts_with};

@@ -26,7 +26,7 @@ pub use test_better_matchers::{
     Subject, all_of, always_matches, any_of, at_least_one, between, close_to, contains,
     contains_all, contains_in_order, contains_str, ends_with, eq, err, every, expect, ge, gt,
     have_len, is_empty, is_false, is_finite, is_nan, is_not_empty, is_true, le, lt, ne,
-    never_matches, none, not, ok, some, starts_with,
+    never_matches, none, not, ok, satisfies, some, starts_with,
 };
 
 /// The one `use` a test file should need: `use test_better::prelude::*;`.
@@ -53,7 +53,7 @@ pub mod prelude {
         all_of, always_matches, any_of, at_least_one, between, close_to, contains, contains_all,
         contains_in_order, contains_str, ends_with, eq, err, every, ge, gt, have_len, is_empty,
         is_false, is_finite, is_nan, is_not_empty, is_true, le, lt, ne, never_matches, none, not,
-        ok, some, starts_with,
+        ok, satisfies, some, starts_with,
     };
 
     pub use crate::expect;

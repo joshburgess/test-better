@@ -119,6 +119,11 @@ versioned in lockstep until 1.0.
   (Iteration 3.5).
 - `test-better`: the facade crate re-exports the numeric matchers and the
   `Float` trait; the prelude gains the matchers (Iteration 3.5).
+- `test-better-matchers`: the `satisfies` escape hatch, a matcher built from an
+  arbitrary `Fn(&T) -> bool` predicate. It takes a `name` so a failure reports
+  the named expectation rather than the useless `<closure>` (Iteration 3.6).
+- `test-better`: the facade crate re-exports `satisfies`; the prelude gains it
+  (Iteration 3.6).
 
 ### Notes
 
