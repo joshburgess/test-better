@@ -10,5 +10,16 @@ authors.workspace = true
 categories.workspace = true
 keywords.workspace = true
 
+# No runtime dependencies: this crate is the `std`-only storage-and-comparison
+# core. Turning a `SnapshotFailure` into a rendered `TestError` is
+# `test-better-matchers`' job.
+
+[dev-dependencies]
+# Dogfooding: this crate's own tests assert with `expect!`. `test-better-matchers`
+# depends on `test-better-snapshot`, so this is a dev-dependency cycle, which
+# Cargo permits (the same arrangement as `test-better-async`).
+test-better-core = { workspace = true }
+test-better-matchers = { workspace = true }
+
 [lints]
 workspace = true

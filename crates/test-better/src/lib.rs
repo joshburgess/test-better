@@ -43,6 +43,13 @@ pub use test_better_property::{
 // `Strategy<T>`. Off by default; `proptest` is the primary backend.
 #[cfg(feature = "quickcheck")]
 pub use test_better_property::{ArbitraryStrategy, QuickcheckTree, arbitrary};
+// The file-backed snapshot store (Phase 7). The everyday entry point is the
+// `expect!(value).to_match_snapshot("name")` method (on the re-exported
+// `Subject`); these are the lower-level pieces it is built on, for callers that
+// need an explicit directory or mode.
+pub use test_better_snapshot::{
+    SnapshotFailure, SnapshotMode, assert_snapshot, assert_snapshot_in, snapshot_path,
+};
 
 /// How to write a custom matcher: see the [`cookbook`] module.
 pub mod cookbook;

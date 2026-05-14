@@ -40,6 +40,16 @@ record the decision and its rationale here when the relevant phase begins.
   `Runner::deterministic`), and shrinking does not promise the exact boundary
   value `proptest`'s integrated shrinking reaches. This is the "works at the
   documented reduced fidelity" outcome §11 6.1c lists as acceptable.
+- **Phase 7 (§12 7.1): RESOLVED (Iteration 7.1).** The `<test_module>`
+  component of a snapshot file name comes from the call site's `module_path!()`,
+  captured by the `expect!` macro and carried on `Subject` (a third argument to
+  `Subject::new`), rather than being derived at runtime from
+  `Location::caller().file()`. `module_path!()` is the value the
+  PROJECT_BUILD_PLAN.md path template literally names, it disambiguates two
+  tests in different modules that pick the same snapshot name, and `Subject::new`
+  had exactly one caller (the macro), so widening it was low-risk. The snapshot
+  *directory* (`tests/snapshots`) is resolved from the working directory, which
+  `cargo test` sets to the package root.
 - **Phase 9 (§9.1):** the structured-output channel the runner consumes
   (marker-wrapped JSON in captured output vs. a side-channel file under
   `target/`). Phases 7.2 and 9.2 both depend on this.

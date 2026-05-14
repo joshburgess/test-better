@@ -19,12 +19,14 @@
 //! under `#[tokio::test]`, `#[async_std::test]`, `pollster::block_on`, or any
 //! other executor. (Runtime-specific timing methods arrive in Phase 5.2.)
 
+use std::fmt::Display;
 use std::future::Future;
 use std::panic::Location;
 use std::time::Duration;
 
 use test_better_async::{Elapsed, RuntimeAvailable, run_within};
 use test_better_core::{ErrorKind, Payload, TestError, TestResult};
+use test_better_snapshot::SnapshotFailure;
 
 use crate::description::Description;
 use crate::matcher::{Matcher, Mismatch};
@@ -37,14 +39,23 @@ use crate::matcher::{Matcher, Mismatch};
 pub struct Subject<T> {
     actual: T,
     expr: &'static str,
+    module_path: &'static str,
 }
 
 impl<T> Subject<T> {
-    /// Pairs `actual` with the source text it came from. Called by [`expect!`](crate::expect);
-    /// rarely constructed directly.
+    /// Pairs `actual` with the source text it came from and the `module_path!()`
+    /// of the call site. Called by [`expect!`](crate::expect); rarely
+    /// constructed directly.
+    ///
+    /// `module_path` is only consulted by [`to_match_snapshot`](Self::to_match_snapshot),
+    /// which uses it to name the snapshot file; every other method ignores it.
     #[must_use]
-    pub fn new(actual: T, expr: &'static str) -> Self {
-        Self { actual, expr }
+    pub fn new(actual: T, expr: &'static str, module_path: &'static str) -> Self {
+        Self {
+            actual,
+            expr,
+            module_path,
+        }
     }
 
     /// Asserts that the value satisfies `matcher`.
@@ -157,6 +168,42 @@ impl<T> Subject<T> {
             }
         }
     }
+
+    /// Asserts that the value matches the snapshot stored under `name`.
+    ///
+    /// The snapshot lives at `tests/snapshots/<module-path>__<name>.snap` in the
+    /// package under test, with `<module-path>` taken from the call site's
+    /// `module_path!()`. On a normal run the value is compared against that
+    /// file; a difference (or a missing file) is a `Snapshot` failure, and the
+    /// difference is rendered with the standard line-oriented diff. Rerun the
+    /// test with `UPDATE_SNAPSHOTS=1` to create the file the first time, or to
+    /// accept an intentional change.
+    ///
+    /// The value only has to be [`Display`]: that is what gets written to and
+    /// compared against the file.
+    ///
+    /// ```no_run
+    /// use test_better_core::TestResult;
+    /// use test_better_matchers::expect;
+    ///
+    /// # fn main() -> TestResult {
+    /// // Run once with `UPDATE_SNAPSHOTS=1` to record the snapshot; later runs
+    /// // compare against `tests/snapshots/<module>__homepage.snap`.
+    /// expect!("<h1>Hello</h1>").to_match_snapshot("homepage")?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    #[track_caller]
+    pub fn to_match_snapshot(self, name: &str) -> TestResult
+    where
+        T: Display,
+    {
+        let actual = self.actual.to_string();
+        match test_better_snapshot::assert_snapshot(self.module_path, name, &actual) {
+            Ok(()) => Ok(()),
+            Err(failure) => Err(snapshot_error(self.expr, name, failure)),
+        }
+    }
 }
 
 /// Builds the error for a matcher that did not match: the expected/actual pair
@@ -192,6 +239,64 @@ fn timeout_error(expr: &str, elapsed: Elapsed) -> TestError {
     ))
 }
 
+/// Renders a [`SnapshotFailure`] from `test-better-snapshot` into a `TestError`.
+///
+/// A mismatch becomes an `ExpectedActual` payload, exactly like a value
+/// matcher's mismatch, so the standard renderer shows it (and its diff) the
+/// same way. A missing file or an I/O error has no two sides to compare, so it
+/// carries only a message.
+#[track_caller]
+fn snapshot_error(expr: &str, name: &str, failure: SnapshotFailure) -> TestError {
+    match failure {
+        SnapshotFailure::Mismatch {
+            path,
+            expected,
+            actual,
+        } => {
+            let diff = snapshot_diff(&expected, &actual);
+            TestError::new(ErrorKind::Snapshot)
+                .with_message(format!(
+                    "expect!({expr}): snapshot {name:?} at {} does not match",
+                    path.display()
+                ))
+                .with_payload(Payload::ExpectedActual {
+                    expected,
+                    actual,
+                    diff,
+                })
+        }
+        SnapshotFailure::Missing { path } => {
+            TestError::new(ErrorKind::Snapshot).with_message(format!(
+                "expect!({expr}): snapshot {name:?} does not exist at {}; \
+                 rerun with UPDATE_SNAPSHOTS=1 to create it",
+                path.display()
+            ))
+        }
+        SnapshotFailure::Io {
+            path,
+            action,
+            source,
+        } => TestError::new(ErrorKind::Snapshot).with_message(format!(
+            "expect!({expr}): snapshot {name:?} I/O error {action} ({}): {source}",
+            path.display()
+        )),
+    }
+}
+
+/// The line-oriented diff for a snapshot mismatch. Unlike a value matcher,
+/// which only diffs multi-line values, a snapshot is text and a diff is always
+/// the readable way to show what changed. With the `diff` feature off this is
+/// `None` and the failure still renders, just without the diff.
+#[cfg(feature = "diff")]
+fn snapshot_diff(expected: &str, actual: &str) -> Option<String> {
+    Some(crate::diff::diff_lines(expected, actual))
+}
+
+#[cfg(not(feature = "diff"))]
+fn snapshot_diff(_expected: &str, _actual: &str) -> Option<String> {
+    None
+}
+
 /// Captures an expression and its source text for assertion with a matcher.
 ///
 /// ```
@@ -206,7 +311,7 @@ fn timeout_error(expr: &str, elapsed: Elapsed) -> TestError {
 #[macro_export]
 macro_rules! expect {
     ($actual:expr) => {
-        $crate::Subject::new($actual, ::core::stringify!($actual))
+        $crate::Subject::new($actual, ::core::stringify!($actual), ::core::module_path!())
     };
 }
 
@@ -299,5 +404,44 @@ mod tests {
             expect!(error.location.line()).to(eq(line))?;
             expect!(error.location.file().ends_with("subject.rs")).to(is_true())
         })
+    }
+
+    #[test]
+    fn snapshot_mismatch_renders_as_a_snapshot_error_with_a_diff() -> TestResult {
+        use std::path::PathBuf;
+
+        use test_better_core::ErrorKind;
+        use test_better_snapshot::SnapshotFailure;
+
+        let failure = SnapshotFailure::Mismatch {
+            path: PathBuf::from("tests/snapshots/m__page.snap"),
+            expected: "line one\nline two".to_string(),
+            actual: "line one\nline TWO".to_string(),
+        };
+        let error = super::snapshot_error("page", "page", failure);
+        expect!(error.kind == ErrorKind::Snapshot).to(is_true())?;
+        let rendered = error.to_string();
+        expect!(rendered.contains("snapshot \"page\"")).to(is_true())?;
+        // The expected/actual payload renders, and `diff` is on by default.
+        expect!(rendered.contains("line one")).to(is_true())?;
+        #[cfg(feature = "diff")]
+        expect!(rendered.contains("-line two")).to(is_true())?;
+        Ok(())
+    }
+
+    #[test]
+    fn snapshot_missing_renders_as_a_snapshot_error_pointing_at_update() -> TestResult {
+        use std::path::PathBuf;
+
+        use test_better_core::ErrorKind;
+        use test_better_snapshot::SnapshotFailure;
+
+        let failure = SnapshotFailure::Missing {
+            path: PathBuf::from("tests/snapshots/m__page.snap"),
+        };
+        let error = super::snapshot_error("page", "page", failure);
+        expect!(error.kind == ErrorKind::Snapshot).to(is_true())?;
+        expect!(error.to_string().contains("UPDATE_SNAPSHOTS=1")).to(is_true())?;
+        Ok(())
     }
 }

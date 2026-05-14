@@ -16,6 +16,10 @@ test-better-core = { workspace = true }
 # and the `RuntimeAvailable` gate (Iteration 5.2). The runtime features below
 # forward to it.
 test-better-async = { workspace = true }
+# Backs `Subject::to_match_snapshot`: the file-backed snapshot store and its
+# compare/update logic (Iteration 7.1). This crate renders the resulting
+# `SnapshotFailure` into a `TestError`, with a diff when the `diff` feature is on.
+test-better-snapshot = { workspace = true }
 # Backs the `diff` feature's line-oriented diff renderer (Iteration 2.4).
 similar = { version = "2", optional = true }
 # Backs the `regex` feature's `matches_regex` matcher (Iteration 3.4).

@@ -21,6 +21,10 @@ test-better-macros = { workspace = true }
 # The property-testing bridge: the `Strategy<T>` seam and the `check` runner
 # (Phase 6). Re-exported so a property test needs only the facade dependency.
 test-better-property = { workspace = true }
+# The snapshot store behind `expect!(value).to_match_snapshot("name")` (Phase 7).
+# The method itself lives on `Subject` in `test-better-matchers`; this dependency
+# is for re-exporting the lower-level snapshot API through the facade.
+test-better-snapshot = { workspace = true }
 
 [dev-dependencies]
 # Drives the compile-fail tests for the structural matcher macros: a missing

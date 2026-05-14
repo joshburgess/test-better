@@ -880,6 +880,7 @@ dependencies = [
  "test-better-macros",
  "test-better-matchers",
  "test-better-property",
+ "test-better-snapshot",
  "tokio",
  "trybuild",
 ]
@@ -923,6 +924,7 @@ dependencies = [
  "similar",
  "test-better-async",
  "test-better-core",
+ "test-better-snapshot",
  "trybuild",
 ]
 
@@ -943,6 +945,10 @@ version = "0.0.0"
 [[package]]
 name = "test-better-snapshot"
 version = "0.0.0"
+dependencies = [
+ "test-better-core",
+ "test-better-matchers",
+]
 
 [[package]]
 name = "timeout-no-runtime"

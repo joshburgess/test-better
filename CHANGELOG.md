@@ -246,6 +246,22 @@ versioned in lockstep until 1.0.
   it, promoting the kind to `ErrorKind::Property`. A golden-file test
   (`tests/shrink_output.rs`, with the golden under `tests/golden/`) pins the
   exact output (Iteration 6.3).
+- `test-better-snapshot`: the file-backed snapshot store. `assert_snapshot`
+  (and the directory-explicit `assert_snapshot_in`) compares a value against
+  `tests/snapshots/<module-path>__<name>.snap`, or rewrites it under
+  `SnapshotMode::Update` / `UPDATE_SNAPSHOTS=1`. `snapshot_path` exposes the
+  path-naming rule and `SnapshotFailure` is the structured outcome (missing
+  file, mismatch, or I/O error). The crate is `std`-only (Iteration 7.1).
+- `test-better-matchers`: `Subject::to_match_snapshot(name)` asserts a
+  `Display` value against its file-backed snapshot. A mismatch renders as an
+  `ErrorKind::Snapshot` failure with an expected/actual payload and (with the
+  `diff` feature on) a line-oriented diff; a missing snapshot points the reader
+  at `UPDATE_SNAPSHOTS=1`. `expect!` now also captures `module_path!()` to name
+  the snapshot file, so `Subject::new` takes a third argument (Iteration 7.1).
+- `test-better`: the facade crate re-exports the snapshot surface
+  (`assert_snapshot`, `assert_snapshot_in`, `snapshot_path`, `SnapshotMode`,
+  `SnapshotFailure`); `to_match_snapshot` rides along on the re-exported
+  `Subject` (Iteration 7.1).
 
 ### Notes
 
@@ -417,3 +433,22 @@ versioned in lockstep until 1.0.
   module. The `quickcheck` feature pulls a second `rand` major version into the
   graph; `cargo deny`'s `multiple-versions` is `warn`, so this is a warning, not
   a failure, and the feature is off by default.
+- `test-better-snapshot` (Iteration 7.1) is deliberately `std`-only and does
+  not depend on `test-better-core`: it returns the structured `SnapshotFailure`,
+  and `test-better-matchers` owns the `SnapshotFailure` -> `TestError` rendering
+  (it is the crate with the diff renderer, and `test-better-matchers` already
+  depends on `test-better-snapshot` for the `to_match_snapshot` method). The
+  snapshot directory is resolved from the current working directory, which
+  `cargo test` sets to the package root; the directory-explicit
+  `assert_snapshot_in` exists so the crate's own lifecycle test can drive a
+  temporary directory rather than a committed fixture. The update-vs-compare
+  decision is a `SnapshotMode` parameter, not read from the environment inside
+  the core, so a test can exercise both modes without mutating process-global
+  env state (`SnapshotMode::from_env` reads `UPDATE_SNAPSHOTS` only at the
+  `assert_snapshot` boundary). Snapshot files store the value verbatim, with no
+  added trailing newline, so comparison is exact. The facade `tests/snapshot.rs`
+  asserts only the matching case: a mismatch asserted through `to_match_snapshot`
+  would behave differently under `UPDATE_SNAPSHOTS=1`, so the mismatch and
+  create/update paths are tested where they can be driven explicitly
+  (`test-better-snapshot/tests/lifecycle.rs` and the `snapshot_error` unit
+  tests).
