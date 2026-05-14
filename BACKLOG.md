@@ -20,8 +20,17 @@ record the decision and its rationale here when the relevant phase begins.
   coexist as inherent impls, and option (a)'s distinct `AsyncSubject<F>` would
   need `expect!` to dispatch on whether its argument is a future, which a
   syntactic macro cannot do. Phase 5 inherits this decision.
-- **Phase 6 (§11.1):** the primary property-testing backend (recommended:
-  `proptest`) and whether the `quickcheck` bridge ships in 1.0 or is deferred.
+- **Phase 6 (§11.1): RESOLVED (Iteration 6.1a).** The primary property-testing
+  backend is `proptest`. Rationale: its integrated shrinking (a `Strategy`
+  produces a `ValueTree` that binary-searches toward a minimal counterexample)
+  composes directly with `test-better`'s structured matcher output, and it is
+  the de-facto standard for new Rust property testing. The `Strategy<T>` seam
+  in `test-better-property` is a deliberately lowest-common-denominator trait
+  (`new_tree` plus a `ValueTree` with `current`/`simplify`/`complicate`) that
+  `proptest` satisfies through a blanket impl, so a property test names
+  ordinary `proptest` strategies. Whether the `quickcheck` bridge (§11 6.1c)
+  ships in 1.0 is still open and decided when 6.1c is picked up; it is
+  best-effort and explicitly not a 1.0 blocker.
 - **Phase 9 (§9.1):** the structured-output channel the runner consumes
   (marker-wrapped JSON in captured output vs. a side-channel file under
   `target/`). Phases 7.2 and 9.2 both depend on this.

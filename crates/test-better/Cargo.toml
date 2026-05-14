@@ -18,6 +18,9 @@ test-better-matchers = { workspace = true }
 # The structural matcher macros (`matches_struct!` and friends). Their
 # generated code refers back to this facade crate, so they ship through it.
 test-better-macros = { workspace = true }
+# The property-testing bridge: the `Strategy<T>` seam and the `check` runner
+# (Phase 6). Re-exported so a property test needs only the facade dependency.
+test-better-property = { workspace = true }
 
 [dev-dependencies]
 # Drives the compile-fail tests for the structural matcher macros: a missing

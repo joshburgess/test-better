@@ -10,5 +10,18 @@ authors.workspace = true
 categories.workspace = true
 keywords.workspace = true
 
+[dependencies]
+test-better-core = { workspace = true }
+# The v1.0 property-testing backend (BACKLOG.md, Iteration 6.1a). `default-
+# features = false` drops `fork`/`timeout` (and their `rusty-fork`/`libc`/
+# `wait-timeout` dependencies): the `Strategy<T>` seam only needs `proptest`'s
+# generation and shrinking, which the `std` feature carries.
+proptest = { version = "1", default-features = false, features = ["std"] }
+
+[dev-dependencies]
+# Dogfooding: the crate's own tests assert with `expect!`. A dev-dependency
+# cycle, which Cargo permits (same pattern as `test-better-core`).
+test-better-matchers = { workspace = true }
+
 [lints]
 workspace = true

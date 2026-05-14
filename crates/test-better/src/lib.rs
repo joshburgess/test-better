@@ -18,6 +18,9 @@ pub use test_better_core::{
     color_choice, set_color_choice,
 };
 pub use test_better_macros::{matches_struct, matches_tuple, matches_variant};
+// The property-testing bridge (Phase 6). `Config` is renamed `PropertyConfig`
+// here: at the facade root, where one crate's surface meets eight others, a
+// bare `Config` says too little.
 #[cfg(feature = "diff")]
 pub use test_better_matchers::diff_lines;
 #[cfg(feature = "regex")]
@@ -30,6 +33,10 @@ pub use test_better_matchers::{
     eventually_blocking_with, eventually_with, every, expect, ge, gt, have_len, is_empty, is_false,
     is_finite, is_nan, is_not_empty, is_true, le, lt, ne, never_matches, none, not, ok, satisfies,
     soft, some, starts_with,
+};
+pub use test_better_property::{
+    Config as PropertyConfig, GenError, PropertyFailure, ProptestTree, Runner, Strategy, ValueTree,
+    check, check_with,
 };
 
 /// How to write a custom matcher: see the [`cookbook`] module.

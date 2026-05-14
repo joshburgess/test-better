@@ -207,6 +207,22 @@ versioned in lockstep until 1.0.
   `eventually_blocking`, `eventually_with`, `eventually_blocking_with`, and
   `Backoff`. The prelude gains the two common-path functions, `eventually` and
   `eventually_blocking` (Iteration 5.3).
+- `test-better-property`: the property-testing bridge crate. The `Strategy<T>`
+  seam (with `ValueTree<T>`, `Runner`, `GenError`, and `ProptestTree`) is a
+  deliberately small trait the runner is written against; `proptest` satisfies
+  it through a blanket impl, so a property test names ordinary `proptest`
+  strategies with no `proptest` import at the call site (Iteration 6.1a).
+- `test-better-property`: the `check` runner. `check` (and `check_with`)
+  generate cases from a `Strategy<T>`, run a `T -> TestResult` predicate, and on
+  the first failure drive the `ValueTree` shrink protocol to a minimal
+  counterexample, returning a `PropertyFailure<T>` that carries the original and
+  shrunk inputs, the matcher failure, and the case count. `Config` sets the case
+  count (256 by default, matching `proptest`); `check` is deterministic by
+  default, `check_with` exposes an explicit `Runner` (Iteration 6.1b).
+- `test-better`: the facade crate re-exports the property-testing surface
+  (`check`, `check_with`, `Strategy`, `ValueTree`, `Runner`, `GenError`,
+  `ProptestTree`, `PropertyFailure`, and `Config` renamed `PropertyConfig`), so
+  a property test needs only the facade dependency (Iteration 6.1b).
 
 ### Notes
 
@@ -320,3 +336,24 @@ versioned in lockstep until 1.0.
   initial, doubling, 100ms ceiling). Only the two default-schedule functions are
   in the prelude; `Backoff` and the `_with` variants are imported by name, in
   keeping with the deliberately small prelude (Iteration 5.3).
+- `proptest` is the property-testing backend for v1.0 (BACKLOG.md §11.1,
+  resolved in Iteration 6.1a): it ships integrated shrinking, the feature the
+  `ValueTree` protocol is built on. It is depended on with
+  `default-features = false, features = ["std"]`, which drops the `fork` /
+  `timeout` machinery (and `rusty-fork` / `libc` / `wait-timeout`) the bridge
+  does not use; `cargo deny` stays clean. A `quickcheck` bridge remains open in
+  BACKLOG.md as a post-1.0 idea, not a 1.0 blocker.
+- The `Strategy<T>` seam has one coherence limitation: a user type that is
+  itself a `proptest::strategy::Strategy` is already covered by the blanket
+  impl, so it cannot also carry a hand-written `Strategy<T>` impl. This is
+  accepted: the seam exists so the runner does not name `proptest` directly, not
+  so users reimplement strategies. Recorded in BACKLOG.md (Iteration 6.1a).
+- `check` runs deterministically by default (`Runner::deterministic`) so a
+  property test does not flake from run to run: the same strategy and predicate
+  pass or fail identically every time. `check_with` exposes `Runner::randomized`
+  for callers who want fresh entropy per run. An over-filtered strategy that
+  cannot produce a value is skipped, not counted as a property failure
+  (Iteration 6.1b).
+- `Config` is re-exported from the facade as `PropertyConfig`: at the facade
+  root, where one crate's surface meets eight others, a bare `Config` says too
+  little (Iteration 6.1b).
