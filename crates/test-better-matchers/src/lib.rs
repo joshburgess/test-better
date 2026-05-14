@@ -14,6 +14,8 @@
 //! - the collection matchers [`have_len`], [`is_empty`], [`is_not_empty`],
 //!   [`contains`], [`contains_all`], [`contains_in_order`], [`every`], and
 //!   [`at_least_one`], generic over the [`Sequence`] trait;
+//! - the string matchers [`contains_str`], [`starts_with`], [`ends_with`], and
+//!   (behind the `regex` feature) `matches_regex`;
 //! - the [`expect!`](crate::expect) macro and its [`Subject`] type, the entry point for an
 //!   assertion;
 //! - the line-oriented [`diff_lines`] renderer, behind the default `diff`
@@ -31,6 +33,7 @@ mod fixtures;
 mod matcher;
 mod option_result;
 mod primitives;
+mod strings;
 mod subject;
 
 pub use collections::{
@@ -45,5 +48,8 @@ pub use fixtures::{always_matches, never_matches};
 pub use matcher::{MatchResult, Matcher, Mismatch};
 pub use option_result::{err, none, ok, some};
 pub use primitives::{eq, ge, gt, is_false, is_true, le, lt, ne};
+#[cfg(feature = "regex")]
+pub use strings::matches_regex;
+pub use strings::{contains_str, ends_with, starts_with};
 pub use subject::Subject;
 // `expect!` is `#[macro_export]`, so it already lives at the crate root.

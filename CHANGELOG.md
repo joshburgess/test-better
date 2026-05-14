@@ -101,6 +101,17 @@ versioned in lockstep until 1.0.
 - `test-better`: the facade crate re-exports the collection matchers and the
   `Sequence`/`ContainsAll` traits; the prelude gains the matchers (Iteration
   3.3).
+- `test-better-matchers`: the string matchers `contains_str`, `starts_with`,
+  `ends_with`, and `matches_regex`. Each is generic over `T: AsRef<str>`, so it
+  matches `&str`, `String`, and `str` alike; a multi-line mismatch carries a
+  line-oriented diff. `matches_regex` is behind a new, non-default `regex`
+  feature (backed by the `regex` crate); an invalid pattern is reported as a
+  match failure rather than a panic, so the constructor stays infallible
+  (Iteration 3.4).
+- `test-better`: the facade crate re-exports the string matchers and gains a
+  `regex` feature forwarding to `test-better-matchers/regex`; the prelude gains
+  the string matchers (`matches_regex` only when `regex` is enabled)
+  (Iteration 3.4).
 
 ### Notes
 

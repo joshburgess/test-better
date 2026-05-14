@@ -21,6 +21,9 @@ default = ["diff"]
 # Forwards `test-better-matchers`'s `diff` feature: a line-oriented diff for
 # multi-line mismatches. On by default; opt out with `--no-default-features`.
 diff = ["test-better-matchers/diff"]
+# Forwards `test-better-matchers`'s `regex` feature: the `matches_regex`
+# matcher. Off by default; it is the one matcher that pulls in `regex`.
+regex = ["test-better-matchers/regex"]
 # Forwards `test-better-core`'s `serde` feature: derives serde on the
 # structured-failure types (see that crate for details).
 serde = ["test-better-core/serde"]
