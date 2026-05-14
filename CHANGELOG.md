@@ -33,6 +33,11 @@ versioned in lockstep until 1.0.
   message only on the failure path). Both are `#[track_caller]`. A `Result`
   whose error already is a `TestError` is not double-wrapped: the context
   frame is pushed onto it directly (Iteration 1.3).
+- `test-better-core`: `OrFail`, the `?`-friendly replacement for `.unwrap()`,
+  implemented for `Result<T, E>` and `Option<T>`, with `or_fail` and
+  `or_fail_with`. `or_fail` on `None` names the expected type; on `Err` it
+  preserves the underlying error chain. All methods are `#[track_caller]`
+  (Iteration 1.4).
 
 ### Notes
 

@@ -37,7 +37,7 @@ pub trait ContextExt<T> {
 /// double-wrapping); otherwise it becomes the [`Payload::Other`] of a fresh
 /// [`ErrorKind::Custom`] error, so its source chain stays walkable.
 #[track_caller]
-fn coerce<E>(error: E) -> TestError
+pub(crate) fn coerce<E>(error: E) -> TestError
 where
     E: Error + Send + Sync + 'static,
 {

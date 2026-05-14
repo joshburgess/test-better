@@ -7,19 +7,20 @@
 //!   [`ContextFrame`], [`Payload`]);
 //! - [`TestResult`], the `?`-friendly return type for tests and helpers;
 //! - [`ContextExt`], which attaches "while doing X" context to a fallible value;
-//! - [`StructuredError`], the owned/serializable mirror that tooling consumes;
-//!
-//! Later iterations add `OrFail` to this crate.
+//! - [`OrFail`], the `?`-friendly replacement for `.unwrap()`;
+//! - [`StructuredError`], the owned/serializable mirror that tooling consumes.
 //!
 //! See PROJECT_BUILD_PLAN.md §6 (Phase 1).
 
 mod context;
 mod error;
+mod or_fail;
 mod render;
 mod result;
 mod structured;
 
 pub use context::ContextExt;
 pub use error::{ContextFrame, ErrorKind, Payload, TestError};
+pub use or_fail::OrFail;
 pub use result::TestResult;
 pub use structured::{SourceLocation, StructuredContextFrame, StructuredError, StructuredPayload};
