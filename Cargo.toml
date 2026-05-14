@@ -1,0 +1,47 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/test-better",
+    "crates/test-better-core",
+    "crates/test-better-matchers",
+    "crates/test-better-macros",
+    "crates/test-better-async",
+    "crates/test-better-property",
+    "crates/test-better-snapshot",
+    "crates/test-better-runner",
+]
+
+# Shared package metadata. Every crate is versioned in lockstep until 1.0
+# (PROJECT_BUILD_PLAN.md §2).
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.95.0"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/joshburgess/test-better"
+authors = ["Josh Burgess"]
+categories = ["development-tools::testing"]
+keywords = ["testing", "assertions", "matchers", "expect"]
+
+# Internal crates are referenced through the workspace so versions stay in lockstep.
+[workspace.dependencies]
+test-better-core = { version = "0.0.0", path = "crates/test-better-core" }
+test-better-matchers = { version = "0.0.0", path = "crates/test-better-matchers" }
+test-better-macros = { version = "0.0.0", path = "crates/test-better-macros" }
+test-better-async = { version = "0.0.0", path = "crates/test-better-async" }
+test-better-property = { version = "0.0.0", path = "crates/test-better-property" }
+test-better-snapshot = { version = "0.0.0", path = "crates/test-better-snapshot" }
+test-better-runner = { version = "0.0.0", path = "crates/test-better-runner" }
+
+# Workspace-wide lints. Per PROJECT_BUILD_PLAN.md §3, `src/` must be free of
+# `.unwrap()`, `.expect()`, and `panic!`. clippy.toml allows unwrap/expect in
+# tests. The `[workspace.lints]` table is filled in here (rather than in a later
+# iteration) so each crate manifest is stable from the moment it is created.
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+
+# Note: `missing_docs` is intentionally NOT enabled yet. Per PROJECT_BUILD_PLAN.md
+# §3 it is turned on by the end of Phase 10, once every public item is documented.
+# Enabling it now would fail `cargo clippy -- -D warnings` on empty scaffolding.

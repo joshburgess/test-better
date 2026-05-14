@@ -1,0 +1,14 @@
+# Clippy configuration. See PROJECT_BUILD_PLAN.md §3.
+#
+# The actual lint *levels* (deny unwrap/expect/panic) live in `[workspace.lints]`
+# in the root Cargo.toml. This file only carries clippy's behavioral knobs.
+
+# Keep clippy's MSRV-aware lints aligned with the pinned toolchain.
+msrv = "1.95.0"
+
+# `.unwrap()` / `.expect()` are denied in `src/` but explicitly allowed in test
+# code (PROJECT_BUILD_PLAN.md §3, global Rust conventions). These knobs scope the
+# `unwrap_used` / `expect_used` denials so they do not fire inside `#[test]`
+# functions and `tests/` directories.
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true

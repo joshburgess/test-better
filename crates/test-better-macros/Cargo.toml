@@ -1,0 +1,17 @@
+[package]
+name = "test-better-macros"
+description = "Procedural macros for the test-better testing library."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+categories.workspace = true
+keywords.workspace = true
+
+[lib]
+proc-macro = true
+
+[lints]
+workspace = true

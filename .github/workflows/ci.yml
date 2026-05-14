@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+# Implements the CI matrix in PROJECT_BUILD_PLAN.md §3:
+#   OS:        ubuntu / macos / windows
+#   Toolchain: stable / beta / MSRV (1.95.0)
+#   Jobs:      build, test --all-features, test --no-default-features,
+#              clippy -D warnings, fmt --check, cargo-deny, doc --no-deps
+jobs:
+  test:
+    name: test / ${{ matrix.os }} / ${{ matrix.toolchain }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        toolchain: [stable, beta, "1.95.0"]
+    # RUSTUP_TOOLCHAIN overrides the pinned rust-toolchain.toml so the matrix
+    # can exercise stable and beta as well as the MSRV.
+    env:
+      RUSTUP_TOOLCHAIN: ${{ matrix.toolchain }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - uses: Swatinem/rust-cache@v2
+      - name: build
+        run: cargo build --workspace --all-targets
+      - name: test (all features)
+        run: cargo test --workspace --all-features
+      - name: test (no default features)
+        run: cargo test --workspace --no-default-features
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.95.0"
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --workspace --all-features --all-targets -- -D warnings
+
+  fmt:
+    name: rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.95.0"
+          components: rustfmt
+      - run: cargo fmt --all --check
+
+  doc:
+    name: doc
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.95.0"
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo doc --workspace --no-deps --all-features
+
+  deny:
+    name: cargo-deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check
