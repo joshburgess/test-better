@@ -1,11 +1,10 @@
-//! Acceptance tests for the property-testing seam and runner
-//! (PROJECT_BUILD_PLAN.md Iteration 6.1b), exercised through the `test-better`
-//! facade.
+//! Acceptance tests for the property-testing seam and runner, exercised
+//! through the `test-better` facade.
 //!
 //! These use numeric-range strategies (`0u32..1_000`), which are
 //! `proptest::strategy::Strategy` and therefore seam `Strategy` values through
 //! the blanket impl, with no `proptest` import at the call site. Richer
-//! strategies and the `property!` macro arrive in Iteration 6.2.
+//! strategies and the `property!` macro are available in later iterations.
 
 use test_better::prelude::*;
 use test_better::{PropertyConfig, Runner, check, check_with};

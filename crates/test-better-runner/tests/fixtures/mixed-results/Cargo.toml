@@ -1,5 +1,5 @@
-# Fixture workspace for `test-better-runner`'s run-summary test
-# (PROJECT_BUILD_PLAN.md Iteration 9.3). The empty `[workspace]` table makes
+# Fixture workspace for `test-better-runner`'s run-summary test. The empty
+# `[workspace]` table makes
 # this its own workspace root, keeping it out of the parent workspace.
 #
 # It has a known mix of outcomes: three passing tests, two failing, one

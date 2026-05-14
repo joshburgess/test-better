@@ -1,5 +1,5 @@
-//! End-to-end snapshot lifecycle (PROJECT_BUILD_PLAN.md Iteration 7.1):
-//! a snapshot is *created*, then *verified*, then an intentional change is
+//! End-to-end snapshot lifecycle: a snapshot is *created*, then *verified*,
+//! then an intentional change is
 //! *updated*, and the new value verifies.
 //!
 //! This drives [`assert_snapshot_in`] against a temporary directory so the

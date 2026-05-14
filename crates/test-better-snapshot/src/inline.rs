@@ -1,5 +1,4 @@
-//! Inline snapshots: the snapshot literal lives in the test source itself
-//! (PROJECT_BUILD_PLAN.md §12, Iteration 7.2).
+//! Inline snapshots: the snapshot literal lives in the test source itself.
 //!
 //! A proc macro cannot rewrite the file it expands, so the mechanism is split
 //! in two, mirroring `insta`:

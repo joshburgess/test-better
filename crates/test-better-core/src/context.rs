@@ -2,8 +2,7 @@
 //!
 //! `ContextExt` is what makes `?` carry a story. A bare `?` propagates a
 //! failure as-is; `.context("loading the fixture")?` propagates the same
-//! failure with a frame explaining what the test was attempting
-//! (PROJECT_BUILD_PLAN.md §6).
+//! failure with a frame explaining what the test was attempting.
 //!
 //! When the error path already holds a [`TestError`], the context frame is
 //! pushed onto it directly: the original kind, location, and payload are kept,

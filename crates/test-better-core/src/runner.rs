@@ -1,5 +1,5 @@
 //! The structured-output channel between a `test-better` test and the optional
-//! `cargo test-better` runner (PROJECT_BUILD_PLAN.md §14, Phase 9).
+//! `cargo test-better` runner (Phase 9).
 //!
 //! The runner never parses rendered failure text. Instead, when it is the one
 //! running `cargo test`, it sets [`RUNNER_ENV`] in the child's environment; a

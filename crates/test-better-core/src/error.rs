@@ -1,7 +1,7 @@
 //! The [`TestError`] data model: the single source of truth for a test failure.
 //!
 //! A `TestError` carries structured data, never pre-rendered text. Two consumers
-//! read it (PROJECT_BUILD_PLAN.md §3):
+//! read it:
 //!
 //! - the human renderer ([`Display`]/[`Debug`], see [`crate::render`]);
 //! - tooling and the Phase 9 runner, via [`TestError::to_structured`].
@@ -98,16 +98,14 @@ pub enum Payload {
 /// A test failure.
 ///
 /// Every fallible `test-better` operation produces a `TestError` on the error
-/// path, so `?` is the single control-flow operator of a test
-/// (PROJECT_BUILD_PLAN.md §1).
+/// path, so `?` is the single control-flow operator of a test.
 ///
 /// # Note on the `message` field
 ///
-/// PROJECT_BUILD_PLAN.md §6.1 sketches `TestError` without a top-level
-/// `message`. A dedicated `message` field is kept here instead of overloading
-/// the first context frame: the message answers *what* failed, while context
-/// frames answer *while doing what*. This deviation is recorded in
-/// `CHANGELOG.md`.
+/// An earlier design sketch had `TestError` without a top-level `message`.
+/// A dedicated `message` field is kept here instead of overloading the first
+/// context frame: the message answers *what* failed, while context frames
+/// answer *while doing what*. This deviation is recorded in `CHANGELOG.md`.
 pub struct TestError {
     /// The failure category.
     pub kind: ErrorKind,
@@ -246,8 +244,8 @@ impl fmt::Display for TestError {
 
 impl fmt::Debug for TestError {
     /// Renders the full pretty failure message, so the stock `cargo test`
-    /// harness (which prints returned errors with `{:?}`) is already useful
-    /// (PROJECT_BUILD_PLAN.md §6.1). Unlike `Display`, this may emit ANSI
+    /// harness (which prints returned errors with `{:?}`) is already useful.
+    /// Unlike `Display`, this may emit ANSI
     /// color, gated by the process-wide [`ColorChoice`](crate::ColorChoice).
     ///
     /// When the `cargo test-better` runner is driving the run (it sets

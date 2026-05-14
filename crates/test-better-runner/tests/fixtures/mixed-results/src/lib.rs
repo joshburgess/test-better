@@ -1,6 +1,6 @@
 //! A fixed mix of test outcomes (three pass, two fail, one ignored) so the
-//! `cargo test-better` summary table has known counts to assert against
-//! (PROJECT_BUILD_PLAN.md Iteration 9.3). The crate is never built for real
+//! `cargo test-better` summary table has known counts to assert against.
+//! The crate is never built for real
 //! use; the failing tests fail on purpose.
 
 #[test]

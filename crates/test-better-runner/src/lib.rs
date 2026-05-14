@@ -1,7 +1,7 @@
 //! `test-better-runner`: optional pretty runner.
 //!
-//! Library half of the `cargo-test-better` subcommand (PROJECT_BUILD_PLAN.md
-//! §14, Phase 9). It wraps `cargo test`, forwarding every argument and
+//! Library half of the `cargo-test-better` subcommand (Phase 9). It wraps
+//! `cargo test`, forwarding every argument and
 //! propagating the exit code; from Phase 9.2 on it also groups failures by
 //! their context chain.
 //!

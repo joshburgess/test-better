@@ -3,7 +3,7 @@
 //!
 //! Panicking on failure provides a location but no story; `.or_fail()?` produces a
 //! [`TestError`] that names what was expected and carries the underlying
-//! error's chain (PROJECT_BUILD_PLAN.md §6). In the happy path the two are
+//! error's chain. In the happy path the two are
 //! interchangeable; in the failure path `or_fail` is strictly more informative.
 
 use std::borrow::Cow;

@@ -5,8 +5,7 @@
 //! `any_of`, Phase 3) build a description out of their children's
 //! descriptions, and nested matchers (`some(ok(eq(..)))`) nest them. Text is
 //! produced once, at the end, by [`Display`](std::fmt::Display) — so the
-//! structure is still inspectable right up until it is rendered
-//! (PROJECT_BUILD_PLAN.md §7).
+//! structure is still inspectable right up until it is rendered.
 
 use std::borrow::Cow;
 use std::fmt;

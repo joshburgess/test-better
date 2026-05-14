@@ -41,8 +41,7 @@
 //! - the line-oriented [`diff_lines`] renderer, behind the default `diff`
 //!   feature.
 //!
-//! Later iterations add the remaining matcher combinators
-//! (PROJECT_BUILD_PLAN.md §8, Phase 3).
+//! Later iterations add the remaining matcher combinators.
 
 mod collections;
 mod combinators;

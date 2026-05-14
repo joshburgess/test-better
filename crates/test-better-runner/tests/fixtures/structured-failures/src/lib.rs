@@ -1,6 +1,5 @@
 //! Failing tests in two feature areas plus one structureless `panic!`, so
-//! `cargo test-better` against this fixture exercises context-chain grouping
-//! (PROJECT_BUILD_PLAN.md Iteration 9.2):
+//! `cargo test-better` against this fixture exercises context-chain grouping:
 //!
 //! - the two `the user store` tests group together,
 //! - the one `the http layer` test forms its own group,

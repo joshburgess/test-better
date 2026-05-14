@@ -13,7 +13,6 @@
 //! - [`RUNNER_ENV`]/[`STRUCTURED_MARKER`], the structured-output channel the
 //!   optional `cargo test-better` runner consumes.
 //!
-//! See PROJECT_BUILD_PLAN.md §6 (Phase 1) and §13 (Phase 8).
 
 mod color;
 mod context;

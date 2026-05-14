@@ -1,24 +1,19 @@
 # Contributing to test-better
 
-Thanks for your interest in `test-better`. This project is built iteratively
-against a canonical plan, and contributions are expected to fit that structure.
+Thanks for your interest in `test-better`. Bug reports, documentation fixes,
+new matchers, and feature work are all welcome.
 
-## Read the plan first
+## Before you start
 
-[`PROJECT_BUILD_PLAN.md`](./PROJECT_BUILD_PLAN.md) is the source of truth. It
-defines:
+For anything larger than a bug fix or a doc tweak, open an issue first so the
+design can be discussed before you write code. Ideas that are out of scope for
+the moment are collected in [`BACKLOG.md`](./BACKLOG.md); that file also records
+the rationale behind several resolved design decisions, which is useful context
+before proposing a change to the same area.
 
-- the **mission** and **design principles** (§1) that every change must respect;
-- the **phases** and **iteration cycles** (§4 onward) that work is decomposed into;
-- the **iteration cycle workflow** and **Definition of Done** (§16).
+## Design principles
 
-Before opening a PR, find the iteration cycle it belongs to. If your change does
-not map to one, it probably belongs in [`BACKLOG.md`](./BACKLOG.md) first, so it
-can be turned into a proper cycle.
-
-## Design principles (the short version)
-
-These are non-negotiable; see §1 of the plan for the full text.
+These shape every change to the library:
 
 1. `?` is the control-flow operator of tests. Fallible operations return
    `Result<T, TestError>`.
@@ -27,15 +22,15 @@ These are non-negotiable; see §1 of the plan for the full text.
 3. Assertions are values (`Matcher<T>`), not statements.
 4. No required runtime: works with the stock `cargo test` harness.
 5. Runtime-agnostic async: no `tokio`/`async-std` in core crates.
-6. Dogfood relentlessly: from Phase 2 on, the library tests itself with itself.
-7. Stability over surface area: small, orthogonal public API.
+6. Dogfood relentlessly: the library tests itself with itself.
+7. Stability over surface area: a small, orthogonal public API.
 8. **Zero panic in user code paths.** No `.unwrap()`, `.expect()`, or `panic!`
    in any crate's `src/`. This is enforced by `[workspace.lints]` in `Cargo.toml`
    plus `clippy.toml`, which allow them only in test code.
 
 ## Local checks
 
-Run the full local check before opening a PR (PROJECT_BUILD_PLAN.md §16 step 4):
+Run the full local check before opening a PR:
 
 ```sh
 cargo fmt --all --check
@@ -44,8 +39,11 @@ cargo test --workspace --all-features
 cargo doc --workspace --no-deps
 ```
 
-`cargo deny check` is also run in CI; install it with `cargo install cargo-deny`
-to run it locally.
+CI additionally runs `cargo deny check`, the dogfood scan
+(`scripts/check-test-api.sh`), the public-API drift check
+(`scripts/check-public-api.sh`), and an `mdbook build` of the guide. You can run
+each locally; install `cargo-deny`, `cargo-public-api`, and `mdbook` with
+`cargo install`.
 
 ### Formatting note
 
@@ -55,23 +53,25 @@ options that are kept commented in `rustfmt.toml`; apply them with
 `cargo +nightly fmt` if you want them locally. CI only enforces the stable
 subset.
 
-## Definition of Done (every cycle)
+## Definition of Done
 
-A PR is not done until all of the following hold (PROJECT_BUILD_PLAN.md §16):
+A PR is not done until all of the following hold:
 
-- [ ] All acceptance criteria for the iteration cycle are met.
 - [ ] No new `unwrap`/`expect`/`panic` in `src/` (CI-enforced).
 - [ ] Public items are documented; doc-tests where useful.
-- [ ] Tests are written using the library itself (Phase 2 onward).
-- [ ] `CHANGELOG.md` is updated under `## [Unreleased]` for every public API change.
+- [ ] Tests are written using the library itself.
+- [ ] `CHANGELOG.md` is updated under `## [Unreleased]` for every public API
+      change.
+- [ ] The public-API snapshots under `public-api/` are regenerated if the
+      surface changed (`scripts/check-public-api.sh --write`).
 - [ ] CI is green across the full matrix.
 
 ## Commits and PRs
 
 - Use [Conventional Commits](https://www.conventionalcommits.org/).
-- Title PRs `phase-N.M: <short description>` and reference the iteration cycle.
-- Include the acceptance test commands in the PR description, and a snippet of
-  failure-message output where the change is user-facing.
+- Keep the PR description concrete: what changed, why, and the acceptance test
+  commands. Include a snippet of failure-message output where the change is
+  user-facing.
 - PRs are squash-merged after CI is green and review is approved.
 
 ## Licensing

@@ -1,5 +1,4 @@
-# cargo-deny configuration. See PROJECT_BUILD_PLAN.md §3.
-# Run with `cargo deny check`.
+# cargo-deny configuration. Run with `cargo deny check`.
 
 [advisories]
 version = 2
@@ -28,6 +27,13 @@ confidence-threshold = 0.93
 # now, and a hard failure here would be noise. Revisit before 1.0.
 multiple-versions = "warn"
 wildcards = "deny"
+# The internal dev-dependency cycles (e.g. `test-better-core` dev-depends on
+# `test-better-matchers` for dogfooding) are declared as path-only deps with no
+# `version` key. cargo drops a versionless path dev-dependency from the
+# published manifest, which is what breaks the publish-order cycle; the price is
+# that such a dep reads as a wildcard. Allow wildcards *only* when they are
+# path dependencies, so real registry wildcards are still denied.
+allow-wildcard-paths = true
 
 [sources]
 unknown-registry = "deny"

@@ -2,8 +2,7 @@
 //! [`is_nan`], and [`is_finite`].
 //!
 //! These are generic over the [`Float`] trait, which is *sealed*: it is
-//! implemented for `f32` and `f64` and cannot be implemented downstream
-//! (PROJECT_BUILD_PLAN.md §8, Iteration 3.5).
+//! implemented for `f32` and `f64` and cannot be implemented downstream.
 
 use std::fmt;
 

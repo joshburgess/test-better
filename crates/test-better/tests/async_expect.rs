@@ -1,6 +1,5 @@
-//! Acceptance tests for the async `expect!` method `resolves_to`
-//! (PROJECT_BUILD_PLAN.md Iteration 5.1), exercised through the `test-better`
-//! facade.
+//! Acceptance tests for the async `expect!` method `resolves_to`,
+//! exercised through the `test-better` facade.
 //!
 //! `resolves_to` is runtime-agnostic: it only awaits the future. These tests
 //! prove that by driving the same assertion under two unrelated executors,

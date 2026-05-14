@@ -5,7 +5,7 @@
 //! and `&S` for any `Sequence` `S`. The matchers in this module
 //! ([`have_len`], [`is_empty`], [`is_not_empty`], [`contains`],
 //! [`contains_all`], [`contains_in_order`], [`every`], [`at_least_one`]) work
-//! for every one of those (PROJECT_BUILD_PLAN.md §8, Iteration 3.3).
+//! for every one of those.
 //!
 //! Failures name the index of the first item (or, for sets, the offending
 //! value) that broke the expectation.

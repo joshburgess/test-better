@@ -1,5 +1,4 @@
-//! `#[test_case]` end-to-end through the `test-better` facade
-//! (PROJECT_BUILD_PLAN.md Iteration 8.1).
+//! `#[test_case]` end-to-end through the `test-better` facade.
 //!
 //! Each `#[test_case(..)]` line becomes its own generated `#[test]`, gathered
 //! into a module named for the annotated function. The malformed-attribute

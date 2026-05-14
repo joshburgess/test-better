@@ -1,5 +1,5 @@
-//! End-to-end coverage of the accept step (PROJECT_BUILD_PLAN.md §12, Iteration
-//! 7.2(c)): a pending patch on disk, applied by `apply_patches_from`, rewrites
+//! End-to-end coverage of the accept step: a pending patch on disk, applied by
+//! `apply_patches_from`, rewrites
 //! the inline-snapshot literal in a real source file and removes the spent
 //! patch so a rerun is a no-op.
 //!

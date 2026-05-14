@@ -4,8 +4,8 @@
 //! run records it, later runs compare against it, and an intentional change is
 //! accepted by rerunning with `UPDATE_SNAPSHOTS=1`.
 //!
-//! This crate is the storage-and-comparison core (PROJECT_BUILD_PLAN.md §12,
-//! Iteration 7.1). It is deliberately `std`-only and `TestError`-free: it knows
+//! This crate is the storage-and-comparison core. It is deliberately
+//! `std`-only and `TestError`-free: it knows
 //! how to find a snapshot file, read it, write it, and report *what* differed,
 //! as the structured [`SnapshotFailure`]. Turning that into a `TestError` with
 //! a rendered diff is `test-better-matchers`' job, in

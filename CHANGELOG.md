@@ -5,9 +5,8 @@ All notable changes to `test-better` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-Per PROJECT_BUILD_PLAN.md §3 and §16, **every public API change is recorded under
-`## [Unreleased]` before the PR that introduces it is merged.** All crates are
-versioned in lockstep until 1.0.
+**Every public API change is recorded under `## [Unreleased]` before the PR that
+introduces it is merged.** All crates are versioned in lockstep.
 
 ## [Unreleased]
 
@@ -399,22 +398,20 @@ as a committed snapshot, and the prose guide is the `test-better` book.
 
 ### Notes
 
-- `TestError` carries a dedicated `message: Option<Cow<'static, str>>` field, a
-  deliberate deviation from the struct sketched in PROJECT_BUILD_PLAN.md §6.1:
+- `TestError` carries a dedicated `message: Option<Cow<'static, str>>` field:
   the message answers *what* failed, context frames answer *while doing what*.
   See the type's rustdoc for rationale.
 - `clippy.toml` gained `allow-panic-in-tests = true`, completing the
-  "allowed in tests" intent of PROJECT_BUILD_PLAN.md §3 (Phase 0 set only the
-  unwrap/expect equivalents).
-- The async-`Subject` design (PROJECT_BUILD_PLAN.md §7.3) is resolved: a single
-  `Subject<T>` type, with Phase 5's `await`-based methods added to the same impl
-  block under method-level `where T: Future` bounds. Rationale in `BACKLOG.md`.
+  "allowed in tests" intent of the workspace lints (the initial setup added
+  only the unwrap/expect equivalents).
+- The async-`Subject` design is resolved: a single `Subject<T>` type, with the
+  `await`-based methods added to the same impl block under method-level
+  `where T: Future` bounds. Rationale in `BACKLOG.md`.
 - `TestError::payload` is `Option<Box<Payload>>` rather than `Option<Payload>`.
   `TestError` is returned by value through every `?`, so it is kept small; the
   large `Payload::ExpectedActual` variant lives behind the box. The public
   `Payload` enum and `with_payload` signature are unchanged (Iteration 1.3).
-- `Sequence` is *not* implemented for lazy iterators, a deliberate deviation
-  from PROJECT_BUILD_PLAN.md §8 Iteration 3.3 ("iterators, eagerly collected").
+- `Sequence` is *not* implemented for lazy iterators.
   A blanket `impl<I: Iterator> Sequence for I` overlaps, under coherence, with
   the concrete `impl Sequence for Vec<T>` (and the other collections), so the
   two cannot coexist. `Sequence` borrows its items through `&self`, which a
@@ -439,8 +436,7 @@ as a committed snapshot, and the prose guide is the `test-better` book.
   field types; the closure is threaded through a generated generic constructor
   function carrying the `Fn` bound, which forces the higher-ranked inference a
   bare struct field would not get. This is the googletest-style projection
-  pattern, a deviation from any single-struct sketch in PROJECT_BUILD_PLAN.md §8.
-  The macros are re-exported through the `test-better` facade only, since their
+  pattern. The macros are re-exported through the `test-better` facade only, since their
   output names `::test_better` and a proc-macro crate's output can only name the
   consumer's direct dependencies. Compile-fail behavior is pinned by `trybuild`
   tests in `crates/test-better/tests/ui/` (Iteration 3.7).
@@ -451,15 +447,15 @@ as a committed snapshot, and the prose guide is the `test-better` book.
   `Result::expect("...")`. A non-test `.expect` with a non-literal message is
   still denied by the workspace's `clippy::expect_used` lint (Iteration 4.1).
 - The async `expect!` acceptance tests (Iteration 5.1) cover `pollster` and
-  `tokio` but not `async-std`, which PROJECT_BUILD_PLAN.md §10 also names.
-  `async-std` is unmaintained as of 2025; `resolves_to` only awaits the future
-  and touches no runtime API, so two unrelated executors already demonstrate
-  the runtime-agnosticism the plan asks for. A `trybuild` test
+  `tokio` but not `async-std`. `async-std` is unmaintained as of 2025;
+  `resolves_to` only awaits the future and touches no runtime API, so two
+  unrelated executors already demonstrate that it is runtime-agnostic. A
+  `trybuild` test
   (`tests/ui/sync_to_on_future.rs`) locks that the sync `to` cannot be pointed
   at a future-typed subject with an output matcher: that path must go through
   `resolves_to` (Iteration 5.1).
 - `to_complete_within` (Iteration 5.2) is an inherent `Subject` method, kept in
-  the same impl block as `resolves_to` per the §7.3 decision. To make that
+  the same impl block as `resolves_to`. To make that
   possible without `test-better-matchers` taking on optional runtime
   dependencies, the timeout machinery lives one layer down in
   `test-better-async` (which now depends only on `test-better-core`), and
@@ -467,9 +463,9 @@ as a committed snapshot, and the prose guide is the `test-better` book.
   `matchers -> async -> core`; `test-better-async` carries `test-better-matchers`
   as a dev-dependency for dogfooding, the same permitted dev-cycle as
   `test-better-core`.
-- The "no runtime feature is a compile error" requirement
-  (PROJECT_BUILD_PLAN.md §10 Iteration 5.2) is met with a deferred trait bound,
-  not a literal `compile_error!`. A `compile_error!` in a function body fires
+- The "no runtime feature is a compile error" requirement is met with a
+  deferred trait bound, not a literal `compile_error!`. A `compile_error!` in a
+  function body fires
   whenever the crate is built, which would break `cargo build` with no runtime
   feature; and a `where` bound on a *concrete* type (`SelectedRuntime:
   Timeout`) is rejected at the definition, not deferred. Instead,
@@ -504,8 +500,8 @@ as a committed snapshot, and the prose guide is the `test-better` book.
   `trybuild` case for the gated `eventually` (Iteration 5.3).
 - `Backoff`'s `initial`/`ceiling`/`factor` knobs are exposed through the
   `eventually_with` / `eventually_blocking_with` variants rather than widening
-  the two-argument signature PROJECT_BUILD_PLAN.md §10 Iteration 5.3 sketches.
-  The plain `eventually` / `eventually_blocking` use `Backoff::default` (1ms
+  the two-argument `eventually` signature. The plain `eventually` /
+  `eventually_blocking` use `Backoff::default` (1ms
   initial, doubling, 100ms ceiling). Only the two default-schedule functions are
   in the prelude; `Backoff` and the `_with` variants are imported by name, in
   keeping with the deliberately small prelude (Iteration 5.3).
@@ -531,9 +527,9 @@ as a committed snapshot, and the prose guide is the `test-better` book.
   root, where one crate's surface meets eight others, a bare `Config` says too
   little (Iteration 6.1b).
 - `property!` (Iteration 6.2) is an *expression* macro that expands to a
-  `TestResult`, not an item macro that generates a `#[test] fn`. The
-  PROJECT_BUILD_PLAN.md §11 6.2 sketch shows `property!(|s: String| { ... })`
-  with no test name, which an item macro could not turn into a named function;
+  `TestResult`, not an item macro that generates a `#[test] fn`. An item macro
+  fed `property!(|s: String| { ... })` with no test name could not turn it into
+  a named function;
   an expression macro composes with `?` and is the body of a hand-named
   `#[test] fn`, which keeps test naming and attributes in the user's hands.
   `property!` routes through a `#[doc(hidden)]` `run_property` helper rather
@@ -555,8 +551,8 @@ as a committed snapshot, and the prose guide is the `test-better` book.
   to the backend's RNG, and normalizes the environment-specific `  at` line.
   Regenerate it with `BLESS_GOLDEN=1`.
 - The `quickcheck` bridge (Iteration 6.1c) ships at documented reduced fidelity
-  rather than being deferred, which PROJECT_BUILD_PLAN.md §11 6.1c lists as an
-  acceptable outcome. Two limitations are inherent to `quickcheck`'s model, not
+  rather than being deferred. Two limitations are inherent to `quickcheck`'s
+  model, not
   bugs: a `quickcheck::Gen` owns its RNG and cannot be seeded from the seam's
   `Runner`, so an `arbitrary()` strategy is *not* made reproducible by
   `Runner::deterministic` (only `proptest` strategies honor it); and shrinking
@@ -619,9 +615,8 @@ as a committed snapshot, and the prose guide is the `test-better` book.
   `assert_inline_snapshot`), so the storage-and-comparison core never had to
   learn about redactions; `to_match_snapshot` is now `to_match_snapshot_with`
   with an empty `Redactions`.
-- `#[test_case]` (Iteration 8.1) is kept *out* of `test_better::prelude`, a
-  deliberate deviation from the `use test_better::prelude::*;` shown in
-  PROJECT_BUILD_PLAN.md §18. `std`'s own prelude exports a `test_case` attribute
+- `#[test_case]` (Iteration 8.1) is kept *out* of `test_better::prelude`.
+  `std`'s own prelude exports a `test_case` attribute
   (the unstable custom-test-frameworks one), and two glob imports of the same
   name are ambiguous at the use site. `test_case` lives at the facade root and
   is imported by name: `use test_better::test_case;`. The macro is implemented
@@ -645,7 +640,7 @@ as a committed snapshot, and the prose guide is the `test-better` book.
   inside the workspace only the internal `TestError::at` did, and it was
   updated.
 - The `#[fixture]` system (Iteration 8.3) is two cooperating attribute macros
-  rather than the single `#[fixture]` sketched in PROJECT_BUILD_PLAN.md §13: a
+  rather than a single `#[fixture]`: a
   `#[test_with_fixtures]` is needed because a plain `#[test]` cannot take
   parameters, so the parameter-to-fixture wiring needs its own attribute. Both
   go in the prelude (they collide with nothing in `std`, unlike `#[test_case]`).
@@ -707,15 +702,15 @@ as a committed snapshot, and the prose guide is the `test-better` book.
 - Iteration 10.3's examples are workspace member crates with `#[cfg(test)]`
   suites, not `examples/*.rs` target files, matching the existing
   `examples/custom-matcher` layout. They are therefore exercised by
-  `cargo test --workspace` (the CI `test` job) rather than the
-  `cargo test --examples` named in PROJECT_BUILD_PLAN.md Iteration 10.3, which
-  only runs `[[example]]` targets. A member crate gives each example its own
+  `cargo test --workspace` (the CI `test` job) rather than
+  `cargo test --examples`, which only runs `[[example]]` targets. A member crate
+  gives each example its own
   `Cargo.toml`, dependency set, and a real test suite a reader can run with
   `cargo test -p <name>-example`.
 - Iteration 10.4's benchmark is `harness = false`: a plain `fn main` timed with
   `std::time::Instant`, not a `criterion` (or other framework) bench. This
-  keeps the dependency tree empty of a benchmark framework (PROJECT_BUILD_PLAN.md
-  §3 defers `criterion` interop to a later release) and lets the bench build and
+  keeps the dependency tree empty of a benchmark framework (`criterion` interop
+  is deferred to a later release) and lets the bench build and
   run on stable. A side effect is that `cargo test` runs the bench's `main`, so
   the iteration count is kept modest (10M/loop) to stay fast in the suite. The
   measured ratios are machine-dependent; the chapter and CHANGELOG state the

@@ -4,7 +4,7 @@
 //! ends the test. [`soft`] opens a scope in which assertions are *recorded*
 //! rather than propagated; when the scope closes, every recorded failure is
 //! reported together under a single [`Payload::Multiple`], each sub-failure
-//! keeping its own location (PROJECT_BUILD_PLAN.md §9, Iteration 4.1).
+//! keeping its own location.
 //!
 //! [`SoftAsserter::context`] opens a sub-scope: failures recorded through the
 //! returned [`SoftScope`] carry an extra context frame, and nested sub-scopes

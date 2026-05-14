@@ -1,9 +1,8 @@
-//! `cargo-test-better`: optional pretty runner binary (PROJECT_BUILD_PLAN.md §14).
+//! `cargo-test-better`: optional pretty runner binary.
 //!
 //! A thin shell over [`test_better_runner::run`]: it wraps `cargo test`,
-//! forwards every argument, and propagates the exit code so that, as
-//! Iteration 9.1 requires, `cargo test-better` and `cargo test` agree on
-//! success and failure.
+//! forwards every argument, and propagates the exit code so that
+//! `cargo test-better` and `cargo test` agree on success and failure.
 
 use std::process::ExitCode;
 

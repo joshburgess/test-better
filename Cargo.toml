@@ -31,8 +31,7 @@ exclude = [
     "tests/timeout-smol",
 ]
 
-# Shared package metadata. Every crate is versioned in lockstep
-# (PROJECT_BUILD_PLAN.md §2).
+# Shared package metadata. Every crate is versioned in lockstep.
 [workspace.package]
 version = "1.0.0"
 edition = "2024"
@@ -57,15 +56,15 @@ test-better-property = { version = "1.0.0", path = "crates/test-better-property"
 test-better-snapshot = { version = "1.0.0", path = "crates/test-better-snapshot" }
 test-better-runner = { version = "1.0.0", path = "crates/test-better-runner" }
 
-# Workspace-wide lints. Per PROJECT_BUILD_PLAN.md §3, `src/` must be free of
-# `.unwrap()`, `.expect()`, and `panic!`. clippy.toml allows unwrap/expect in
-# tests. The `[workspace.lints]` table is filled in here (rather than in a later
-# iteration) so each crate manifest is stable from the moment it is created.
+# Workspace-wide lints. `src/` must be free of `.unwrap()`, `.expect()`, and
+# `panic!`. clippy.toml allows unwrap/expect in tests. The `[workspace.lints]`
+# table is filled in here (rather than in a later iteration) so each crate
+# manifest is stable from the moment it is created.
 [workspace.lints.clippy]
 unwrap_used = "deny"
 expect_used = "deny"
 panic = "deny"
 
-# Note: `missing_docs` is intentionally NOT enabled yet. Per PROJECT_BUILD_PLAN.md
-# §3 it is turned on by the end of Phase 10, once every public item is documented.
-# Enabling it now would fail `cargo clippy -- -D warnings` on empty scaffolding.
+# Note: `missing_docs` is intentionally NOT enabled yet. It will be turned on
+# once every public item is documented, to avoid failing `cargo clippy -- -D warnings`
+# on empty scaffolding.

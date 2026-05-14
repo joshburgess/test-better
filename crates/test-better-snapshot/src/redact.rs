@@ -1,5 +1,5 @@
 //! Redactions: stabilizing non-deterministic content before a snapshot
-//! comparison (PROJECT_BUILD_PLAN.md §12, Iteration 7.3).
+//! comparison.
 //!
 //! A snapshot is only worth keeping if it is stable run to run, but rendered
 //! values often carry content that is not: a freshly minted UUID, a wall-clock

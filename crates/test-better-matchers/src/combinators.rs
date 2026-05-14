@@ -4,8 +4,7 @@
 //! inverts a single matcher; `all_of` and `any_of` take a *tuple* of matchers
 //! (arities 2 through 8) and require, respectively, that every one or at least
 //! one of them holds. Each combinator's [`Description`] is built from its
-//! children's, through the `!`/`and`/`or` combinators on [`Description`]
-//! (PROJECT_BUILD_PLAN.md §8, Iteration 3.1).
+//! children's, through the `!`/`and`/`or` combinators on [`Description`].
 
 use std::fmt;
 

@@ -1,5 +1,5 @@
 //! Benchmark: the cost of `expect!` versus the stock `assert_eq!` on a hot
-//! loop (PROJECT_BUILD_PLAN.md Iteration 10.4).
+//! loop.
 //!
 //! This is a `harness = false` benchmark: it is an ordinary `fn main` that
 //! times two loops with `std::time::Instant` and prints a comparison table. It

@@ -1,6 +1,5 @@
-//! Acceptance tests for the runtime-free `eventually_blocking` polling helper
-//! (PROJECT_BUILD_PLAN.md Iteration 5.3), exercised through the `test-better`
-//! facade.
+//! Acceptance tests for the runtime-free `eventually_blocking` polling helper,
+//! exercised through the `test-better` facade.
 //!
 //! The async `eventually` is covered by the per-runtime crates under
 //! `tests/timeout-*`, where a real runtime drives its inter-probe sleep.

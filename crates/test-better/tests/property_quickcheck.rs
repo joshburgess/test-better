@@ -1,7 +1,6 @@
-//! Acceptance tests for the best-effort `quickcheck` bridge
-//! (PROJECT_BUILD_PLAN.md Iteration 6.1c), exercised through the `test-better`
-//! facade. The whole file is gated on the `quickcheck` feature: with it off,
-//! this compiles to an empty test binary.
+//! Acceptance tests for the best-effort `quickcheck` bridge, exercised
+//! through the `test-better` facade. The whole file is gated on the
+//! `quickcheck` feature: with it off, this compiles to an empty test binary.
 
 #![cfg(feature = "quickcheck")]
 

@@ -1,5 +1,4 @@
-//! Golden-file test for the shrunk-failure rendering (PROJECT_BUILD_PLAN.md
-//! Iteration 6.3).
+//! Golden-file test for the shrunk-failure rendering.
 //!
 //! `render_failure` is exactly what `property!` uses to turn a counterexample
 //! into a `TestError`, so pinning its output here pins the user-visible

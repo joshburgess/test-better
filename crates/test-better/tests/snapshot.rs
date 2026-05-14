@@ -1,5 +1,4 @@
-//! End-to-end snapshot wiring through the `test-better` facade
-//! (PROJECT_BUILD_PLAN.md Iteration 7.1).
+//! End-to-end snapshot wiring through the `test-better` facade.
 //!
 //! `expect!(value).to_match_snapshot("name")` has to capture the call site's
 //! `module_path!()`, resolve `tests/snapshots/` relative to the package root

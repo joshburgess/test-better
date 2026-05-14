@@ -1,5 +1,5 @@
-//! Golden-file test for the diff renderer (PROJECT_BUILD_PLAN.md Iteration
-//! 2.4): a multi-line string mismatch produces a stable, line-oriented diff.
+//! Golden-file test for the diff renderer: a multi-line string mismatch
+//! produces a stable, line-oriented diff.
 //!
 //! The whole file is gated on the `diff` feature, so `--no-default-features`
 //! builds compile it away cleanly rather than failing on a missing item.

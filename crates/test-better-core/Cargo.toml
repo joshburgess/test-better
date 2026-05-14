@@ -14,8 +14,8 @@ keywords.workspace = true
 default = []
 # Derives `serde::{Serialize, Deserialize}` on the structured-failure types
 # (`StructuredError` and friends) and pulls in `serde_json`, which the runner
-# channel (`crate::runner`) uses as its wire format. Per PROJECT_BUILD_PLAN.md
-# §3, the structured form is what tooling and the Phase 9 runner consume.
+# channel (`crate::runner`) uses as its wire format. The structured form is
+# what tooling and the Phase 9 runner consume.
 serde = ["dep:serde", "dep:serde_json"]
 
 [dependencies]
@@ -25,7 +25,7 @@ serde = { version = "1.0", optional = true, features = ["derive"] }
 serde_json = { version = "1.0", optional = true }
 
 [dev-dependencies]
-# Dogfooding (PROJECT_BUILD_PLAN.md Iteration 2.5): this crate's own tests use
+# Dogfooding: this crate's own tests use
 # `expect!` and the matchers. `test-better-matchers` depends on this crate, so
 # this is a dev-dependency cycle, which Cargo permits because dev-dependencies
 # are not part of the normal build graph. It is declared path-only (rather than

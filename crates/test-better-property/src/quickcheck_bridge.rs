@@ -4,8 +4,7 @@
 //! [`arbitrary`] turns any `quickcheck::Arbitrary` type into a seam
 //! [`Strategy<T>`], so a property test can name `arbitrary::<MyType>()` wherever
 //! it would name a `proptest` strategy. This exists to prove the [`Strategy`]
-//! trait is a real seam and not a `proptest`-shaped hole (PROJECT_BUILD_PLAN.md
-//! §11 Iteration 6.1c).
+//! trait is a real seam and not a `proptest`-shaped hole.
 //!
 //! # Reduced fidelity
 //!

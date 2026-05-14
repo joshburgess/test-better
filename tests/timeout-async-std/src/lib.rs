@@ -1,6 +1,5 @@
 //! Integration coverage for the runtime-gated async assertions on the
-//! async-std runtime: `expect!(fut).to_complete_within(..)`
-//! (PROJECT_BUILD_PLAN.md Iteration 5.2) and `eventually` (Iteration 5.3).
+//! async-std runtime: `expect!(fut).to_complete_within(..)` and `eventually`.
 //!
 //! This crate is excluded from the workspace so its `async-std` runtime
 //! feature is never unified with the `tokio`/`smol` crates. It is run on its

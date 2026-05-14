@@ -2,8 +2,7 @@
 //!
 //! This module produces the *structured, uncolored* diff text that lands in a
 //! [`Mismatch`](crate::Mismatch)'s `diff` field. Color is applied later, and
-//! only by `test-better-core`'s renderer (PROJECT_BUILD_PLAN.md §7, Iteration
-//! 2.4): `matchers` never emits ANSI escapes.
+//! only by `test-better-core`'s renderer: `matchers` never emits ANSI escapes.
 //!
 //! The output is a unified-style diff: each line is prefixed with ` ` for
 //! unchanged context, `-` for a line present in `expected` but not `actual`,

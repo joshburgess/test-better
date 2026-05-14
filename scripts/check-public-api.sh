@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Enforces PROJECT_BUILD_PLAN.md Iteration 10.1 (the public API review): every
-# crate's public surface is captured as a committed `public-api/<crate>.txt`
-# snapshot, and this check fails if the live surface has drifted from it.
+# Public API review: every crate's public surface is captured as a committed
+# `public-api/<crate>.txt` snapshot, and this check fails if the live surface
+# has drifted from it.
 #
 # A drift is not necessarily a bug: it just means the public API changed. The
 # fix is to review the diff, and if the change is intended, regenerate the

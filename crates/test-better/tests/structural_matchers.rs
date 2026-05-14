@@ -1,5 +1,5 @@
 //! Acceptance tests for the structural matcher macros (`matches_struct!`,
-//! `matches_tuple!`, `matches_variant!`, PROJECT_BUILD_PLAN.md Iteration 3.7).
+//! `matches_tuple!`, `matches_variant!`).
 //!
 //! These run from outside the matcher crate, through the `test-better` facade,
 //! which is how the macros are meant to be used: their generated code refers to

@@ -1,5 +1,5 @@
 //! `#[fixture]` and `#[test_with_fixtures]` end-to-end through the
-//! `test-better` facade (PROJECT_BUILD_PLAN.md Iteration 8.3).
+//! `test-better` facade.
 //!
 //! A fixture is a `fn() -> TestResult<T>` of reusable setup; a
 //! `#[test_with_fixtures]` test names fixtures as parameters and they are

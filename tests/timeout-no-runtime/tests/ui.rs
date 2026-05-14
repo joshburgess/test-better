@@ -1,7 +1,6 @@
 //! Confirms that the runtime-gated async assertions fail to compile, with a
 //! diagnostic that names the runtime feature flags, when none of them is
-//! enabled: `to_complete_within` (PROJECT_BUILD_PLAN.md Iteration 5.2) and
-//! `eventually` (Iteration 5.3).
+//! enabled: `to_complete_within` and `eventually`.
 //!
 //! `trybuild` compiles the ui file in an isolated build, so the runtime
 //! features that other test crates enable on `test-better` do not leak in

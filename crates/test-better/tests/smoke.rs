@@ -2,10 +2,8 @@
 //! `test_better::prelude::*` can write a `?`-driven test with `expect!` and the
 //! `?`-friendly conversions.
 //!
-//! This is the acceptance check for PROJECT_BUILD_PLAN.md Iterations 1.5 and
-//! 2.3 (the facade wiring of `expect!` and the matchers), and it doubles as the
-//! reference for what a dogfooded test looks like from outside the workspace:
-//! every assertion goes through `expect!` (Iteration 2.5).
+//! This doubles as the reference for what a dogfooded test looks like from
+//! outside the workspace: every assertion goes through `expect!`.
 
 use test_better::prelude::*;
 

@@ -1,5 +1,5 @@
-//! Acceptance tests for soft assertions (`soft`, PROJECT_BUILD_PLAN.md
-//! Iteration 4.1), exercised through the `test-better` facade.
+//! Acceptance tests for soft assertions (`soft`), exercised through the
+//! `test-better` facade.
 
 use test_better::prelude::*;
 

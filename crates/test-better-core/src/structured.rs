@@ -5,8 +5,8 @@
 //! serialize, compare, or send across a process boundary. [`StructuredError`]
 //! is its fully-owned, `PartialEq`, optionally-`serde` mirror.
 //!
-//! Per PROJECT_BUILD_PLAN.md §3, this is the form tooling and the Phase 9 runner
-//! consume: no consumer ever recovers structure by parsing rendered text.
+//! This is the form tooling and the Phase 9 runner consume: no consumer ever
+//! recovers structure by parsing rendered text.
 
 use std::panic::Location;
 
@@ -127,8 +127,7 @@ impl TestError {
     /// Converts this error into its structured, owned, serializable form.
     ///
     /// This is the boundary between `test-better` and any tooling that consumes
-    /// failures (PROJECT_BUILD_PLAN.md §3): tooling reads the structured form,
-    /// never the rendered text.
+    /// failures: tooling reads the structured form, never the rendered text.
     #[must_use]
     pub fn to_structured(&self) -> StructuredError {
         StructuredError {

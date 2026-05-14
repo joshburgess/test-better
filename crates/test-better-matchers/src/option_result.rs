@@ -5,7 +5,7 @@
 //! wrapped value, so they nest: `some(ok(eq(42)))` matches `Some(Ok(42))`. When
 //! an inner matcher fails, its expectation is wrapped in a
 //! [`Description::labeled`] layer, so a nested failure renders as aligned,
-//! indented `some:` / `ok:` blocks (PROJECT_BUILD_PLAN.md §8, Iteration 3.2).
+//! indented `some:` / `ok:` blocks.
 
 use std::fmt;
 

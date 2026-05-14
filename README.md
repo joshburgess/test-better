@@ -5,11 +5,28 @@
 
 > Result-returning tests with `?`: composable matchers, rich failure output, and never a `.unwrap()` in sight.
 
-`test-better` is a generic Rust testing library that makes `Result`-returning
-tests with `?` strictly better than panicking tests. It replaces `.unwrap()` and
-`.expect("...")` with composable, intention-revealing helpers that produce rich
-failure output and compose cleanly across async, property, snapshot, and
-parameterized tests.
+`test-better` is a testing library for Rust that treats `?` as the control-flow
+operator of tests. Instead of panicking with `.unwrap()`, `.expect("...")`, and
+`assert_eq!`, you write tests that return `Result` and use composable,
+intention-revealing matchers. When something fails you get the expression that
+failed, the expected and actual values, the source location, and the full
+context chain, all rendered as a value rather than a panic.
+
+It works with the stock `cargo test` harness (no runtime required), stays
+runtime-agnostic for async code, and grows from primitive assertions up through
+async, property, snapshot, and parameterized testing without changing how a
+test is shaped.
+
+## Quick start
+
+Add the facade crate to your dev-dependencies:
+
+```toml
+[dev-dependencies]
+test-better = "1.0"
+```
+
+Write a test that returns `TestResult` and reach for `?`:
 
 ```rust
 use test_better::prelude::*;
@@ -23,39 +40,103 @@ fn parses_a_valid_port() -> TestResult {
 }
 ```
 
-A failure renders the expression that failed, the expected and actual values,
-the source location, and any context attached on the way down: no panic, no
-`assert_eq!`, no backtrace through the test harness.
+When `expect!` fails, the message names the expression, both sides of the
+comparison, and where it happened, with no backtrace through the harness:
+
+```text
+expectation failed: expect!(port).to(eq(8080))
+  expected: 8080
+  actual:   8000
+  at tests/config.rs:12
+```
+
+## Why `?` instead of `panic!`
+
+A panicking assertion throws away everything except a message. A
+`Result`-returning test keeps the context:
+
+- **Failures are values.** A `Matcher<T>` is a value you can pass around,
+  negate, and combine, not a statement that aborts the thread.
+- **Context is never erased.** Attach a human-readable note with
+  `.context("...")` or `.or_fail_with("...")` and it travels with the error.
+- **`?` composes.** Setup that can fail, the assertion itself, and teardown all
+  use the same operator. No nested `match`, no `.unwrap()` to "just get past"
+  the setup.
+- **No required runtime.** Tests run under plain `cargo test`. A prettier
+  grouped-output runner is available but never mandatory.
+
+## What's in the box
+
+```rust
+use test_better::prelude::*;
+
+// Composable matchers over any type
+expect!(name).to(eq("Ada"))?;
+expect!(items).to(contains(eq(3)))?;
+expect!(result).to(ok(eq(8080)))?;
+
+// Structural matching on structs and enums
+expect!(user).to(matches_struct!(User { active: true, .. }))?;
+expect!(event).to(matches_variant!(Event::Click { .. }))?;
+
+// Soft assertions: collect several failures, report them together
+soft(|s| {
+    s.expect(&a, eq(1));
+    s.expect(&b, eq(2));
+})?;
+```
+
+Async, property, and snapshot testing are layered on the same `expect!`/`?`
+shape:
+
+```rust
+// Async timing assertions, runtime-agnostic
+expect!(fetch_user(id)).to_complete_within(Duration::from_millis(50)).await?;
+
+// Property testing over generated inputs
+property!(|xs: Vec<i64>| {
+    expect!(decode(&encode(&xs))).to(eq(Ok(xs)))
+})?;
+
+// Inline and file snapshots, with redactions
+expect!(render_page(&ctx)).to_match_inline_snapshot(r#"<h1>Hello</h1>"#)?;
+```
 
 ## Documentation
 
-- The prose guide is the **`test-better` book** under [`book/`](./book/):
+- **The `test-better` book** under [`book/`](./book/) is the prose guide:
   Getting Started, Migrating from `assert!`, Writing Matchers, Async Testing,
-  Property Testing, Snapshots, Fixtures, and Recipes. Build it with
-  `mdbook build book`.
-- The API reference is the rustdoc: `cargo doc --open -p test-better`.
-
-## Status
-
-In development. The canonical build plan lives in
-[`PROJECT_BUILD_PLAN.md`](./PROJECT_BUILD_PLAN.md): it defines the mission,
-design principles, and the phased iteration plan this repository is executed
-against. The library surface (core, matchers, macros, async, property,
-snapshot, runner) is implemented; the project is in Phase 10, the
-documentation and release pass.
+  Property Testing, Snapshots, Fixtures, Performance, and Recipes. Build it
+  locally with `mdbook build book`.
+- **The API reference** is the rustdoc: `cargo doc --open -p test-better`.
+- **Runnable examples** live in [`examples/`](./examples/), each a small crate
+  with its own test suite: `cargo test -p web-handler-tests-example` and
+  friends.
 
 ## Workspace layout
+
+`test-better` is the facade you depend on; it re-exports everything through its
+`prelude`. The functionality is split across focused crates so you only compile
+what you use.
 
 | Crate | Purpose |
 |-------|---------|
 | `test-better` | Facade crate: re-exports and `prelude`. |
 | `test-better-core` | `TestError`, `TestResult`, `ContextExt`, `OrFail`. |
 | `test-better-matchers` | `Matcher` trait, standard matchers, `expect!`. |
-| `test-better-macros` | Procedural macros. |
+| `test-better-macros` | Procedural macros (`matches_struct!`, `#[test_case]`, fixtures). |
 | `test-better-async` | Async and timing helpers (runtime-gated). |
-| `test-better-property` | Property-testing bridge. |
-| `test-better-snapshot` | Snapshot testing. |
+| `test-better-property` | Property-testing bridge (`proptest`-backed). |
+| `test-better-snapshot` | Snapshot testing, inline and file-based. |
 | `test-better-runner` | Optional `cargo-test-better` pretty runner. |
+
+## Contributing
+
+Bug reports, documentation fixes, new matchers, and feature work are all
+welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for the design principles,
+local check commands, and the definition of done. Ideas that are out of scope
+for now, along with the rationale behind several resolved design decisions,
+live in [BACKLOG.md](./BACKLOG.md).
 
 ## License
 
@@ -65,9 +146,3 @@ Dual-licensed under either of:
 - MIT license ([LICENSE-MIT](./LICENSE-MIT))
 
 at your option.
-
-## Contributing
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md). All work is organized around the
-phases and iteration cycles in [`PROJECT_BUILD_PLAN.md`](./PROJECT_BUILD_PLAN.md).
-Out-of-scope ideas surfaced mid-iteration go in [BACKLOG.md](./BACKLOG.md).

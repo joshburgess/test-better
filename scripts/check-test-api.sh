@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Enforces PROJECT_BUILD_PLAN.md Iteration 2.5 (the dogfood switchover): the
-# workspace's own tests must use `expect!`, `TestResult`, and `or_fail` rather
-# than the stock panic/assert API.
+# Dogfood check: the workspace's own tests must use `expect!`, `TestResult`,
+# and `or_fail` rather than the stock panic/assert API.
 #
 # `assert!`, `assert_eq!`, `assert_ne!`, `.unwrap()`, and `Result`/`Option`'s
 # `.expect("...")` must not appear anywhere under a crate's `src/` — that covers
@@ -24,7 +23,7 @@ pattern='assert(_eq|_ne)?!|\.unwrap\(\)|\.expect\("'
 
 if matches=$(grep -rnE "$pattern" crates/*/src/ 2>/dev/null); then
     echo "error: banned panic/assert API found under crates/*/src/"
-    echo "       tests in src/ must dogfood expect!/TestResult/or_fail (PROJECT_BUILD_PLAN.md 2.5)"
+    echo "       tests in src/ must dogfood expect!/TestResult/or_fail"
     echo
     echo "$matches"
     exit 1

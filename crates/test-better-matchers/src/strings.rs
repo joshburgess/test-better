@@ -3,8 +3,7 @@
 //!
 //! Each is generic over `T: AsRef<str>`, so it matches `&str`, `String`,
 //! `&String`, and `str` alike. When a mismatch involves a multi-line string,
-//! the failure carries a line-oriented diff (PROJECT_BUILD_PLAN.md §8,
-//! Iteration 3.4).
+//! the failure carries a line-oriented diff.
 
 use std::fmt;
 

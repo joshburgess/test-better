@@ -1,7 +1,7 @@
 //! Color choice for rendered failures.
 //!
-//! Color is owned here, in `core`, not in `matchers` (PROJECT_BUILD_PLAN.md
-//! §7, Iteration 2.4): the renderer that backs `TestError`'s `Debug`/`Display`
+//! Color is owned here, in `core`, not in `matchers`: the renderer that backs
+//! `TestError`'s `Debug`/`Display`
 //! lives in `core`, so this is the one place that decides whether ANSI escapes
 //! are emitted. `matchers` only ever produces structured, uncolored data.
 //!

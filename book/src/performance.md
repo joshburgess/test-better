@@ -26,7 +26,7 @@ lt                 0.44           3.51       8.0x
 The exact numbers move with the machine, but the shape holds: a passing
 `expect!` on a primitive matcher costs a few nanoseconds, a single-digit
 multiple of the stock macro. That is comfortably **within an order of
-magnitude**, the bar PROJECT_BUILD_PLAN.md Iteration 10.4 sets.
+magnitude** of `assert_eq!`.
 
 ## Where the overhead comes from
 

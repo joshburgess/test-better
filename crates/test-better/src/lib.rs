@@ -7,8 +7,8 @@
 //!
 //! This is the facade crate, the one users depend on. It re-exports the public
 //! surface of the workspace's focused crates (`test-better-core`,
-//! `test-better-matchers`, and so on, per PROJECT_BUILD_PLAN.md §2) so a test
-//! file needs a single dependency and, ideally, a single `use`:
+//! `test-better-matchers`, and so on) so a test file needs a single
+//! dependency and, ideally, a single `use`:
 //!
 //! ```
 //! use test_better::prelude::*;

@@ -1,8 +1,7 @@
 //! Human-readable rendering of a [`TestError`].
 //!
 //! This is the *only* place a `TestError` is turned into text. Tooling never
-//! parses this output; it reads [`TestError::to_structured`] instead
-//! (PROJECT_BUILD_PLAN.md §3).
+//! parses this output; it reads [`TestError::to_structured`] instead.
 //!
 //! Rendering takes a `colorize` flag (Iteration 2.4). `Display` always passes
 //! `false`; `Debug` passes [`crate::color::color_enabled`], so the stock

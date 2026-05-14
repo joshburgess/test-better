@@ -3,7 +3,7 @@
 //!
 //! When no standard matcher fits, `satisfies` wraps a `Fn(&T) -> bool`. It
 //! takes a `name` so a failure reads `expected: even` rather than the useless
-//! `expected: <closure>` (PROJECT_BUILD_PLAN.md §8, Iteration 3.6).
+//! `expected: <closure>`.
 
 use std::fmt;
 use std::marker::PhantomData;

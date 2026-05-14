@@ -2,8 +2,7 @@
 //! operator of a test.
 //!
 //! A test (or any test helper) returns `TestResult`, so every fallible step
-//! short-circuits with `?` and the first failure is the one reported
-//! (PROJECT_BUILD_PLAN.md §1, §6).
+//! short-circuits with `?` and the first failure is the one reported.
 
 use crate::error::TestError;
 

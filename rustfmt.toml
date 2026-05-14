@@ -1,9 +1,9 @@
-# Project rustfmt style. See PROJECT_BUILD_PLAN.md §3.
+# Project rustfmt style.
 #
 # `max_width` is a stable option and is enforced by `cargo fmt --check` in CI.
 max_width = 100
 
-# Import grouping ("group imports by crate", §3) is the intended style, but
+# Import grouping ("group imports by crate") is the intended style, but
 # `group_imports` and `imports_granularity` are still nightly-only rustfmt
 # options. They are kept here, commented, as the canonical intent: run
 # `cargo +nightly fmt` to apply them. Stable rustfmt ignores unknown options,

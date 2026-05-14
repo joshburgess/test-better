@@ -1,5 +1,5 @@
-//! The accept step: applying pending inline-snapshot patches back to source
-//! (PROJECT_BUILD_PLAN.md §12, Iteration 7.2). Behind the `accept` feature,
+//! The accept step: applying pending inline-snapshot patches back to source.
+//! Behind the `accept` feature,
 //! since this is the only part of the crate that needs `syn`.
 //!
 //! A pending patch (see [`crate::inline`]) names a source file, the call-site

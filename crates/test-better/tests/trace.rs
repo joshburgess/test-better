@@ -1,5 +1,4 @@
-//! `Trace` end-to-end through the `test-better` facade
-//! (PROJECT_BUILD_PLAN.md Iteration 8.2).
+//! `Trace` end-to-end through the `test-better` facade.
 //!
 //! A `Trace` records breadcrumbs while a test runs; any `TestError` built while
 //! the trace is in scope snapshots them, and the rendered failure shows them in
