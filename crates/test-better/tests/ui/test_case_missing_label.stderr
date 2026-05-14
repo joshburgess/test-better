@@ -1,0 +1,7 @@
+error: unexpected end of input, expected string literal
+ --> tests/ui/test_case_missing_label.rs:4:1
+  |
+4 | #[test_case(1 ;)]
+  | ^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `test_case` (in Nightly builds, run with -Z macro-backtrace for more info)

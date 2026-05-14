@@ -17,7 +17,7 @@ pub use test_better_core::{
     StructuredContextFrame, StructuredError, StructuredPayload, TestError, TestResult,
     color_choice, set_color_choice,
 };
-pub use test_better_macros::{matches_struct, matches_tuple, matches_variant};
+pub use test_better_macros::{matches_struct, matches_tuple, matches_variant, test_case};
 // The property-testing bridge (Phase 6). `Config` is renamed `PropertyConfig`
 // here: at the facade root, where one crate's surface meets eight others, a
 // bare `Config` says too little.
@@ -77,6 +77,11 @@ pub mod cookbook;
 /// Procedural macros (`matches_struct!`, `matches_tuple!`, `matches_variant!`)
 /// are different: they are ordinary items of `test-better-macros`, so a plain
 /// `pub use` re-exports them and they need no special treatment.
+///
+/// The one exception is `#[test_case]`: it lives at the facade root
+/// (`test_better::test_case`) but is kept *out* of the prelude, because `std`'s
+/// prelude exports a `test_case` attribute of its own and two glob imports of
+/// one name are ambiguous. Import it by name.
 pub mod prelude {
     pub use test_better_core::{ContextExt, OrFail, TestError, TestResult};
     #[cfg(feature = "regex")]
@@ -88,6 +93,11 @@ pub mod prelude {
         lt, ne, never_matches, none, not, ok, satisfies, soft, some, starts_with,
     };
 
+    // `test_case` is deliberately *not* re-exported here. `std`'s own prelude
+    // already exports a `test_case` attribute (the unstable custom-test-
+    // frameworks one), and two glob imports of the same name are ambiguous at
+    // the use site. It is available as `test_better::test_case`; import it
+    // explicitly.
     pub use test_better_macros::{matches_struct, matches_tuple, matches_variant};
 
     pub use crate::{define_matcher, expect, property};

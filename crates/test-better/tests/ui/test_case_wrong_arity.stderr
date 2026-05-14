@@ -1,0 +1,5 @@
+error: this `#[test_case]` passes 3 argument(s) but `takes_one` takes 1
+ --> tests/ui/test_case_wrong_arity.rs:5:13
+  |
+5 | #[test_case(1, 2, 3 ; "too many")]
+  |             ^

@@ -1,0 +1,5 @@
+error: unexpected tokens after the test-case label
+ --> tests/ui/test_case_trailing_garbage.rs:4:27
+  |
+4 | #[test_case(1 ; "a label" and then some)]
+  |                           ^^^

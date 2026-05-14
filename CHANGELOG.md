@@ -294,6 +294,16 @@ versioned in lockstep until 1.0.
   (Iteration 7.3).
 - `test-better`: the facade crate re-exports `Redactions`; the `*_with` snapshot
   methods ride along on the re-exported `Subject` (Iteration 7.3).
+- `test-better-macros`: the `#[test_case]` attribute. Stacking
+  `#[test_case(args... ; "label")]` lines on a `fn` generates one `#[test]` per
+  case, gathered into a module named for the function (so a case is addressable
+  as `the_fn::the_label`, or `the_fn::case_N` when unlabeled). For a
+  value-returning test each generated case wraps the call in failure context
+  carrying the label and the rendered arguments. Other attributes on the
+  function (`#[ignore]`, doc comments) are forwarded onto every generated test
+  (Iteration 8.1).
+- `test-better`: the facade crate re-exports `test_case` at its root
+  (Iteration 8.1).
 
 ### Notes
 
@@ -517,3 +527,16 @@ versioned in lockstep until 1.0.
   `assert_inline_snapshot`), so the storage-and-comparison core never had to
   learn about redactions; `to_match_snapshot` is now `to_match_snapshot_with`
   with an empty `Redactions`.
+- `#[test_case]` (Iteration 8.1) is kept *out* of `test_better::prelude`, a
+  deliberate deviation from the `use test_better::prelude::*;` shown in
+  PROJECT_BUILD_PLAN.md §18. `std`'s own prelude exports a `test_case` attribute
+  (the unstable custom-test-frameworks one), and two glob imports of the same
+  name are ambiguous at the use site. `test_case` lives at the facade root and
+  is imported by name: `use test_better::test_case;`. The macro is implemented
+  so the topmost `#[test_case]` does all the work: it parses its own arguments,
+  then drains the function's remaining attributes, splitting further
+  `#[test_case]` lines from attributes to forward (`#[ignore]`, doc comments).
+  Generated tests are `pub(super)` so a deliberately failing case can be marked
+  `#[ignore]` and then driven directly by path from an ordinary `#[test]`, which
+  is how `crates/test-better/tests/test_case.rs` exercises the failure-context
+  path without failing the suite.

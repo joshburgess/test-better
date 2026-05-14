@@ -1,8 +1,8 @@
 //! `test-better-macros`: procedural macros.
 //!
-//! Home of `matches_struct!`, `matches_tuple!`, and `matches_variant!` (this
-//! iteration), and later `#[test_case]`, `#[fixture]`, and the inline snapshot
-//! macros (PROJECT_BUILD_PLAN.md §8, §12-§13).
+//! Home of `matches_struct!`, `matches_tuple!`, `matches_variant!`, and the
+//! `#[test_case]` attribute (PROJECT_BUILD_PLAN.md §8, §13), with `#[fixture]`
+//! and the inline snapshot macros still to come (§13, §12).
 //!
 //! The structural matchers parse a *pattern* of inner matcher expressions and
 //! emit a `Matcher` impl. The matcher holds a projection (a closure that pulls
@@ -13,16 +13,23 @@
 //! signature carries the `Fn` bound, which is what makes the closure infer as
 //! higher-ranked over the borrow.
 //!
+//! `#[test_case]` is an attribute macro: stacked `#[test_case(..)]` lines on one
+//! function each become a generated `#[test]`, all gathered into a module named
+//! for the function so the cases share a namespace.
+//!
 //! The generated code refers to the testing library through the `::test_better`
 //! facade crate, so these macros are meant to be used via `test-better`, not by
 //! depending on `test-better-macros` directly.
+
+use std::collections::HashSet;
 
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{Expr, Ident, Index, Path, Token, braced, parenthesized};
+use syn::spanned::Spanned;
+use syn::{Expr, Ident, Index, ItemFn, LitStr, Path, Token, braced, parenthesized};
 
 /// A named-field pattern: `Path { field: matcher, ..., .. }`.
 struct StructPattern {
@@ -705,6 +712,232 @@ pub fn matches_tuple(input: TokenStream) -> TokenStream {
 pub fn matches_variant(input: TokenStream) -> TokenStream {
     let result = syn::parse::<VariantPattern>(input).and_then(|pattern| gen_variant(&pattern));
     match result {
+        Ok(tokens) => tokens.into(),
+        Err(error) => error.to_compile_error().into(),
+    }
+}
+
+/// One `#[test_case(..)]` invocation: the argument expressions and an optional
+/// `; "label"`.
+struct TestCase {
+    /// A span pointing at the invocation, used to place an arg-count error on
+    /// the offending attribute rather than on the function.
+    span: proc_macro2::Span,
+    /// The expressions passed positionally to the annotated function.
+    args: Vec<Expr>,
+    /// The case label after `;`, if one was given.
+    label: Option<LitStr>,
+}
+
+impl Parse for TestCase {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let span = input.span();
+        let mut args = Vec::new();
+        let mut label = None;
+        while !input.is_empty() {
+            if input.peek(Token![;]) {
+                input.parse::<Token![;]>()?;
+                label = Some(input.parse::<LitStr>()?);
+                if !input.is_empty() {
+                    return Err(input.error("unexpected tokens after the test-case label"));
+                }
+                break;
+            }
+            args.push(input.parse()?);
+            if input.is_empty() || input.peek(Token![;]) {
+                continue;
+            }
+            input.parse::<Token![,]>()?;
+        }
+        Ok(Self { span, args, label })
+    }
+}
+
+/// Reads one `#[test_case]` attribute. A bare `#[test_case]` (no parentheses) is
+/// a zero-argument, unlabeled case; anything else is parsed as a [`TestCase`].
+fn parse_test_case_attr(attribute: &syn::Attribute) -> syn::Result<TestCase> {
+    match &attribute.meta {
+        syn::Meta::Path(_) => Ok(TestCase {
+            span: attribute.span(),
+            args: Vec::new(),
+            label: None,
+        }),
+        _ => attribute.parse_args::<TestCase>(),
+    }
+}
+
+/// Whether an attribute is `#[test_case]` (matched on the final path segment so
+/// a fully qualified `#[test_better::test_case]` is recognized too).
+fn is_test_case_attr(attribute: &syn::Attribute) -> bool {
+    attribute
+        .path()
+        .segments
+        .last()
+        .is_some_and(|segment| segment.ident == "test_case")
+}
+
+/// Turns a case label into a valid, lowercased identifier fragment: every
+/// character that is not ASCII alphanumeric becomes `_`, and a leading digit
+/// gets an `_` prefix. An empty result falls back to `case`.
+fn sanitize_ident(label: &str) -> String {
+    let mut out: String = label
+        .chars()
+        .map(|ch| {
+            if ch.is_ascii_alphanumeric() {
+                ch.to_ascii_lowercase()
+            } else {
+                '_'
+            }
+        })
+        .collect();
+    if out.is_empty() {
+        out.push_str("case");
+    }
+    if out.starts_with(|ch: char| ch.is_ascii_digit()) {
+        out.insert(0, '_');
+    }
+    out
+}
+
+/// Expands the stacked `#[test_case]` attributes on `func` into one `#[test]`
+/// per case, all wrapped in a module named for the function.
+fn test_case_impl(first: TestCase, mut func: ItemFn) -> syn::Result<TokenStream2> {
+    // The topmost `#[test_case]` is handed to us as `attr`; the rest are still
+    // attached to the function. Split the remaining attributes into further
+    // cases and everything else (`#[ignore]`, doc comments, ...), which is
+    // forwarded onto every generated test.
+    let mut cases = vec![first];
+    let mut forwarded = Vec::new();
+    for attribute in std::mem::take(&mut func.attrs) {
+        if is_test_case_attr(&attribute) {
+            cases.push(parse_test_case_attr(&attribute)?);
+        } else {
+            forwarded.push(attribute);
+        }
+    }
+
+    let fn_name = func.sig.ident.clone();
+    let fn_name_str = fn_name.to_string();
+    let ret = func.sig.output.clone();
+    let expected_arity = func.sig.inputs.len();
+    // A `-> ()` (explicit or implicit) test cannot carry failure context; only
+    // a value-returning test (the `-> TestResult` shape) is wrapped.
+    let returns_value = match &func.sig.output {
+        syn::ReturnType::Default => false,
+        syn::ReturnType::Type(_, ty) => {
+            !matches!(&**ty, syn::Type::Tuple(tuple) if tuple.elems.is_empty())
+        }
+    };
+
+    let mut used_names: HashSet<String> = HashSet::new();
+    let mut tests = Vec::with_capacity(cases.len());
+    for (index, case) in cases.iter().enumerate() {
+        if case.args.len() != expected_arity {
+            return Err(syn::Error::new(
+                case.span,
+                format!(
+                    "this `#[test_case]` passes {} argument(s) but `{fn_name_str}` takes {}",
+                    case.args.len(),
+                    expected_arity,
+                ),
+            ));
+        }
+
+        let base = match &case.label {
+            Some(label) => sanitize_ident(&label.value()),
+            None => format!("case_{index}"),
+        };
+        // Two labels that sanitize to the same identifier (or a label that
+        // collides with a `case_N` default) are disambiguated by index.
+        let name = if used_names.contains(&base) {
+            format!("{base}_{index}")
+        } else {
+            base
+        };
+        used_names.insert(name.clone());
+        let test_ident = format_ident!("{name}");
+
+        let args = &case.args;
+        let args_rendered = args
+            .iter()
+            .map(|arg| quote!(#arg).to_string())
+            .collect::<Vec<_>>()
+            .join(", ");
+        let label_part = match &case.label {
+            Some(label) => format!("{:?}", label.value()),
+            None => format!("#{index}"),
+        };
+        let context_msg = format!("test case {label_part}: {fn_name_str}({args_rendered})");
+
+        let body = if returns_value {
+            quote! {
+                ::test_better::ContextExt::context(#fn_name(#(#args),*), #context_msg)
+            }
+        } else {
+            quote! { #fn_name(#(#args),*); }
+        };
+
+        // `pub(super)` so the generated test stays addressable from the file
+        // that wrote the `#[test_case]` (e.g. to drive an `#[ignore]`d failing
+        // case directly), without widening visibility any further.
+        tests.push(quote! {
+            #(#forwarded)*
+            #[test]
+            pub(super) fn #test_ident() #ret {
+                #body
+            }
+        });
+    }
+
+    Ok(quote! {
+        mod #fn_name {
+            #[allow(unused_imports)]
+            use super::*;
+
+            #func
+
+            #(#tests)*
+        }
+    })
+}
+
+/// Generates one `#[test]` per `#[test_case(..)]` line on a function.
+///
+/// Each attribute lists the positional arguments for one run, optionally
+/// followed by `; "label"`. The cases are gathered into a module named for the
+/// annotated function, so a labeled case is addressable as
+/// `the_fn::the_label`; an unlabeled case becomes `the_fn::case_N`. The
+/// original function stays callable inside that module as a helper.
+///
+/// When the function returns a value (the usual `-> TestResult` shape), each
+/// generated test wraps the call in failure context carrying the case label
+/// and the rendered arguments, so a failure names the case that produced it.
+///
+/// ```ignore
+/// use test_better::prelude::*;
+///
+/// #[test_case("alice", 30 ; "common case")]
+/// #[test_case("",      0  ; "empty name")]
+/// fn validates_user(name: &str, age: u32) -> TestResult {
+///     expect!(name.len()).to(ge(age as usize))
+/// }
+/// ```
+///
+/// A `#[test_case]` whose argument count does not match the function's
+/// parameter count is a compile error, as is trailing junk after the label.
+/// Other attributes on the function (`#[ignore]`, doc comments) are forwarded
+/// onto every generated test.
+#[proc_macro_attribute]
+pub fn test_case(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let first = match syn::parse::<TestCase>(attr) {
+        Ok(case) => case,
+        Err(error) => return error.to_compile_error().into(),
+    };
+    let func = match syn::parse::<ItemFn>(item) {
+        Ok(func) => func,
+        Err(error) => return error.to_compile_error().into(),
+    };
+    match test_case_impl(first, func) {
         Ok(tokens) => tokens.into(),
         Err(error) => error.to_compile_error().into(),
     }
