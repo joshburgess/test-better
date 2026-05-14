@@ -946,6 +946,8 @@ version = "0.0.0"
 name = "test-better-snapshot"
 version = "0.0.0"
 dependencies = [
+ "proc-macro2",
+ "syn",
  "test-better-core",
  "test-better-matchers",
 ]

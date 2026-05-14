@@ -10,9 +10,25 @@ authors.workspace = true
 categories.workspace = true
 keywords.workspace = true
 
-# No runtime dependencies: this crate is the `std`-only storage-and-comparison
-# core. Turning a `SnapshotFailure` into a rendered `TestError` is
-# `test-better-matchers`' job.
+# The runtime half of this crate is `std`-only: it is the storage-and-comparison
+# core, and turning a `SnapshotFailure` into a rendered `TestError` is
+# `test-better-matchers`' job. `syn`/`proc-macro2` are pulled in *only* behind
+# the `accept` feature, which builds the `test-better-accept` companion binary
+# that rewrites inline-snapshot literals in source files.
+[dependencies]
+syn = { version = "2", features = ["full", "visit", "parsing"], optional = true }
+proc-macro2 = { version = "1", features = ["span-locations"], optional = true }
+
+[features]
+# Builds the `test-better-accept` binary and exposes the `accept` module. Off by
+# default: ordinary test runs only need the `std`-only runtime half.
+accept = ["dep:syn", "dep:proc-macro2"]
+
+# The accept-step binary. Gated on the `accept` feature so a default build of
+# the crate stays dependency-free.
+[[bin]]
+name = "test-better-accept"
+required-features = ["accept"]
 
 [dev-dependencies]
 # Dogfooding: this crate's own tests assert with `expect!`. `test-better-matchers`

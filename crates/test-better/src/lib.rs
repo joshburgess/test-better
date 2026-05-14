@@ -43,12 +43,15 @@ pub use test_better_property::{
 // `Strategy<T>`. Off by default; `proptest` is the primary backend.
 #[cfg(feature = "quickcheck")]
 pub use test_better_property::{ArbitraryStrategy, QuickcheckTree, arbitrary};
-// The file-backed snapshot store (Phase 7). The everyday entry point is the
-// `expect!(value).to_match_snapshot("name")` method (on the re-exported
-// `Subject`); these are the lower-level pieces it is built on, for callers that
-// need an explicit directory or mode.
+// The snapshot store (Phase 7). The everyday entry points are the
+// `expect!(value).to_match_snapshot("name")` and `.to_match_inline_snapshot(..)`
+// methods (on the re-exported `Subject`); these are the lower-level pieces they
+// are built on, for callers that need an explicit directory or mode, or that
+// drive the `test-better-accept` companion binary.
 pub use test_better_snapshot::{
-    SnapshotFailure, SnapshotMode, assert_snapshot, assert_snapshot_in, snapshot_path,
+    InlineLocation, InlineSnapshotFailure, SnapshotFailure, SnapshotMode, assert_inline_snapshot,
+    assert_snapshot, assert_snapshot_in, normalize_inline_literal, parse_pending_patch,
+    pending_patch_dir, snapshot_path,
 };
 
 /// How to write a custom matcher: see the [`cookbook`] module.

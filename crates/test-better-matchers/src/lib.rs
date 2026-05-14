@@ -26,8 +26,9 @@
 //!   assertion; when the subject is a [`Future`], the `resolves_to` method
 //!   awaits it and matches its output, and `to_complete_within` awaits it
 //!   under a time limit (the latter behind a runtime feature: `tokio`,
-//!   `async-std`, or `smol`); and `to_match_snapshot` compares a
-//!   [`Display`](std::fmt::Display) value against a file-backed snapshot
+//!   `async-std`, or `smol`); `to_match_snapshot` compares a
+//!   [`Display`](std::fmt::Display) value against a file-backed snapshot, and
+//!   `to_match_inline_snapshot` against a snapshot literal in the test source
 //!   (`test-better-snapshot`);
 //! - [`eventually`] and [`eventually_blocking`], which retry a `bool` probe on
 //!   an exponential [`Backoff`] schedule until it passes or a deadline is hit,

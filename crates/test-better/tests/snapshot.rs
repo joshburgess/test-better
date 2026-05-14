@@ -9,10 +9,12 @@
 //!
 //! They deliberately assert only the *matching* case. A test that asserted a
 //! *mismatch* through `to_match_snapshot` would behave differently under
-//! `UPDATE_SNAPSHOTS=1` (it would rewrite the committed file), so the mismatch
-//! path and the create/update lifecycle are covered where they can be driven
-//! explicitly instead: `test-better-snapshot`'s own `tests/lifecycle.rs` and
-//! the `snapshot_error` unit tests in `test-better-matchers`.
+//! `UPDATE_SNAPSHOTS=1` (it would rewrite the committed file, or record a
+//! pending inline patch), so the mismatch path and the create/update lifecycle
+//! are covered where they can be driven explicitly instead:
+//! `test-better-snapshot`'s own `tests/lifecycle.rs` and `tests/accept.rs`, and
+//! the `snapshot_error`/`inline_snapshot_error` unit tests in
+//! `test-better-matchers`.
 
 use test_better::prelude::*;
 
@@ -26,4 +28,21 @@ fn a_value_matches_its_committed_snapshot() -> TestResult {
 fn a_multi_line_value_matches_its_committed_snapshot() -> TestResult {
     let report = ["name: alice", "score: 42", "status: active"].join("\n");
     expect!(report).to_match_snapshot("report")
+}
+
+#[test]
+fn a_value_matches_its_inline_snapshot() -> TestResult {
+    expect!(2 + 2).to_match_inline_snapshot("4")
+}
+
+#[test]
+fn a_multi_line_value_matches_its_inline_snapshot() -> TestResult {
+    let report = ["name: alice", "score: 42", "status: active"].join("\n");
+    expect!(report).to_match_inline_snapshot(
+        r#"
+        name: alice
+        score: 42
+        status: active
+        "#,
+    )
 }

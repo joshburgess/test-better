@@ -50,9 +50,23 @@ record the decision and its rationale here when the relevant phase begins.
   had exactly one caller (the macro), so widening it was low-risk. The snapshot
   *directory* (`tests/snapshots`) is resolved from the working directory, which
   `cargo test` sets to the package root.
+- **Phase 7 (§12 7.2): RESOLVED (Iteration 7.2).** `to_match_inline_snapshot` is
+  a `#[track_caller]` method on `Subject`, not a macro: the build plan's shown
+  API is method-shaped and the rest of `Subject` already is, so a macro would
+  buy nothing but inconsistency. The runtime cannot rewrite its own source, so
+  a mismatch under `UPDATE_SNAPSHOTS=1` only records a pending patch; the
+  `test-better-accept` binary applies them later. The accept step lives in the
+  library (`accept` module) rather than only in `src/bin`, so it is callable
+  from an integration test against a fixture; the binary is a thin shell. `syn`
+  is confined to the non-default `accept` feature so the crate stays
+  dependency-free for ordinary runs. Pending patches are one-file-per-patch
+  (`<pid>-<seq>.patch`) to avoid concurrent-append contention between parallel
+  tests.
 - **Phase 9 (§9.1):** the structured-output channel the runner consumes
   (marker-wrapped JSON in captured output vs. a side-channel file under
-  `target/`). Phases 7.2 and 9.2 both depend on this.
+  `target/`). Phase 9.2 depends on this. (Iteration 7.2 turned out not to: the
+  inline-snapshot accept step uses its own per-patch files under `target/`,
+  not the runner's structured-output channel.)
 
 ## Ideas
 

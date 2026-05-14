@@ -17,11 +17,35 @@
 //! [`assert_snapshot`] resolves that directory from the current working
 //! directory, which `cargo test` sets to the package root; [`assert_snapshot_in`]
 //! takes the directory explicitly and is what tests of this crate drive.
+//!
+//! Inline snapshots (the `inline` module: [`assert_inline_snapshot`] and
+//! friends) keep the snapshot literal in the test source instead. A mismatch
+//! under `UPDATE_SNAPSHOTS=1` records a pending patch under `target/`, which
+//! the `test-better-accept` companion binary (built with the `accept` feature)
+//! applies back to the source.
 
 use std::error::Error;
 use std::fmt;
 use std::fs;
 use std::path::{Path, PathBuf};
+
+mod inline;
+
+pub use inline::{
+    InlineLocation, InlineSnapshotFailure, assert_inline_snapshot, normalize_inline_literal,
+    parse_pending_patch, pending_patch_dir,
+};
+
+// The accept step is the only part of the crate that needs `syn`, so it is
+// gated behind the `accept` feature along with the `test-better-accept` binary
+// (`src/bin/test-better-accept.rs`) that drives it.
+#[cfg(feature = "accept")]
+mod accept;
+
+#[cfg(feature = "accept")]
+pub use accept::{
+    AcceptError, Applied, apply_inline_patch, apply_patches_from, apply_pending_patches,
+};
 
 /// Whether a snapshot assertion compares against the stored file or rewrites it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

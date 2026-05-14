@@ -26,7 +26,7 @@ use std::time::Duration;
 
 use test_better_async::{Elapsed, RuntimeAvailable, run_within};
 use test_better_core::{ErrorKind, Payload, TestError, TestResult};
-use test_better_snapshot::SnapshotFailure;
+use test_better_snapshot::{InlineLocation, InlineSnapshotFailure, SnapshotFailure, SnapshotMode};
 
 use crate::description::Description;
 use crate::matcher::{Matcher, Mismatch};
@@ -204,6 +204,54 @@ impl<T> Subject<T> {
             Err(failure) => Err(snapshot_error(self.expr, name, failure)),
         }
     }
+
+    /// Asserts that the value matches the inline snapshot literal `expected`.
+    ///
+    /// Unlike [`to_match_snapshot`](Self::to_match_snapshot), the snapshot lives
+    /// in the test source: `expected` *is* the snapshot. The literal is
+    /// normalized before comparison (a leading newline and the common
+    /// indentation are cosmetic), so it can be indented to match the
+    /// surrounding code.
+    ///
+    /// On a mismatch with `UPDATE_SNAPSHOTS` unset this fails like any
+    /// assertion. With `UPDATE_SNAPSHOTS=1` it records a *pending patch* under
+    /// `target/test-better-pending/` and passes; the `test-better-accept`
+    /// companion binary rewrites the literal in the source from those patches.
+    /// A proc macro could not do this rewrite (it runs before the test), so the
+    /// work is split: this method captures the call-site location with
+    /// `#[track_caller]`, the accept binary edits the file.
+    ///
+    /// ```no_run
+    /// use test_better_core::TestResult;
+    /// use test_better_matchers::expect;
+    ///
+    /// # fn main() -> TestResult {
+    /// expect!(2 + 2).to_match_inline_snapshot("4")?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    #[track_caller]
+    pub fn to_match_inline_snapshot(self, expected: &str) -> TestResult
+    where
+        T: Display,
+    {
+        let actual = self.actual.to_string();
+        let caller = Location::caller();
+        let location = InlineLocation {
+            file: caller.file().to_string(),
+            line: caller.line(),
+            column: caller.column(),
+        };
+        match test_better_snapshot::assert_inline_snapshot(
+            &actual,
+            expected,
+            &location,
+            SnapshotMode::from_env(),
+        ) {
+            Ok(()) => Ok(()),
+            Err(failure) => Err(inline_snapshot_error(self.expr, failure)),
+        }
+    }
 }
 
 /// Builds the error for a matcher that did not match: the expected/actual pair
@@ -281,6 +329,25 @@ fn snapshot_error(expr: &str, name: &str, failure: SnapshotFailure) -> TestError
             path.display()
         )),
     }
+}
+
+/// Renders an [`InlineSnapshotFailure`] into a `TestError`, the inline-snapshot
+/// counterpart of [`snapshot_error`]. Both sides go into an `ExpectedActual`
+/// payload so the standard renderer (and its diff) show the change.
+#[track_caller]
+fn inline_snapshot_error(expr: &str, failure: InlineSnapshotFailure) -> TestError {
+    let InlineSnapshotFailure { expected, actual } = failure;
+    let diff = snapshot_diff(&expected, &actual);
+    TestError::new(ErrorKind::Snapshot)
+        .with_message(format!(
+            "expect!({expr}): inline snapshot does not match; \
+             rerun with UPDATE_SNAPSHOTS=1 to update it"
+        ))
+        .with_payload(Payload::ExpectedActual {
+            expected,
+            actual,
+            diff,
+        })
 }
 
 /// The line-oriented diff for a snapshot mismatch. Unlike a value matcher,
@@ -442,6 +509,25 @@ mod tests {
         let error = super::snapshot_error("page", "page", failure);
         expect!(error.kind == ErrorKind::Snapshot).to(is_true())?;
         expect!(error.to_string().contains("UPDATE_SNAPSHOTS=1")).to(is_true())?;
+        Ok(())
+    }
+
+    #[test]
+    fn inline_snapshot_mismatch_renders_as_a_snapshot_error_with_a_diff() -> TestResult {
+        use test_better_core::ErrorKind;
+        use test_better_snapshot::InlineSnapshotFailure;
+
+        let failure = InlineSnapshotFailure {
+            expected: "one\ntwo".to_string(),
+            actual: "one\nTWO".to_string(),
+        };
+        let error = super::inline_snapshot_error("value", failure);
+        expect!(error.kind == ErrorKind::Snapshot).to(is_true())?;
+        let rendered = error.to_string();
+        expect!(rendered.contains("inline snapshot does not match")).to(is_true())?;
+        expect!(rendered.contains("UPDATE_SNAPSHOTS=1")).to(is_true())?;
+        #[cfg(feature = "diff")]
+        expect!(rendered.contains("-two")).to(is_true())?;
         Ok(())
     }
 }

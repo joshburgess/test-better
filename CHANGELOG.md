@@ -262,6 +262,25 @@ versioned in lockstep until 1.0.
   (`assert_snapshot`, `assert_snapshot_in`, `snapshot_path`, `SnapshotMode`,
   `SnapshotFailure`); `to_match_snapshot` rides along on the re-exported
   `Subject` (Iteration 7.1).
+- `test-better-snapshot`: inline snapshots, where the snapshot literal lives in
+  the test source. `normalize_inline_literal` undoes the cosmetic indentation
+  of a literal, `assert_inline_snapshot` compares against it, and on a mismatch
+  under `UPDATE_SNAPSHOTS=1` records a *pending patch* under
+  `target/test-better-pending/` (`pending_patch_dir`, `parse_pending_patch`).
+  Behind the new `accept` feature, the `test-better-accept` companion binary
+  reads those patches and rewrites the literals in place: `apply_inline_patch`,
+  `apply_patches_from`, and `apply_pending_patches`, with `Applied` and
+  `AcceptError` as their result types (Iteration 7.2).
+- `test-better-matchers`: `Subject::to_match_inline_snapshot(literal)` asserts a
+  `Display` value against a snapshot literal in the test source, capturing the
+  call site via `#[track_caller]`. A mismatch renders as an
+  `ErrorKind::Snapshot` failure with an expected/actual payload and diff,
+  pointing the reader at `UPDATE_SNAPSHOTS=1` (Iteration 7.2).
+- `test-better`: the facade crate re-exports the inline-snapshot surface
+  (`InlineLocation`, `InlineSnapshotFailure`, `assert_inline_snapshot`,
+  `normalize_inline_literal`, `parse_pending_patch`, `pending_patch_dir`);
+  `to_match_inline_snapshot` rides along on the re-exported `Subject`
+  (Iteration 7.2).
 
 ### Notes
 
@@ -452,3 +471,21 @@ versioned in lockstep until 1.0.
   create/update paths are tested where they can be driven explicitly
   (`test-better-snapshot/tests/lifecycle.rs` and the `snapshot_error` unit
   tests).
+- Inline snapshots (Iteration 7.2) are split in two, mirroring `insta`: a proc
+  macro cannot rewrite the file it expands from, so the runtime half
+  (`to_match_inline_snapshot`, `std`-only) only *records* a pending patch on a
+  mismatch under `UPDATE_SNAPSHOTS=1`, and the separate `test-better-accept`
+  binary applies those patches afterwards. The accept step is the one place
+  that needs `syn`, so it (and the binary) sit behind a non-default `accept`
+  feature, keeping the crate dependency-free for ordinary test runs. A patch is
+  written as its own line-oriented file under `target/test-better-pending/`
+  (named `<pid>-<seq>.patch`) so parallel tests never contend on a shared file.
+  `assert_inline_snapshot` drops a single trailing newline from the value before
+  comparing: literal normalization trims trailing whitespace, so a value
+  rendered with a trailing newline could otherwise never match its accepted
+  literal. The accept step's literal placement comes from `syn`'s span
+  information (`proc-macro2`'s `span-locations`), so everything outside the
+  rewritten literal stays byte-for-byte unchanged; it is covered end-to-end by
+  `test-better-snapshot/tests/accept.rs` against a scratch fixture file. As with
+  file-backed snapshots, the facade `tests/snapshot.rs` asserts only the
+  matching inline case.
