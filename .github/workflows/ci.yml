@@ -39,6 +39,15 @@ jobs:
         run: cargo test --workspace --all-features
       - name: test (no default features)
         run: cargo test --workspace --no-default-features
+      # The per-runtime `to_complete_within` crates are excluded from the
+      # workspace (see the root Cargo.toml note) so their `tokio`/`async-std`/
+      # `smol` features are never unified. Each is tested on its own here.
+      - name: test (timeout / tokio)
+        run: cargo test --manifest-path tests/timeout-tokio/Cargo.toml
+      - name: test (timeout / async-std)
+        run: cargo test --manifest-path tests/timeout-async-std/Cargo.toml
+      - name: test (timeout / smol)
+        run: cargo test --manifest-path tests/timeout-smol/Cargo.toml
 
   clippy:
     name: clippy

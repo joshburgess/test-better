@@ -23,11 +23,12 @@ pub use test_better_matchers::diff_lines;
 #[cfg(feature = "regex")]
 pub use test_better_matchers::matches_regex;
 pub use test_better_matchers::{
-    ContainsAll, Description, Float, MatchResult, Matcher, MatcherTuple, Mismatch, Sequence,
-    SoftAsserter, SoftScope, Subject, all_of, always_matches, any_of, at_least_one, between,
-    close_to, contains, contains_all, contains_in_order, contains_str, define_matcher, ends_with,
-    eq, err, every, expect, ge, gt, have_len, is_empty, is_false, is_finite, is_nan, is_not_empty,
-    is_true, le, lt, ne, never_matches, none, not, ok, satisfies, soft, some, starts_with,
+    ContainsAll, Description, Elapsed, Float, MatchResult, Matcher, MatcherTuple, Mismatch,
+    RuntimeAvailable, Sequence, SoftAsserter, SoftScope, Subject, all_of, always_matches, any_of,
+    at_least_one, between, close_to, contains, contains_all, contains_in_order, contains_str,
+    define_matcher, ends_with, eq, err, every, expect, ge, gt, have_len, is_empty, is_false,
+    is_finite, is_nan, is_not_empty, is_true, le, lt, ne, never_matches, none, not, ok, satisfies,
+    soft, some, starts_with,
 };
 
 /// How to write a custom matcher: see the [`cookbook`] module.

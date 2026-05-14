@@ -1,0 +1,16 @@
+# Outside the workspace on purpose (see the root Cargo.toml `exclude` note):
+# this crate pins `test-better`'s runtime feature to `async-std`. Workspace
+# inheritance is unavailable here, so the manifest is spelled out in full.
+[package]
+name = "timeout-async-std"
+description = "Integration coverage for `to_complete_within` on the async-std runtime."
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.95.0"
+publish = false
+
+[dependencies]
+test-better = { path = "../../crates/test-better", features = ["async-std"] }
+
+[dev-dependencies]
+async-std = { version = "1", features = ["attributes"] }

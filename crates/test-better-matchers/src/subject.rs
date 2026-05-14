@@ -21,7 +21,9 @@
 
 use std::future::Future;
 use std::panic::Location;
+use std::time::Duration;
 
+use test_better_async::{Elapsed, RuntimeAvailable, run_within};
 use test_better_core::{ErrorKind, Payload, TestError, TestResult};
 
 use crate::description::Description;
@@ -118,6 +120,43 @@ impl<T> Subject<T> {
             }
         }
     }
+
+    /// Awaits the future, but fails if it does not finish within `limit`.
+    ///
+    /// Like [`resolves_to`](Self::resolves_to), this is for a future-typed
+    /// subject and returns a future rather than being `async` itself, so the
+    /// `#[track_caller]` location is the call site. Unlike `resolves_to`, it
+    /// does not look at the output: the assertion is purely about *time*.
+    ///
+    /// The timeout needs a runtime to provide its sleep, selected by a cargo
+    /// feature on `test-better`: `tokio`, `async-std`, or `smol`. With none
+    /// enabled, the `T: RuntimeAvailable` bound is unsatisfied and the call is
+    /// a compile error naming those flags.
+    ///
+    /// ```ignore
+    /// use std::time::Duration;
+    /// use test_better::prelude::*;
+    ///
+    /// # async fn run() -> TestResult {
+    /// expect!(some_future())
+    ///     .to_complete_within(Duration::from_millis(50))
+    ///     .await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    #[track_caller]
+    pub fn to_complete_within(self, limit: Duration) -> impl Future<Output = TestResult>
+    where
+        T: Future + RuntimeAvailable,
+    {
+        let location = Location::caller();
+        async move {
+            match run_within(limit, self.actual).await {
+                Ok(_) => Ok(()),
+                Err(elapsed) => Err(timeout_error(self.expr, elapsed).with_location(location)),
+            }
+        }
+    }
 }
 
 /// Builds the error for a matcher that did not match: the expected/actual pair
@@ -139,6 +178,17 @@ fn mismatch_error(expr: &str, mismatch: Mismatch) -> TestError {
 fn unexpected_match_error(expr: &str, description: Description) -> TestError {
     TestError::new(ErrorKind::Assertion).with_message(format!(
         "expect!({expr}): expected it not to be {description}, but it was"
+    ))
+}
+
+/// Builds the error for `to_complete_within` when the future ran past its
+/// limit. This is a timing failure, not a value mismatch, so it carries only
+/// a message, no payload.
+#[track_caller]
+fn timeout_error(expr: &str, elapsed: Elapsed) -> TestError {
+    TestError::new(ErrorKind::Assertion).with_message(format!(
+        "expect!({expr}): did not complete within {:?}",
+        elapsed.limit
     ))
 }
 

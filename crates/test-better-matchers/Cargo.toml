@@ -12,6 +12,10 @@ keywords.workspace = true
 
 [dependencies]
 test-better-core = { workspace = true }
+# Backs `Subject::to_complete_within`: the runtime-agnostic timeout primitive
+# and the `RuntimeAvailable` gate (Iteration 5.2). The runtime features below
+# forward to it.
+test-better-async = { workspace = true }
 # Backs the `diff` feature's line-oriented diff renderer (Iteration 2.4).
 similar = { version = "2", optional = true }
 # Backs the `regex` feature's `matches_regex` matcher (Iteration 3.4).
@@ -26,6 +30,13 @@ diff = ["dep:similar"]
 # `regex` is off by default: `matches_regex` is the one matcher that pulls in
 # the `regex` crate, so it is opt-in.
 regex = ["dep:regex"]
+# Runtime selectors for `Subject::to_complete_within`, forwarded to
+# `test-better-async`. Exactly one is meant to be enabled; with none, calling
+# `to_complete_within` is a compile error pointing at these flags
+# (Iteration 5.2).
+tokio = ["test-better-async/tokio"]
+async-std = ["test-better-async/async-std"]
+smol = ["test-better-async/smol"]
 
 [dev-dependencies]
 # Drives the compile-fail test that a forgotten `?` on `expect!(..)` is a

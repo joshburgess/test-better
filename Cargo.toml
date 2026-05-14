@@ -10,6 +10,21 @@ members = [
     "crates/test-better-snapshot",
     "crates/test-better-runner",
     "examples/custom-matcher",
+    # Confirms `to_complete_within` is a compile error with no runtime feature.
+    # Safe as a member: it enables no runtime feature (Iteration 5.2).
+    "tests/timeout-no-runtime",
+]
+# The per-runtime `to_complete_within` integration crates are deliberately
+# *outside* the workspace. Each enables exactly one of `tokio`/`async-std`/
+# `smol` on `test-better`; if they were members, a workspace-wide
+# `--all-features` build would unify all three runtime features into one
+# `test-better`, and tests written for one runtime would run against another.
+# Each is exercised on its own (`cargo test --manifest-path ...`) in CI
+# (Iteration 5.2).
+exclude = [
+    "tests/timeout-tokio",
+    "tests/timeout-async-std",
+    "tests/timeout-smol",
 ]
 
 # Shared package metadata. Every crate is versioned in lockstep until 1.0

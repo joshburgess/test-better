@@ -41,6 +41,13 @@ regex = ["test-better-matchers/regex"]
 # Forwards `test-better-core`'s `serde` feature: derives serde on the
 # structured-failure types (see that crate for details).
 serde = ["test-better-core/serde"]
+# Runtime selectors for `expect!(fut).to_complete_within(..)`, forwarded down
+# through `test-better-matchers` to `test-better-async`. Enable exactly one;
+# with none, calling `to_complete_within` is a compile error naming these
+# flags (Iteration 5.2).
+tokio = ["test-better-matchers/tokio"]
+async-std = ["test-better-matchers/async-std"]
+smol = ["test-better-matchers/smol"]
 
 [lints]
 workspace = true

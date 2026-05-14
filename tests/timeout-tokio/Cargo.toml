@@ -1,0 +1,18 @@
+# Outside the workspace on purpose (see the root Cargo.toml `exclude` note):
+# this crate pins `test-better`'s runtime feature to `tokio`, and must not have
+# that unified with the `async-std`/`smol` crates under a workspace-wide build.
+# Workspace inheritance (`version.workspace`, `[lints] workspace`) is therefore
+# unavailable here, so the manifest is spelled out in full.
+[package]
+name = "timeout-tokio"
+description = "Integration coverage for `to_complete_within` on the Tokio runtime."
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.95.0"
+publish = false
+
+[dependencies]
+test-better = { path = "../../crates/test-better", features = ["tokio"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt", "macros", "time"] }

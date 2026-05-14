@@ -24,7 +24,9 @@
 //!   shortcut for the common custom-matcher case;
 //! - the [`expect!`](crate::expect) macro and its [`Subject`] type, the entry point for an
 //!   assertion; when the subject is a [`Future`], the `resolves_to` method
-//!   awaits it and matches its output;
+//!   awaits it and matches its output, and `to_complete_within` awaits it
+//!   under a time limit (the latter behind a runtime feature: `tokio`,
+//!   `async-std`, or `smol`);
 //! - [`soft`] and its [`SoftAsserter`]/[`SoftScope`], which collect several
 //!   failures in one test run instead of stopping at the first, with nestable
 //!   context sub-scopes;
@@ -69,5 +71,8 @@ pub use soft::{SoftAsserter, SoftScope, soft};
 pub use strings::matches_regex;
 pub use strings::{contains_str, ends_with, starts_with};
 pub use subject::Subject;
+// Re-exported from `test-better-async` so they are nameable on the public
+// surface (both appear in `Subject::to_complete_within`'s signature).
+pub use test_better_async::{Elapsed, RuntimeAvailable};
 // `expect!` and `define_matcher!` are `#[macro_export]`, so they already live
 // at the crate root.

@@ -10,5 +10,32 @@ authors.workspace = true
 categories.workspace = true
 keywords.workspace = true
 
+[dependencies]
+test-better-core = { workspace = true }
+# Optional runtime backends for `RuntimeTimeout`. Exactly one is meant to be
+# enabled; if more than one is (e.g. under `--all-features`), the `cfg`
+# priority in `lib.rs` picks `tokio` > `async-std` > `smol`. Only the timeout
+# primitive of each is used, so the feature sets are kept minimal.
+tokio = { version = "1", features = ["time"], optional = true }
+async-std = { version = "1", optional = true }
+smol = { version = "2", optional = true }
+
+[features]
+# No default runtime: a runtime is the caller's choice, forwarded from the
+# `test-better` facade. With none enabled the crate still compiles; calling
+# `to_complete_within` is what trips the `RuntimeTimeout` diagnostic.
+tokio = ["dep:tokio"]
+async-std = ["dep:async-std"]
+smol = ["dep:smol"]
+
+[dev-dependencies]
+# A dependency-free `block_on`, so the runtime-agnostic `race` core can be
+# unit-tested with hand-built futures and no real runtime.
+pollster = "0.4"
+# Dogfooding: the crate's own tests assert with `expect!`. This is a
+# dev-dependency cycle (`test-better-matchers` depends on `test-better-async`),
+# which Cargo permits, mirroring the `test-better-core` arrangement.
+test-better-matchers = { workspace = true }
+
 [lints]
 workspace = true

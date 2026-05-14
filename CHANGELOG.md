@@ -180,6 +180,20 @@ versioned in lockstep until 1.0.
   captured location. It backs the async `expect!` methods, which capture the
   caller's location synchronously and thread it through once the awaited
   assertion has a result (Iteration 5.1).
+- `test-better-async`: the runtime-agnostic timeout layer. `run_within` awaits
+  a future under a time limit and returns `Elapsed` if it overruns; the
+  `RuntimeAvailable` marker trait gates it on a runtime feature. Concrete
+  sleep backends are provided behind the `tokio`, `async-std`, and `smol`
+  features (Iteration 5.2).
+- `test-better-matchers`: `Subject::to_complete_within`, the async `expect!`
+  method that fails a test when a future overruns a `Duration`. It needs a
+  runtime feature (`tokio`, `async-std`, or `smol`); with none enabled the
+  call is a compile error naming those flags. Like `resolves_to` it is
+  `#[track_caller]` and returns a future, so the failure points at the call
+  site (Iteration 5.2).
+- `test-better`, `test-better-matchers`: `tokio`, `async-std`, and `smol`
+  features, each forwarding down to `test-better-async`'s, plus re-exports of
+  `Elapsed` and `RuntimeAvailable` (Iteration 5.2).
 
 ### Notes
 
@@ -242,3 +256,33 @@ versioned in lockstep until 1.0.
   (`tests/ui/sync_to_on_future.rs`) locks that the sync `to` cannot be pointed
   at a future-typed subject with an output matcher: that path must go through
   `resolves_to` (Iteration 5.1).
+- `to_complete_within` (Iteration 5.2) is an inherent `Subject` method, kept in
+  the same impl block as `resolves_to` per the §7.3 decision. To make that
+  possible without `test-better-matchers` taking on optional runtime
+  dependencies, the timeout machinery lives one layer down in
+  `test-better-async` (which now depends only on `test-better-core`), and
+  `test-better-matchers` depends on it. The dependency edges are
+  `matchers -> async -> core`; `test-better-async` carries `test-better-matchers`
+  as a dev-dependency for dogfooding, the same permitted dev-cycle as
+  `test-better-core`.
+- The "no runtime feature is a compile error" requirement
+  (PROJECT_BUILD_PLAN.md §10 Iteration 5.2) is met with a deferred trait bound,
+  not a literal `compile_error!`. A `compile_error!` in a function body fires
+  whenever the crate is built, which would break `cargo build` with no runtime
+  feature; and a `where` bound on a *concrete* type (`SelectedRuntime:
+  Timeout`) is rejected at the definition, not deferred. Instead,
+  `RuntimeAvailable` is a marker trait bound on the *generic* future type, so
+  the check is deferred to the call site, and `#[diagnostic::on_unimplemented]`
+  supplies the message naming the feature flags. The crate compiles cleanly
+  with zero runtime features; only *calling* `to_complete_within` without one
+  is the error.
+- The three per-runtime acceptance crates (`tests/timeout-tokio`,
+  `tests/timeout-async-std`, `tests/timeout-smol`) are excluded from the
+  workspace. A workspace-wide `cargo test --all-features` unifies all three
+  runtime features into one `test-better`, under which `cfg` priority picks
+  `tokio` and the `async-std`/`smol` tests would run against the wrong runtime.
+  Excluding them keeps each crate's runtime feature isolated; CI runs each with
+  its own `cargo test --manifest-path`. The fourth crate,
+  `tests/timeout-no-runtime`, enables no runtime feature and so is a safe
+  workspace member; its `trybuild` test confirms the missing-runtime
+  diagnostic (Iteration 5.2).
