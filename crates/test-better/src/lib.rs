@@ -14,8 +14,8 @@
 
 pub use test_better_core::{
     ColorChoice, ContextExt, ContextFrame, ErrorKind, OrFail, Payload, SourceLocation,
-    StructuredContextFrame, StructuredError, StructuredPayload, TestError, TestResult,
-    color_choice, set_color_choice,
+    StructuredContextFrame, StructuredError, StructuredPayload, TestError, TestResult, Trace,
+    TraceEntry, color_choice, set_color_choice,
 };
 pub use test_better_macros::{matches_struct, matches_tuple, matches_variant, test_case};
 // The property-testing bridge (Phase 6). `Config` is renamed `PropertyConfig`

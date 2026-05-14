@@ -304,6 +304,15 @@ versioned in lockstep until 1.0.
   (Iteration 8.1).
 - `test-better`: the facade crate re-exports `test_case` at its root
   (Iteration 8.1).
+- `test-better-core`: `Trace` and `TraceEntry`, for in-test breadcrumbs.
+  `Trace::new()` opens a scope; `step` and `kv` record narrative steps and
+  key/value pairs into a thread-local. Every `TestError` built while the trace
+  is in scope snapshots the breadcrumbs, and the rendered failure shows them in
+  chronological order. `TestError` gains a public `trace: Vec<TraceEntry>`
+  field, and `StructuredError` a matching one, so tooling sees the trail too
+  (Iteration 8.2).
+- `test-better`: the facade crate re-exports `Trace` and `TraceEntry` at its
+  root (Iteration 8.2).
 
 ### Notes
 
@@ -540,3 +549,15 @@ versioned in lockstep until 1.0.
   `#[ignore]` and then driven directly by path from an ordinary `#[test]`, which
   is how `crates/test-better/tests/test_case.rs` exercises the failure-context
   path without failing the suite.
+- `Trace` (Iteration 8.2) is captured through a `thread_local!`, not a true
+  task-local: `std` has no task-local, and `cargo test` runs each test on its
+  own thread, so a thread-local is per-test in practice. The honest limitation,
+  documented on the type, is async: a runtime that migrates a task across
+  threads can have a later `TestError` snapshot the wrong thread's (usually
+  empty) trace. `TestError::at` (the single internal constructor all the
+  `#[track_caller]` constructors funnel through) takes the snapshot, so every
+  error path picks the trace up automatically. Adding the `trace` field to the
+  all-public-fields `TestError` and `StructuredError` structs is a pre-1.0
+  source break for any code that built them with an exhaustive struct literal;
+  inside the workspace only the internal `TestError::at` did, and it was
+  updated.

@@ -10,6 +10,8 @@ use std::borrow::Cow;
 use std::fmt;
 use std::panic::Location;
 
+use crate::trace::TraceEntry;
+
 /// The category of a [`TestError`].
 ///
 /// The kind selects the headline of the rendered failure and lets tooling group
@@ -115,6 +117,9 @@ pub struct TestError {
     pub location: &'static Location<'static>,
     /// The context chain, outermost first.
     pub context: Vec<ContextFrame>,
+    /// The in-test breadcrumbs ([`Trace`](crate::Trace)) that were active when
+    /// this error was built, oldest first. Empty when no `Trace` was in scope.
+    pub trace: Vec<TraceEntry>,
     /// Structured detail, when applicable.
     ///
     /// Boxed so `TestError` stays small: it is returned by value through every
@@ -133,6 +138,9 @@ impl TestError {
             message: None,
             location,
             context: Vec::new(),
+            // Snapshot the active `Trace` (if any) at construction time, so the
+            // error carries the breadcrumbs that led up to the failure.
+            trace: crate::trace::snapshot(),
             payload: None,
         }
     }

@@ -11,6 +11,7 @@
 use std::fmt;
 
 use crate::error::{Payload, TestError};
+use crate::trace::TraceEntry;
 
 /// ANSI escape: red foreground, for the actual value and removed diff lines.
 const RED: &str = "\x1b[31m";
@@ -31,6 +32,16 @@ pub(crate) fn render(error: &TestError, f: &mut fmt::Formatter<'_>, colorize: bo
 
     for frame in &error.context {
         writeln!(f, "  while {}", frame.message)?;
+    }
+
+    if !error.trace.is_empty() {
+        writeln!(f, "  trace:")?;
+        for entry in &error.trace {
+            match entry {
+                TraceEntry::Step(message) => writeln!(f, "    - {message}")?,
+                TraceEntry::Kv { key, value } => writeln!(f, "    - {key} = {value}")?,
+            }
+        }
     }
 
     if let Some(payload) = error.payload.as_deref() {
@@ -104,7 +115,7 @@ fn diff_line_color(line: &str) -> Option<&'static str> {
 mod tests {
     use crate::color::{ColorChoice, color_choice, set_color_choice};
     use crate::error::{ContextFrame, ErrorKind, Payload, TestError};
-    use crate::{OrFail, TestResult};
+    use crate::{OrFail, TestResult, Trace};
     use test_better_matchers::{expect, is_false, is_true};
 
     #[test]
@@ -128,6 +139,30 @@ mod tests {
         expect!(rendered.contains("      while inner context"))
             .to(is_true())
             .or_fail()?;
+        Ok(())
+    }
+
+    #[test]
+    fn trace_breadcrumbs_render_in_chronological_order() -> TestResult {
+        let mut trace = Trace::new();
+        trace.step("connecting to db");
+        trace.kv("db_url", "postgres://localhost");
+        trace.step("running the query");
+        let error = TestError::new(ErrorKind::Assertion).with_message("query returned no rows");
+        drop(trace);
+
+        let rendered = error.to_string();
+        let connect = rendered
+            .find("- connecting to db")
+            .or_fail_with("step rendered")?;
+        let url = rendered
+            .find("- db_url = postgres://localhost")
+            .or_fail_with("kv rendered")?;
+        let query = rendered
+            .find("- running the query")
+            .or_fail_with("second step rendered")?;
+        expect!(connect < url).to(is_true()).or_fail()?;
+        expect!(url < query).to(is_true()).or_fail()?;
         Ok(())
     }
 

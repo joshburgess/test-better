@@ -11,6 +11,7 @@
 use std::panic::Location;
 
 use crate::error::{ErrorKind, Payload, TestError};
+use crate::trace::TraceEntry;
 
 /// A source location, owned and serializable (the plain-data form of
 /// [`std::panic::Location`]).
@@ -115,6 +116,9 @@ pub struct StructuredError {
     pub location: SourceLocation,
     /// The context chain, outermost first.
     pub context: Vec<StructuredContextFrame>,
+    /// The in-test breadcrumbs active when the error was built, oldest first.
+    /// [`TraceEntry`] is already plain data, so it is its own structured form.
+    pub trace: Vec<TraceEntry>,
     /// Structured detail, when applicable.
     pub payload: Option<StructuredPayload>,
 }
@@ -139,6 +143,7 @@ impl TestError {
                     location: frame.location.map(SourceLocation::from_std),
                 })
                 .collect(),
+            trace: self.trace.clone(),
             payload: self.payload.as_deref().map(StructuredPayload::from_payload),
         }
     }
@@ -148,7 +153,7 @@ impl TestError {
 mod tests {
     use super::*;
     use crate::error::ContextFrame;
-    use crate::{OrFail, TestResult};
+    use crate::{OrFail, TestResult, Trace};
     use test_better_matchers::{eq, expect, is_true};
 
     fn all_kinds() -> [ErrorKind; 6] {
@@ -189,6 +194,22 @@ mod tests {
             .or_fail()?;
         expect!(structured.location.line > 0)
             .to(is_true())
+            .or_fail()?;
+        Ok(())
+    }
+
+    #[test]
+    fn structured_carries_the_trace() -> TestResult {
+        let mut trace = Trace::new();
+        trace.step("step one");
+        trace.kv("answer", 42);
+        let error = TestError::new(ErrorKind::Assertion);
+        drop(trace);
+
+        let structured = error.to_structured();
+        expect!(structured.trace.len()).to(eq(2)).or_fail()?;
+        expect!(structured.trace[0].clone())
+            .to(eq(TraceEntry::Step("step one".into())))
             .or_fail()?;
         Ok(())
     }
