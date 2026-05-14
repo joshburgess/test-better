@@ -231,6 +231,14 @@ versioned in lockstep until 1.0.
   `arbitrary::<MyType>()` wherever it would name a `proptest` strategy. The
   facade forwards the feature and re-exports `arbitrary`, `ArbitraryStrategy`,
   and `QuickcheckTree` (Iteration 6.1c).
+- `test-better-property`, `test-better`: the `property!` macro, the test-facing
+  front for property testing. It takes a closure with a typed binding and a
+  block body returning `TestResult`, infers a `Strategy` from the binding's type
+  (via the new `any::<T>()` strategy constructor) or takes one explicitly with a
+  trailing `using` clause, runs it through `check`, and renders a counterexample
+  as a `TestError`. It expands to an expression, so `property!(...)` is the body
+  of an ordinary `#[test]` function. The facade re-exports `property!` and
+  `any`, and the prelude gains `property!` (Iteration 6.2).
 
 ### Notes
 
@@ -365,6 +373,23 @@ versioned in lockstep until 1.0.
 - `Config` is re-exported from the facade as `PropertyConfig`: at the facade
   root, where one crate's surface meets eight others, a bare `Config` says too
   little (Iteration 6.1b).
+- `property!` (Iteration 6.2) is an *expression* macro that expands to a
+  `TestResult`, not an item macro that generates a `#[test] fn`. The
+  PROJECT_BUILD_PLAN.md §11 6.2 sketch shows `property!(|s: String| { ... })`
+  with no test name, which an item macro could not turn into a named function;
+  an expression macro composes with `?` and is the body of a hand-named
+  `#[test] fn`, which keeps test naming and attributes in the user's hands.
+  `property!` routes through a `#[doc(hidden)]` `run_property` helper rather
+  than re-exporting `check`'s rendering, so Iteration 6.3 can enrich the
+  shrunk-failure output without touching the macro. The strategy-inference
+  branch requires the binding type to be `proptest::arbitrary::Arbitrary`; the
+  `using` clause sidesteps that for any seam `Strategy`.
+- The shrunk-failure rendering `property!` produces in Iteration 6.2 is
+  deliberately basic: the matcher's own failure is kept whole, with a context
+  frame naming the case count and the shrunk input wrapped around it, and the
+  kind promoted to `ErrorKind::Property`. Iteration 6.3 owns the polished layout
+  (the original input alongside the shrunk one, a golden-file test); the macro
+  and `run_property` do not change then.
 - The `quickcheck` bridge (Iteration 6.1c) ships at documented reduced fidelity
   rather than being deferred, which PROJECT_BUILD_PLAN.md §11 6.1c lists as an
   acceptable outcome. Two limitations are inherent to `quickcheck`'s model, not

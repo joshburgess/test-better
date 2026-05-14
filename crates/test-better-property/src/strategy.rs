@@ -164,6 +164,33 @@ where
     }
 }
 
+/// The default [`Strategy`] for a type: `proptest`'s `any::<T>()`, surfaced
+/// through the seam.
+///
+/// This is what [`property!`](crate::property) uses when the closure binding
+/// has a type annotation and no `using` clause. It is available for direct use
+/// too: `check(any::<u32>(), |n| ...)` is the same as naming the `u32` strategy
+/// inline. The `quickcheck` counterpart is
+/// [`arbitrary`](crate::quickcheck_bridge::arbitrary).
+///
+/// ```
+/// use test_better_core::TestResult;
+/// use test_better_matchers::{expect, ge};
+/// use test_better_property::{any, check};
+///
+/// # fn main() -> TestResult {
+/// check(any::<u8>(), |n: u8| expect!(u16::from(n)).to(ge(0u16)))
+///     .map_err(|f| f.failure)?;
+/// # Ok(())
+/// # }
+/// ```
+pub fn any<T>() -> impl Strategy<T>
+where
+    T: proptest::arbitrary::Arbitrary,
+{
+    proptest::arbitrary::any::<T>()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

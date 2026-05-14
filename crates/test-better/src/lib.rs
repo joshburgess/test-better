@@ -36,7 +36,7 @@ pub use test_better_matchers::{
 };
 pub use test_better_property::{
     Config as PropertyConfig, GenError, PropertyFailure, ProptestTree, Runner, Strategy, ValueTree,
-    check, check_with,
+    any, check, check_with, property,
 };
 // The best-effort `quickcheck` bridge, behind the facade's `quickcheck`
 // feature: `arbitrary::<T>()` turns a `quickcheck::Arbitrary` type into a
@@ -80,5 +80,5 @@ pub mod prelude {
 
     pub use test_better_macros::{matches_struct, matches_tuple, matches_variant};
 
-    pub use crate::{define_matcher, expect};
+    pub use crate::{define_matcher, expect, property};
 }

@@ -38,3 +38,34 @@ fn check_with_lets_the_caller_set_the_case_count_and_runner() -> TestResult {
     });
     expect!(outcome.is_ok()).to(is_true())
 }
+
+#[test]
+fn property_macro_runs_an_inferred_strategy_property() -> TestResult {
+    // `u32` is `Arbitrary`, so `property!` infers the strategy from the binding
+    // and the whole macro call is the `TestResult`-returning test body.
+    property!(|n: u32| { expect!(n.wrapping_add(1)).to(ne(n)) })
+}
+
+#[test]
+fn property_macro_accepts_a_using_clause_for_an_explicit_strategy() -> TestResult {
+    // The binding is bare; the type and the values come from the `using`
+    // strategy, an ordinary numeric range.
+    property!(|n| {
+        expect!(n).to(lt(10u64))
+    } using 0u64..10)
+}
+
+#[test]
+fn property_macro_failure_names_the_shrunk_input_and_keeps_the_matcher_description() -> TestResult {
+    // "every value in 0..1000 is below 500" is false; `property!` must surface
+    // a failure that names the shrunk counterexample (proptest shrinks to 500)
+    // and still carries the matcher's own description.
+    let error = property!(|n: u32| {
+        expect!(n).to(lt(500u32))
+    } using 0u32..1_000)
+    .err()
+    .or_fail_with("values at or above 500 exist in 0..1000")?;
+    let rendered = error.to_string();
+    expect!(rendered.contains("shrunk to 500")).to(is_true())?;
+    expect!(rendered.contains("less than 500")).to(is_true())
+}
