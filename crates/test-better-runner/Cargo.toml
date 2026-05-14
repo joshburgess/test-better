@@ -14,5 +14,10 @@ keywords.workspace = true
 name = "cargo-test-better"
 path = "src/main.rs"
 
+# The runner's own tests dogfood `expect!`/`TestResult` through the facade,
+# like every other crate in the workspace.
+[dev-dependencies]
+test-better = { workspace = true }
+
 [lints]
 workspace = true

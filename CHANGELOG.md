@@ -327,6 +327,14 @@ versioned in lockstep until 1.0.
   fixture failure as `ErrorKind::Setup` (Iteration 8.3).
 - `test-better`: the facade crate re-exports `fixture` and `test_with_fixtures`
   at its root and, unlike `test_case`, in the prelude (Iteration 8.3).
+- `test-better-runner`: the `cargo-test-better` binary, invoked as
+  `cargo test-better`. It wraps `cargo test`, dropping the cargo-injected
+  `test-better` subcommand argument, forwarding every other argument verbatim,
+  inheriting stdio, and propagating the exit code (a signal death maps to
+  `101`, as cargo itself does). The library exposes `cargo_test_command` and
+  `run`, plus `RUNNER_ENV` and `STRUCTURED_MARKER`: the names of the
+  environment variable and output sentinel of the structured-output channel
+  the runner will consume from Phase 9.2 on (Iteration 9.1).
 
 ### Notes
 
@@ -588,3 +596,14 @@ versioned in lockstep until 1.0.
   original's rendered text rather than the original `TestError` itself. Fixture
   compile-fail behavior (a `#[fixture]` with parameters, an unknown `scope`) is
   pinned by `trybuild` tests in `crates/test-better/tests/ui/`.
+- The runner's structured-output channel (Iteration 9.1) is marker-wrapped JSON
+  in the test's own captured output, not a side-channel file under `target/`.
+  Rationale is recorded in `BACKLOG.md`. The exit-code-parity acceptance is
+  pinned by two fixture crates under
+  `crates/test-better-runner/tests/fixtures/`; each carries an empty
+  `[workspace]` table so it is its own workspace root (out of the parent
+  workspace) and has no dependencies, so the nested `cargo test` the parity
+  test drives builds in a moment. The runner inherits stdio, so the nested
+  `cargo test` against the has-failures fixture prints its own `FAILED` lines
+  into the parent run's output; that noise is expected, and the parent suite
+  still exits `0`.

@@ -941,6 +941,9 @@ dependencies = [
 [[package]]
 name = "test-better-runner"
 version = "0.0.0"
+dependencies = [
+ "test-better",
+]
 
 [[package]]
 name = "test-better-snapshot"

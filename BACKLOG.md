@@ -75,11 +75,22 @@ record the decision and its rationale here when the relevant phase begins.
   regex-backed `redact_regex` behind a feature is the obvious next step if the
   built-ins plus the `redact_with` escape hatch are not enough; deferred until
   there is a concrete need.
-- **Phase 9 (§9.1):** the structured-output channel the runner consumes
-  (marker-wrapped JSON in captured output vs. a side-channel file under
-  `target/`). Phase 9.2 depends on this. (Iteration 7.2 turned out not to: the
-  inline-snapshot accept step uses its own per-patch files under `target/`,
-  not the runner's structured-output channel.)
+- **Phase 9 (§9.1): RESOLVED (Iteration 9.1).** The structured-output channel
+  the runner consumes is **marker-wrapped JSON in the test's own captured
+  output**, not a side-channel file under `target/`. The runner exports
+  `TEST_BETTER_RUNNER=1` (`test_better_runner::RUNNER_ENV`) into the `cargo
+  test` it spawns; when that is set, a failing `test-better` test prints one
+  line bracketed by `test_better_runner::STRUCTURED_MARKER` carrying the
+  serde-serialized `StructuredError` (Phase 9.2 wires this emitting side in
+  `test-better-core`). Rationale: `cargo test` already captures test output and
+  replays it for *failing* tests, which is exactly when the runner needs it, so
+  there is no side-channel file to create, clean up, or detect staleness on,
+  and no `--nocapture` requirement. A side-channel file would also have to
+  survive contention from parallel test binaries and threads. A failure with no
+  marker line (a plain `panic!`, non-`test-better` code) is shown ungrouped and
+  labelled "unstructured"; the runner never parses prose. (Iteration 7.2 turned
+  out not to depend on this: the inline-snapshot accept step uses its own
+  per-patch files under `target/`.)
 
 ## Ideas
 

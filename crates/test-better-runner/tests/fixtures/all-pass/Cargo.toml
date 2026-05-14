@@ -1,0 +1,14 @@
+# Fixture workspace for `test-better-runner`'s exit-code-parity test
+# (PROJECT_BUILD_PLAN.md Iteration 9.1). The empty `[workspace]` table makes
+# this its own workspace root, keeping it out of the parent workspace; it has
+# no dependencies, so a nested `cargo test` against it builds in a moment.
+[workspace]
+
+[package]
+name = "all-pass-fixture"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "src/lib.rs"
