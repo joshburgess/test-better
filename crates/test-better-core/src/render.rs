@@ -104,30 +104,35 @@ fn diff_line_color(line: &str) -> Option<&'static str> {
 mod tests {
     use crate::color::{ColorChoice, color_choice, set_color_choice};
     use crate::error::{ContextFrame, ErrorKind, Payload, TestError};
+    use crate::{OrFail, TestResult};
+    use test_better_matchers::{expect, is_false, is_true};
 
     #[test]
-    fn render_has_no_trailing_newline() {
+    fn render_has_no_trailing_newline() -> TestResult {
         let rendered = TestError::new(ErrorKind::Assertion).to_string();
-        assert!(!rendered.ends_with('\n'), "{rendered:?}");
+        expect!(rendered.ends_with('\n')).to(is_false()).or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn nested_multiple_indents_each_line() {
+    fn nested_multiple_indents_each_line() -> TestResult {
         let inner = TestError::new(ErrorKind::Assertion)
             .with_message("inner")
             .with_context_frame(ContextFrame::new("inner context"));
         let outer =
             TestError::new(ErrorKind::Assertion).with_payload(Payload::Multiple(vec![inner]));
         let rendered = outer.to_string();
-        assert!(
-            rendered.contains("      assertion failed: inner"),
-            "{rendered}"
-        );
-        assert!(rendered.contains("      while inner context"), "{rendered}");
+        expect!(rendered.contains("      assertion failed: inner"))
+            .to(is_true())
+            .or_fail()?;
+        expect!(rendered.contains("      while inner context"))
+            .to(is_true())
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn debug_colorizes_only_when_color_is_on() {
+    fn debug_colorizes_only_when_color_is_on() -> TestResult {
         let _guard = crate::color::TEST_LOCK
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -142,22 +147,26 @@ mod tests {
         // `Always`: `Debug` emits ANSI, including red removals and green adds.
         set_color_choice(ColorChoice::Always);
         let colored = format!("{error:?}");
-        assert!(colored.contains("\x1b[31m"), "expected red:\n{colored}");
-        assert!(colored.contains("\x1b[32m"), "expected green:\n{colored}");
 
         // `Never`: `Debug` stays plain.
         set_color_choice(ColorChoice::Never);
         let plain = format!("{error:?}");
-        assert!(!plain.contains('\x1b'), "Never must be plain:\n{plain}");
 
         // `Display` is plain even with color forced on.
         set_color_choice(ColorChoice::Always);
         let display = format!("{error}");
-        assert!(
-            !display.contains('\x1b'),
-            "Display must be plain:\n{display}"
-        );
 
+        // Restore before any `?` to avoid skipping the restore on early return.
         set_color_choice(original);
+
+        expect!(colored.contains("\x1b[31m"))
+            .to(is_true())
+            .or_fail()?;
+        expect!(colored.contains("\x1b[32m"))
+            .to(is_true())
+            .or_fail()?;
+        expect!(plain.contains('\x1b')).to(is_false()).or_fail()?;
+        expect!(display.contains('\x1b')).to(is_false()).or_fail()?;
+        Ok(())
     }
 }

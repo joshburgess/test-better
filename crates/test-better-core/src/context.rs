@@ -104,83 +104,105 @@ impl<T> ContextExt<T> for Option<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{OrFail, TestResult};
     use std::cell::Cell;
+    use test_better_matchers::{eq, expect, is_true};
 
     fn io_error() -> std::io::Error {
         std::io::Error::new(std::io::ErrorKind::NotFound, "missing file")
     }
 
     #[test]
-    fn context_passes_through_ok() {
+    fn context_passes_through_ok() -> TestResult {
         let value: TestResult<i32> = Ok::<i32, std::io::Error>(7).context("unused");
-        assert_eq!(value.expect("ok path"), 7);
+        expect!(value?).to(eq(7)).or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn context_passes_through_some() {
+    fn context_passes_through_some() -> TestResult {
         let value: TestResult<i32> = Some(7).context("unused");
-        assert_eq!(value.expect("some path"), 7);
+        expect!(value?).to(eq(7)).or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn context_wraps_foreign_error_as_other_payload() {
+    fn context_wraps_foreign_error_as_other_payload() -> TestResult {
         let failing: Result<(), std::io::Error> = Err(io_error());
         let line = line!() + 1;
         let result = failing.context("reading the fixture");
         let error = result.expect_err("err path");
-        assert_eq!(error.kind, ErrorKind::Custom);
-        assert_eq!(error.location.line(), line);
-        assert!(matches!(error.payload.as_deref(), Some(Payload::Other(_))));
-        assert_eq!(error.context.len(), 1);
-        assert_eq!(error.context[0].message, "reading the fixture");
+        expect!(error.kind).to(eq(ErrorKind::Custom)).or_fail()?;
+        expect!(error.location.line()).to(eq(line)).or_fail()?;
+        expect!(matches!(error.payload.as_deref(), Some(Payload::Other(_))))
+            .to(is_true())
+            .or_fail()?;
+        expect!(error.context.len()).to(eq(1)).or_fail()?;
+        expect!(error.context[0].message.as_ref())
+            .to(eq("reading the fixture"))
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn context_does_not_double_wrap_a_test_error() {
+    fn context_does_not_double_wrap_a_test_error() -> TestResult {
         let original = TestError::assertion("values differ");
         let original_line = original.location.line();
         let error = Err::<(), _>(original)
             .context("comparing the results")
             .expect_err("err path");
         // Kind, location, and the (absent) payload of the original are kept.
-        assert_eq!(error.kind, ErrorKind::Assertion);
-        assert_eq!(error.location.line(), original_line);
-        assert!(error.payload.is_none());
-        assert_eq!(error.message.as_deref(), Some("values differ"));
-        assert_eq!(error.context.len(), 1);
-        assert_eq!(error.context[0].message, "comparing the results");
+        expect!(error.kind).to(eq(ErrorKind::Assertion)).or_fail()?;
+        expect!(error.location.line())
+            .to(eq(original_line))
+            .or_fail()?;
+        expect!(error.payload.is_none()).to(is_true()).or_fail()?;
+        expect!(error.message.as_deref())
+            .to(eq(Some("values differ")))
+            .or_fail()?;
+        expect!(error.context.len()).to(eq(1)).or_fail()?;
+        expect!(error.context[0].message.as_ref())
+            .to(eq("comparing the results"))
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn context_frames_accumulate_in_order() {
+    fn context_frames_accumulate_in_order() -> TestResult {
         let error = Err::<(), _>(io_error())
             .context("inner step")
             .context("outer step")
             .expect_err("err path");
         let messages: Vec<_> = error.context.iter().map(|f| f.message.as_ref()).collect();
-        assert_eq!(messages, ["inner step", "outer step"]);
+        expect!(messages)
+            .to(eq(vec!["inner step", "outer step"]))
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn none_gains_context_and_caller_location() {
+    fn none_gains_context_and_caller_location() -> TestResult {
         let missing: Option<i32> = None;
         let line = line!() + 1;
         let result = missing.context("looking up the user");
         let error = result.expect_err("err path");
-        assert_eq!(error.kind, ErrorKind::Custom);
-        assert_eq!(error.location.line(), line);
-        assert_eq!(error.context[0].message, "looking up the user");
+        expect!(error.kind).to(eq(ErrorKind::Custom)).or_fail()?;
+        expect!(error.location.line()).to(eq(line)).or_fail()?;
+        expect!(error.context[0].message.as_ref())
+            .to(eq("looking up the user"))
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn with_context_runs_the_closure_only_on_failure() {
+    fn with_context_runs_the_closure_only_on_failure() -> TestResult {
         let calls = Cell::new(0);
         let ok: TestResult<i32> = Ok::<i32, std::io::Error>(1).with_context(|| {
             calls.set(calls.get() + 1);
             "unused"
         });
-        assert_eq!(ok.expect("ok path"), 1);
-        assert_eq!(calls.get(), 0, "closure must not run on the success path");
+        expect!(ok?).to(eq(1)).or_fail()?;
+        expect!(calls.get()).to(eq(0)).or_fail()?;
 
         let err = Err::<(), _>(io_error())
             .with_context(|| {
@@ -188,7 +210,10 @@ mod tests {
                 "computed context"
             })
             .expect_err("err path");
-        assert_eq!(calls.get(), 1, "closure must run once on the failure path");
-        assert_eq!(err.context[0].message, "computed context");
+        expect!(calls.get()).to(eq(1)).or_fail()?;
+        expect!(err.context[0].message.as_ref())
+            .to(eq("computed context"))
+            .or_fail()?;
+        Ok(())
     }
 }

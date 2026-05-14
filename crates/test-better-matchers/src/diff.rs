@@ -18,10 +18,14 @@ use similar::{ChangeTag, TextDiff};
 /// indents each line.
 ///
 /// ```
-/// use test_better_matchers::diff_lines;
+/// use test_better_core::TestResult;
+/// use test_better_matchers::{diff_lines, eq, expect};
 ///
-/// let diff = diff_lines("a\nb\nc", "a\nB\nc");
-/// assert_eq!(diff, " a\n-b\n+B\n c");
+/// fn main() -> TestResult {
+///     let diff = diff_lines("a\nb\nc", "a\nB\nc");
+///     expect!(diff).to(eq(" a\n-b\n+B\n c".to_string()))?;
+///     Ok(())
+/// }
 /// ```
 #[must_use]
 pub fn diff_lines(expected: &str, actual: &str) -> String {
@@ -50,22 +54,28 @@ pub fn diff_lines(expected: &str, actual: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use test_better_core::TestResult;
+
     use super::*;
+    use crate::{eq, expect, is_false};
 
     #[test]
-    fn equal_input_is_all_context_lines() {
-        assert_eq!(diff_lines("one\ntwo", "one\ntwo"), " one\n two");
+    fn equal_input_is_all_context_lines() -> TestResult {
+        expect!(diff_lines("one\ntwo", "one\ntwo")).to(eq(" one\n two".to_string()))?;
+        Ok(())
     }
 
     #[test]
-    fn a_changed_line_becomes_a_delete_then_an_insert() {
+    fn a_changed_line_becomes_a_delete_then_an_insert() -> TestResult {
         let diff = diff_lines("keep\nold\nkeep", "keep\nnew\nkeep");
-        assert_eq!(diff, " keep\n-old\n+new\n keep");
+        expect!(diff).to(eq(" keep\n-old\n+new\n keep".to_string()))?;
+        Ok(())
     }
 
     #[test]
-    fn has_no_trailing_newline() {
+    fn has_no_trailing_newline() -> TestResult {
         let diff = diff_lines("a\n", "b\n");
-        assert!(!diff.ends_with('\n'), "{diff:?}");
+        expect!(diff.ends_with('\n')).to(is_false())?;
+        Ok(())
     }
 }

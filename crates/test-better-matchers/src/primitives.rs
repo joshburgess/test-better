@@ -99,10 +99,14 @@ fn multi_line_diff(_expected: &str, _actual: &str) -> Option<String> {
 /// struct, a collection), the failure carries a line-oriented diff.
 ///
 /// ```
-/// use test_better_matchers::{eq, Matcher};
+/// use test_better_core::TestResult;
+/// use test_better_matchers::{eq, expect};
 ///
-/// assert!(eq(4).check(&(2 + 2)).matched);
-/// assert!(!eq(4).check(&5).matched);
+/// fn main() -> TestResult {
+///     expect!(2 + 2).to(eq(4))?;
+///     expect!(5).to_not(eq(4))?;
+///     Ok(())
+/// }
 /// ```
 pub fn eq<T>(expected: T) -> impl Matcher<T>
 where
@@ -114,10 +118,14 @@ where
 /// Matches a value not equal to `expected`.
 ///
 /// ```
-/// use test_better_matchers::{ne, Matcher};
+/// use test_better_core::TestResult;
+/// use test_better_matchers::{ne, expect};
 ///
-/// assert!(ne(4).check(&5).matched);
-/// assert!(!ne(4).check(&4).matched);
+/// fn main() -> TestResult {
+///     expect!(5).to(ne(4))?;
+///     expect!(4).to_not(ne(4))?;
+///     Ok(())
+/// }
 /// ```
 pub fn ne<T>(expected: T) -> impl Matcher<T>
 where
@@ -129,10 +137,14 @@ where
 /// Matches a value strictly less than `expected`.
 ///
 /// ```
-/// use test_better_matchers::{lt, Matcher};
+/// use test_better_core::TestResult;
+/// use test_better_matchers::{lt, expect};
 ///
-/// assert!(lt(10).check(&9).matched);
-/// assert!(!lt(10).check(&10).matched);
+/// fn main() -> TestResult {
+///     expect!(9).to(lt(10))?;
+///     expect!(10).to_not(lt(10))?;
+///     Ok(())
+/// }
 /// ```
 pub fn lt<T>(expected: T) -> impl Matcher<T>
 where
@@ -144,10 +156,14 @@ where
 /// Matches a value less than or equal to `expected`.
 ///
 /// ```
-/// use test_better_matchers::{le, Matcher};
+/// use test_better_core::TestResult;
+/// use test_better_matchers::{le, expect};
 ///
-/// assert!(le(10).check(&10).matched);
-/// assert!(!le(10).check(&11).matched);
+/// fn main() -> TestResult {
+///     expect!(10).to(le(10))?;
+///     expect!(11).to_not(le(10))?;
+///     Ok(())
+/// }
 /// ```
 pub fn le<T>(expected: T) -> impl Matcher<T>
 where
@@ -159,10 +175,14 @@ where
 /// Matches a value strictly greater than `expected`.
 ///
 /// ```
-/// use test_better_matchers::{gt, Matcher};
+/// use test_better_core::TestResult;
+/// use test_better_matchers::{gt, expect};
 ///
-/// assert!(gt(0).check(&1).matched);
-/// assert!(!gt(0).check(&0).matched);
+/// fn main() -> TestResult {
+///     expect!(1).to(gt(0))?;
+///     expect!(0).to_not(gt(0))?;
+///     Ok(())
+/// }
 /// ```
 pub fn gt<T>(expected: T) -> impl Matcher<T>
 where
@@ -174,10 +194,14 @@ where
 /// Matches a value greater than or equal to `expected`.
 ///
 /// ```
-/// use test_better_matchers::{ge, Matcher};
+/// use test_better_core::TestResult;
+/// use test_better_matchers::{ge, expect};
 ///
-/// assert!(ge(0).check(&0).matched);
-/// assert!(!ge(0).check(&-1).matched);
+/// fn main() -> TestResult {
+///     expect!(0).to(ge(0))?;
+///     expect!(-1).to_not(ge(0))?;
+///     Ok(())
+/// }
 /// ```
 pub fn ge<T>(expected: T) -> impl Matcher<T>
 where
@@ -208,10 +232,14 @@ impl Matcher<bool> for BoolMatcher {
 /// Matches `true`.
 ///
 /// ```
-/// use test_better_matchers::{is_true, Matcher};
+/// use test_better_core::TestResult;
+/// use test_better_matchers::{is_true, expect};
 ///
-/// assert!(is_true().check(&(1 == 1)).matched);
-/// assert!(!is_true().check(&false).matched);
+/// fn main() -> TestResult {
+///     expect!(1 == 1).to(is_true())?;
+///     expect!(false).to_not(is_true())?;
+///     Ok(())
+/// }
 /// ```
 pub fn is_true() -> impl Matcher<bool> {
     BoolMatcher { expected: true }
@@ -220,10 +248,14 @@ pub fn is_true() -> impl Matcher<bool> {
 /// Matches `false`.
 ///
 /// ```
-/// use test_better_matchers::{is_false, Matcher};
+/// use test_better_core::TestResult;
+/// use test_better_matchers::{is_false, expect};
 ///
-/// assert!(is_false().check(&(1 == 2)).matched);
-/// assert!(!is_false().check(&true).matched);
+/// fn main() -> TestResult {
+///     expect!(1 == 2).to(is_false())?;
+///     expect!(true).to_not(is_false())?;
+///     Ok(())
+/// }
 /// ```
 pub fn is_false() -> impl Matcher<bool> {
     BoolMatcher { expected: false }
@@ -231,87 +263,108 @@ pub fn is_false() -> impl Matcher<bool> {
 
 #[cfg(test)]
 mod tests {
+    use test_better_core::{OrFail, TestResult};
+
     use super::*;
+    use crate::{eq, expect, is_true};
 
     #[test]
-    fn eq_passes_and_fails_with_rendered_mismatch() {
-        assert!(eq(4).check(&4).matched);
-        let failure = eq(4).check(&5).failure.expect("5 is not 4");
-        assert_eq!(failure.expected.to_string(), "equal to 4");
-        assert_eq!(failure.actual, "5");
+    fn eq_passes_and_fails_with_rendered_mismatch() -> TestResult {
+        expect!(eq(4).check(&4).matched).to(is_true())?;
+        let failure = eq(4).check(&5).failure.or_fail_with("5 is not 4")?;
+        expect!(failure.expected.to_string()).to(eq("equal to 4".to_string()))?;
+        expect!(failure.actual).to(eq("5".to_string()))?;
+        Ok(())
     }
 
     #[test]
-    fn eq_omits_a_diff_for_single_line_values() {
-        let failure = eq(4).check(&5).failure.expect("5 is not 4");
-        assert!(failure.diff.is_none(), "{:?}", failure.diff);
+    fn eq_omits_a_diff_for_single_line_values() -> TestResult {
+        let failure = eq(4).check(&5).failure.or_fail_with("5 is not 4")?;
+        expect!(failure.diff.is_none()).to(is_true())?;
+        Ok(())
     }
 
     #[cfg(feature = "diff")]
     #[test]
-    fn eq_attaches_a_diff_when_the_pretty_repr_is_multi_line() {
+    fn eq_attaches_a_diff_when_the_pretty_repr_is_multi_line() -> TestResult {
         let failure = eq(vec![1, 2, 3])
             .check(&vec![1, 2, 4])
             .failure
-            .expect("the vectors differ");
-        let diff = failure.diff.expect("multi-line pretty reprs get a diff");
-        assert!(diff.contains("-    3,"), "{diff}");
-        assert!(diff.contains("+    4,"), "{diff}");
+            .or_fail_with("the vectors differ")?;
+        let diff = failure
+            .diff
+            .or_fail_with("multi-line pretty reprs get a diff")?;
+        expect!(diff.contains("-    3,")).to(is_true())?;
+        expect!(diff.contains("+    4,")).to(is_true())?;
+        Ok(())
     }
 
     #[test]
-    fn ne_passes_and_fails_with_rendered_mismatch() {
-        assert!(ne(4).check(&5).matched);
-        let failure = ne(4).check(&4).failure.expect("4 is equal to 4");
-        assert_eq!(failure.expected.to_string(), "not equal to 4");
-        assert_eq!(failure.actual, "4");
+    fn ne_passes_and_fails_with_rendered_mismatch() -> TestResult {
+        expect!(ne(4).check(&5).matched).to(is_true())?;
+        let failure = ne(4).check(&4).failure.or_fail_with("4 is equal to 4")?;
+        expect!(failure.expected.to_string()).to(eq("not equal to 4".to_string()))?;
+        expect!(failure.actual).to(eq("4".to_string()))?;
+        Ok(())
     }
 
     #[test]
-    fn lt_passes_and_fails_with_rendered_mismatch() {
-        assert!(lt(10).check(&9).matched);
-        let failure = lt(10).check(&10).failure.expect("10 is not < 10");
-        assert_eq!(failure.expected.to_string(), "less than 10");
-        assert_eq!(failure.actual, "10");
+    fn lt_passes_and_fails_with_rendered_mismatch() -> TestResult {
+        expect!(lt(10).check(&9).matched).to(is_true())?;
+        let failure = lt(10).check(&10).failure.or_fail_with("10 is not < 10")?;
+        expect!(failure.expected.to_string()).to(eq("less than 10".to_string()))?;
+        expect!(failure.actual).to(eq("10".to_string()))?;
+        Ok(())
     }
 
     #[test]
-    fn le_passes_and_fails_with_rendered_mismatch() {
-        assert!(le(10).check(&10).matched);
-        let failure = le(10).check(&11).failure.expect("11 is not <= 10");
-        assert_eq!(failure.expected.to_string(), "less than or equal to 10");
-        assert_eq!(failure.actual, "11");
+    fn le_passes_and_fails_with_rendered_mismatch() -> TestResult {
+        expect!(le(10).check(&10).matched).to(is_true())?;
+        let failure = le(10).check(&11).failure.or_fail_with("11 is not <= 10")?;
+        expect!(failure.expected.to_string()).to(eq("less than or equal to 10".to_string()))?;
+        expect!(failure.actual).to(eq("11".to_string()))?;
+        Ok(())
     }
 
     #[test]
-    fn gt_passes_and_fails_with_rendered_mismatch() {
-        assert!(gt(0).check(&1).matched);
-        let failure = gt(0).check(&0).failure.expect("0 is not > 0");
-        assert_eq!(failure.expected.to_string(), "greater than 0");
-        assert_eq!(failure.actual, "0");
+    fn gt_passes_and_fails_with_rendered_mismatch() -> TestResult {
+        expect!(gt(0).check(&1).matched).to(is_true())?;
+        let failure = gt(0).check(&0).failure.or_fail_with("0 is not > 0")?;
+        expect!(failure.expected.to_string()).to(eq("greater than 0".to_string()))?;
+        expect!(failure.actual).to(eq("0".to_string()))?;
+        Ok(())
     }
 
     #[test]
-    fn ge_passes_and_fails_with_rendered_mismatch() {
-        assert!(ge(0).check(&0).matched);
-        let failure = ge(0).check(&-1).failure.expect("-1 is not >= 0");
-        assert_eq!(failure.expected.to_string(), "greater than or equal to 0");
-        assert_eq!(failure.actual, "-1");
+    fn ge_passes_and_fails_with_rendered_mismatch() -> TestResult {
+        expect!(ge(0).check(&0).matched).to(is_true())?;
+        let failure = ge(0).check(&-1).failure.or_fail_with("-1 is not >= 0")?;
+        expect!(failure.expected.to_string()).to(eq("greater than or equal to 0".to_string()))?;
+        expect!(failure.actual).to(eq("-1".to_string()))?;
+        Ok(())
     }
 
     #[test]
-    fn is_true_passes_and_fails_with_rendered_mismatch() {
-        assert!(is_true().check(&true).matched);
-        let failure = is_true().check(&false).failure.expect("false is not true");
-        assert_eq!(failure.expected.to_string(), "true");
-        assert_eq!(failure.actual, "false");
+    fn is_true_passes_and_fails_with_rendered_mismatch() -> TestResult {
+        expect!(is_true().check(&true).matched).to(is_true())?;
+        let failure = is_true()
+            .check(&false)
+            .failure
+            .or_fail_with("false is not true")?;
+        expect!(failure.expected.to_string()).to(eq("true".to_string()))?;
+        expect!(failure.actual).to(eq("false".to_string()))?;
+        Ok(())
     }
 
     #[test]
-    fn is_false_passes_and_fails_with_rendered_mismatch() {
-        assert!(is_false().check(&false).matched);
-        let failure = is_false().check(&true).failure.expect("true is not false");
-        assert_eq!(failure.expected.to_string(), "false");
-        assert_eq!(failure.actual, "true");
+    fn is_false_passes_and_fails_with_rendered_mismatch() -> TestResult {
+        expect!(is_false().check(&false).matched).to(is_true())?;
+        let failure = is_false()
+            .check(&true)
+            .failure
+            .or_fail_with("true is not false")?;
+        expect!(failure.expected.to_string()).to(eq("false".to_string()))?;
+        expect!(failure.actual).to(eq("true".to_string()))?;
+        Ok(())
     }
 }

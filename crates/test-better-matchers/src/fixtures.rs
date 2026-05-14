@@ -41,10 +41,14 @@ impl<T: ?Sized> Matcher<T> for NeverMatches {
 /// A matcher that matches every value, for testing matcher machinery.
 ///
 /// ```
-/// use test_better_matchers::{always_matches, Matcher};
+/// use test_better_core::TestResult;
+/// use test_better_matchers::{always_matches, expect};
 ///
-/// assert!(always_matches().check(&42).matched);
-/// assert!(always_matches().check("any string").matched);
+/// fn main() -> TestResult {
+///     expect!(42).to(always_matches())?;
+///     expect!("any string").to(always_matches())?;
+///     Ok(())
+/// }
 /// ```
 pub fn always_matches<T: ?Sized>() -> impl Matcher<T> {
     AlwaysMatches
@@ -53,9 +57,13 @@ pub fn always_matches<T: ?Sized>() -> impl Matcher<T> {
 /// A matcher that matches no value, for testing matcher machinery.
 ///
 /// ```
-/// use test_better_matchers::{never_matches, Matcher};
+/// use test_better_core::TestResult;
+/// use test_better_matchers::{never_matches, expect};
 ///
-/// assert!(!never_matches().check(&42).matched);
+/// fn main() -> TestResult {
+///     expect!(42).to_not(never_matches())?;
+///     Ok(())
+/// }
 /// ```
 pub fn never_matches<T: ?Sized>() -> impl Matcher<T> {
     NeverMatches
@@ -63,21 +71,26 @@ pub fn never_matches<T: ?Sized>() -> impl Matcher<T> {
 
 #[cfg(test)]
 mod tests {
+    use test_better_core::{OrFail, TestResult};
+
     use super::*;
+    use crate::{eq, expect, is_false, is_true};
 
     #[test]
-    fn always_matches_passes_for_any_type() {
-        assert!(always_matches().check(&42).matched);
-        assert!(always_matches().check("a str").matched);
-        assert!(always_matches().check(&[1, 2, 3][..]).matched);
+    fn always_matches_passes_for_any_type() -> TestResult {
+        expect!(always_matches().check(&42).matched).to(is_true())?;
+        expect!(always_matches().check("a str").matched).to(is_true())?;
+        expect!(always_matches().check(&[1, 2, 3][..]).matched).to(is_true())?;
+        Ok(())
     }
 
     #[test]
-    fn never_matches_fails_with_a_described_mismatch() {
+    fn never_matches_fails_with_a_described_mismatch() -> TestResult {
         let result = never_matches().check(&42);
-        assert!(!result.matched);
-        let failure = result.failure.expect("never_matches always fails");
-        assert_eq!(failure.expected.to_string(), "nothing");
-        assert_eq!(failure.actual, "<value>");
+        expect!(result.matched).to(is_false())?;
+        let failure = result.failure.or_fail_with("never_matches always fails")?;
+        expect!(failure.expected.to_string()).to(eq("nothing".to_string()))?;
+        expect!(failure.actual).to(eq("<value>".to_string()))?;
+        Ok(())
     }
 }

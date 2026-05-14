@@ -3,7 +3,9 @@
 //! `?`-friendly conversions.
 //!
 //! This is the acceptance check for PROJECT_BUILD_PLAN.md Iterations 1.5 and
-//! 2.3 (the facade wiring of `expect!` and the matchers).
+//! 2.3 (the facade wiring of `expect!` and the matchers), and it doubles as the
+//! reference for what a dogfooded test looks like from outside the workspace:
+//! every assertion goes through `expect!` (Iteration 2.5).
 
 use test_better::prelude::*;
 
@@ -23,23 +25,22 @@ fn prelude_supports_an_expect_driven_test() -> TestResult {
 }
 
 #[test]
-fn expect_failure_names_the_expression_and_values() {
+fn expect_failure_names_the_expression_and_values() -> TestResult {
     let error = expect!(2 + 2).to(eq(5)).expect_err("2 + 2 is not 5");
     let rendered = error.to_string();
-    assert!(rendered.contains("2 + 2"), "{rendered}");
-    assert!(rendered.contains("equal to 5"), "{rendered}");
+    expect!(rendered.contains("2 + 2")).to(is_true())?;
+    expect!(rendered.contains("equal to 5")).to(is_true())?;
+    Ok(())
 }
 
 #[test]
-fn or_fail_failure_path_carries_context_and_message() {
+fn or_fail_failure_path_carries_context_and_message() -> TestResult {
     let failure = load_answer(false)
         .context("loading the answer")
         .expect_err("the missing answer should fail");
 
     let rendered = failure.to_string();
-    assert!(
-        rendered.contains("the answer should have been loaded"),
-        "{rendered}"
-    );
-    assert!(rendered.contains("while loading the answer"), "{rendered}");
+    expect!(rendered.contains("the answer should have been loaded")).to(is_true())?;
+    expect!(rendered.contains("while loading the answer")).to(is_true())?;
+    Ok(())
 }

@@ -1,4 +1,4 @@
-//! The [`expect!`] macro and its [`Subject`] type: the entry point for writing
+//! The [`expect!`](crate::expect) macro and its [`Subject`] type: the entry point for writing
 //! an assertion.
 //!
 //! `expect!(value)` captures the value *and the source text of the expression
@@ -22,7 +22,7 @@ use crate::matcher::{Matcher, Mismatch};
 /// A value under test, paired with the source text of the expression that
 /// produced it.
 ///
-/// `Subject` owns its value (the [`expect!`] macro hands it over by value) and
+/// `Subject` owns its value (the [`expect!`](crate::expect) macro hands it over by value) and
 /// borrows nothing, so it carries no lifetime parameter.
 pub struct Subject<T> {
     actual: T,
@@ -30,7 +30,7 @@ pub struct Subject<T> {
 }
 
 impl<T> Subject<T> {
-    /// Pairs `actual` with the source text it came from. Called by [`expect!`];
+    /// Pairs `actual` with the source text it came from. Called by [`expect!`](crate::expect);
     /// rarely constructed directly.
     #[must_use]
     pub fn new(actual: T, expr: &'static str) -> Self {
@@ -112,49 +112,57 @@ macro_rules! expect {
 
 #[cfg(test)]
 mod tests {
+    use test_better_core::TestResult;
+
     use crate::{eq, is_true};
 
     #[test]
-    fn to_returns_ok_on_a_match() {
+    fn to_returns_ok_on_a_match() -> TestResult {
         let result = expect!(2 + 2).to(eq(4));
-        assert!(result.is_ok());
+        expect!(result.is_ok()).to(is_true())?;
+        Ok(())
     }
 
     #[test]
-    fn to_failure_mentions_the_expression_and_the_expected_value() {
+    fn to_failure_mentions_the_expression_and_the_expected_value() -> TestResult {
         let error = expect!(2 + 2).to(eq(5)).expect_err("2 + 2 is not 5");
         let rendered = error.to_string();
-        assert!(rendered.contains("2 + 2"), "{rendered}");
-        assert!(rendered.contains("equal to 5"), "{rendered}");
-        assert!(rendered.contains("actual: 4"), "{rendered}");
+        expect!(rendered.contains("2 + 2")).to(is_true())?;
+        expect!(rendered.contains("equal to 5")).to(is_true())?;
+        expect!(rendered.contains("actual: 4")).to(is_true())?;
+        Ok(())
     }
 
     #[test]
-    fn to_failure_captures_the_caller_location() {
+    fn to_failure_captures_the_caller_location() -> TestResult {
         let line = line!() + 1;
         let error = expect!(2 + 2).to(eq(5)).expect_err("2 + 2 is not 5");
-        assert_eq!(error.location.line(), line);
-        assert!(error.location.file().ends_with("subject.rs"));
+        expect!(error.location.line()).to(eq(line))?;
+        expect!(error.location.file().ends_with("subject.rs")).to(is_true())?;
+        Ok(())
     }
 
     #[test]
-    fn to_not_returns_ok_when_the_matcher_does_not_match() {
+    fn to_not_returns_ok_when_the_matcher_does_not_match() -> TestResult {
         let result = expect!(2 + 2).to_not(eq(5));
-        assert!(result.is_ok());
+        expect!(result.is_ok()).to(is_true())?;
+        Ok(())
     }
 
     #[test]
-    fn to_not_failure_mentions_the_expression_and_the_matcher() {
+    fn to_not_failure_mentions_the_expression_and_the_matcher() -> TestResult {
         let error = expect!(true).to_not(is_true()).expect_err("true is true");
         let rendered = error.to_string();
-        assert!(rendered.contains("expect!(true)"), "{rendered}");
-        assert!(rendered.contains("not to be true"), "{rendered}");
+        expect!(rendered.contains("expect!(true)")).to(is_true())?;
+        expect!(rendered.contains("not to be true")).to(is_true())?;
+        Ok(())
     }
 
     #[test]
-    fn to_not_captures_the_caller_location() {
+    fn to_not_captures_the_caller_location() -> TestResult {
         let line = line!() + 1;
         let error = expect!(true).to_not(is_true()).expect_err("true is true");
-        assert_eq!(error.location.line(), line);
+        expect!(error.location.line()).to(eq(line))?;
+        Ok(())
     }
 }

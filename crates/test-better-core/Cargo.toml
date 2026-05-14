@@ -23,6 +23,11 @@ serde = { version = "1.0", optional = true, features = ["derive"] }
 [dev-dependencies]
 # Used only by the `#[cfg(feature = "serde")]` round-trip tests.
 serde_json = "1.0"
+# Dogfooding (PROJECT_BUILD_PLAN.md Iteration 2.5): this crate's own tests use
+# `expect!` and the matchers. `test-better-matchers` depends on this crate, so
+# this is a dev-dependency cycle, which Cargo permits because dev-dependencies
+# are not part of the normal build graph.
+test-better-matchers = { workspace = true }
 
 [lints]
 workspace = true

@@ -32,6 +32,9 @@ use crate::error::TestError;
 ///     Ok(())
 /// }
 ///
-/// test_division().expect("division test should pass");
+/// fn main() -> TestResult {
+///     test_division()?;
+///     Ok(())
+/// }
 /// ```
 pub type TestResult<T = ()> = Result<T, TestError>;

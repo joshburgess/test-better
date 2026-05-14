@@ -213,7 +213,7 @@ impl fmt::Debug for TestError {
     /// Renders the full pretty failure message, so the stock `cargo test`
     /// harness (which prints returned errors with `{:?}`) is already useful
     /// (PROJECT_BUILD_PLAN.md §6.1). Unlike `Display`, this may emit ANSI
-    /// color, gated by [`crate::color::color_enabled`].
+    /// color, gated by the process-wide [`ColorChoice`](crate::ColorChoice).
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         crate::render::render(self, f, crate::color::color_enabled())
     }
@@ -231,6 +231,8 @@ impl std::error::Error for TestError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{OrFail, TestResult};
+    use test_better_matchers::{eq, expect, is_true};
 
     #[track_caller]
     fn sample_assertion() -> TestError {
@@ -238,115 +240,151 @@ mod tests {
     }
 
     #[test]
-    fn new_captures_caller_location() {
+    fn new_captures_caller_location() -> TestResult {
         let line = line!() + 1;
         let error = TestError::new(ErrorKind::Assertion);
-        assert_eq!(error.location.line(), line);
-        assert!(error.location.file().ends_with("error.rs"));
+        expect!(error.location.line()).to(eq(line)).or_fail()?;
+        expect!(error.location.file().ends_with("error.rs"))
+            .to(is_true())
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn display_includes_headline_message_and_location() {
+    fn display_includes_headline_message_and_location() -> TestResult {
         let rendered = sample_assertion().to_string();
-        assert!(
-            rendered.contains("assertion failed: values differ"),
-            "{rendered}"
-        );
-        assert!(rendered.contains("  at "), "{rendered}");
+        expect!(rendered.contains("assertion failed: values differ"))
+            .to(is_true())
+            .or_fail()?;
+        expect!(rendered.contains("  at "))
+            .to(is_true())
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn debug_matches_display() {
+    fn debug_matches_display() -> TestResult {
         // `Debug` may colorize off the global `ColorChoice`; hold the lock so a
         // concurrent color test cannot flip it mid-render.
         let _guard = crate::color::TEST_LOCK
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         let error = sample_assertion();
-        assert_eq!(format!("{error:?}"), format!("{error}"));
+        expect!(format!("{error:?}"))
+            .to(eq(format!("{error}")))
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn context_frames_render_in_order() {
+    fn context_frames_render_in_order() -> TestResult {
         let error = sample_assertion()
             .with_context_frame(ContextFrame::new("creating user"))
             .with_context_frame(ContextFrame::new("loading profile"));
         let rendered = error.to_string();
-        let first = rendered.find("creating user").expect("first frame present");
+        let first = rendered
+            .find("creating user")
+            .or_fail_with("first frame present")?;
         let second = rendered
             .find("loading profile")
-            .expect("second frame present");
-        assert!(first < second, "frames out of order:\n{rendered}");
+            .or_fail_with("second frame present")?;
+        expect!(first < second).to(is_true()).or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn error_source_walks_into_payload_other() {
+    fn error_source_walks_into_payload_other() -> TestResult {
         let io = std::io::Error::new(std::io::ErrorKind::NotFound, "missing file");
         let error = TestError::new(ErrorKind::Custom).with_payload(Payload::Other(Box::new(io)));
-        let source = std::error::Error::source(&error).expect("source is the wrapped io error");
-        assert_eq!(source.to_string(), "missing file");
+        let source =
+            std::error::Error::source(&error).or_fail_with("source is the wrapped io error")?;
+        expect!(source.to_string())
+            .to(eq("missing file".to_string()))
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn expected_actual_payload_renders_both_values() {
+    fn expected_actual_payload_renders_both_values() -> TestResult {
         let error = TestError::new(ErrorKind::Assertion).with_payload(Payload::ExpectedActual {
             expected: "4".to_string(),
             actual: "5".to_string(),
             diff: None,
         });
         let rendered = error.to_string();
-        assert!(rendered.contains("expected: 4"), "{rendered}");
-        assert!(rendered.contains("actual: 5"), "{rendered}");
+        expect!(rendered.contains("expected: 4"))
+            .to(is_true())
+            .or_fail()?;
+        expect!(rendered.contains("actual: 5"))
+            .to(is_true())
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn multiple_payload_renders_every_sub_failure() {
+    fn multiple_payload_renders_every_sub_failure() -> TestResult {
         let error = TestError::new(ErrorKind::Assertion).with_payload(Payload::Multiple(vec![
             TestError::new(ErrorKind::Assertion).with_message("first"),
             TestError::new(ErrorKind::Assertion).with_message("second"),
         ]));
         let rendered = error.to_string();
-        assert!(rendered.contains("first"), "{rendered}");
-        assert!(rendered.contains("second"), "{rendered}");
+        expect!(rendered.contains("first"))
+            .to(is_true())
+            .or_fail()?;
+        expect!(rendered.contains("second"))
+            .to(is_true())
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn assertion_constructor_sets_kind_message_and_caller_location() {
+    fn assertion_constructor_sets_kind_message_and_caller_location() -> TestResult {
         let line = line!() + 1;
         let error = TestError::assertion("values differ");
-        assert_eq!(error.kind, ErrorKind::Assertion);
-        assert_eq!(error.message.as_deref(), Some("values differ"));
-        assert_eq!(error.location.line(), line);
-        assert!(error.location.file().ends_with("error.rs"));
+        expect!(error.kind).to(eq(ErrorKind::Assertion)).or_fail()?;
+        expect!(error.message.as_deref())
+            .to(eq(Some("values differ")))
+            .or_fail()?;
+        expect!(error.location.line()).to(eq(line)).or_fail()?;
+        expect!(error.location.file().ends_with("error.rs"))
+            .to(is_true())
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn custom_constructor_sets_kind_message_and_caller_location() {
+    fn custom_constructor_sets_kind_message_and_caller_location() -> TestResult {
         let line = line!() + 1;
         let error = TestError::custom("something off");
-        assert_eq!(error.kind, ErrorKind::Custom);
-        assert_eq!(error.message.as_deref(), Some("something off"));
-        assert_eq!(error.location.line(), line);
-        assert!(error.location.file().ends_with("error.rs"));
+        expect!(error.kind).to(eq(ErrorKind::Custom)).or_fail()?;
+        expect!(error.message.as_deref())
+            .to(eq(Some("something off")))
+            .or_fail()?;
+        expect!(error.location.line()).to(eq(line)).or_fail()?;
+        expect!(error.location.file().ends_with("error.rs"))
+            .to(is_true())
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn from_expected_actual_captures_debug_values_and_caller_location() {
+    fn from_expected_actual_captures_debug_values_and_caller_location() -> TestResult {
         let line = line!() + 1;
         let error = TestError::from_expected_actual(4, 5);
-        assert_eq!(error.kind, ErrorKind::Assertion);
-        assert_eq!(error.location.line(), line);
+        expect!(error.kind).to(eq(ErrorKind::Assertion)).or_fail()?;
+        expect!(error.location.line()).to(eq(line)).or_fail()?;
         match error.payload.map(|payload| *payload) {
             Some(Payload::ExpectedActual {
                 expected,
                 actual,
                 diff,
             }) => {
-                assert_eq!(expected, "4");
-                assert_eq!(actual, "5");
-                assert!(diff.is_none());
+                expect!(expected).to(eq("4".to_string())).or_fail()?;
+                expect!(actual).to(eq("5".to_string())).or_fail()?;
+                expect!(diff.is_none()).to(is_true()).or_fail()?;
             }
             other => panic!("expected ExpectedActual, got {other:?}"),
         }
+        Ok(())
     }
 }

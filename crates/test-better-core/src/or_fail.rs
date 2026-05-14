@@ -1,7 +1,7 @@
 //! [`OrFail`]: turn a `Result` or `Option` into a [`TestResult`] at the call
-//! site, the `?`-friendly replacement for `.unwrap()`.
+//! site, the `?`-friendly alternative to panicking on failure.
 //!
-//! `.unwrap()` panics with a location but no story; `.or_fail()?` produces a
+//! Panicking on failure provides a location but no story; `.or_fail()?` produces a
 //! [`TestError`] that names what was expected and carries the underlying
 //! error's chain (PROJECT_BUILD_PLAN.md §6). In the happy path the two are
 //! interchangeable; in the failure path `or_fail` is strictly more informative.
@@ -76,79 +76,103 @@ where
 mod tests {
     use super::*;
     use crate::error::Payload;
+    use crate::{OrFail, TestResult};
+    use test_better_matchers::{eq, expect, is_true};
 
     fn io_error() -> std::io::Error {
         std::io::Error::new(std::io::ErrorKind::NotFound, "missing file")
     }
 
     #[test]
-    fn or_fail_passes_through_some_like_unwrap() {
+    fn or_fail_passes_through_some_like_unwrap() -> TestResult {
         let some: Option<i32> = Some(7);
-        assert_eq!(some.or_fail().expect("some path"), 7);
+        expect!(some.or_fail()?).to(eq(7)).or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn or_fail_passes_through_ok_like_unwrap() {
+    fn or_fail_passes_through_ok_like_unwrap() -> TestResult {
         let ok: Result<i32, std::io::Error> = Ok(7);
-        assert_eq!(ok.or_fail().expect("ok path"), 7);
+        expect!(ok.or_fail()?).to(eq(7)).or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn or_fail_on_none_names_the_expected_type_and_caller_location() {
+    fn or_fail_on_none_names_the_expected_type_and_caller_location() -> TestResult {
         let missing: Option<i32> = None;
         let line = line!() + 1;
         let result = missing.or_fail();
         let error = result.expect_err("err path");
-        assert_eq!(error.kind, ErrorKind::Assertion);
-        assert_eq!(error.location.line(), line);
-        let message = error.message.as_deref().expect("message present");
-        assert!(message.starts_with("expected Some("), "{message}");
-        assert!(message.ends_with("i32), got None"), "{message}");
+        expect!(error.kind).to(eq(ErrorKind::Assertion)).or_fail()?;
+        expect!(error.location.line()).to(eq(line)).or_fail()?;
+        let message = error.message.as_deref().or_fail_with("message present")?;
+        expect!(message.starts_with("expected Some("))
+            .to(is_true())
+            .or_fail()?;
+        expect!(message.ends_with("i32), got None"))
+            .to(is_true())
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn or_fail_with_on_none_uses_the_supplied_message() {
+    fn or_fail_with_on_none_uses_the_supplied_message() -> TestResult {
         let missing: Option<i32> = None;
         let error = missing
             .or_fail_with("the user should have been seeded")
             .expect_err("err path");
-        assert_eq!(
-            error.message.as_deref(),
-            Some("the user should have been seeded")
-        );
+        expect!(error.message.as_deref())
+            .to(eq(Some("the user should have been seeded")))
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn or_fail_on_err_preserves_the_underlying_error() {
+    fn or_fail_on_err_preserves_the_underlying_error() -> TestResult {
         let failing: Result<(), std::io::Error> = Err(io_error());
         let error = failing.or_fail().expect_err("err path");
-        assert_eq!(error.kind, ErrorKind::Custom);
+        expect!(error.kind).to(eq(ErrorKind::Custom)).or_fail()?;
         match error.payload.as_deref() {
-            Some(Payload::Other(inner)) => assert_eq!(inner.to_string(), "missing file"),
+            Some(Payload::Other(inner)) => {
+                expect!(inner.to_string())
+                    .to(eq("missing file".to_string()))
+                    .or_fail()?;
+            }
             other => panic!("expected Other payload, got {other:?}"),
         }
+        Ok(())
     }
 
     #[test]
-    fn or_fail_does_not_double_wrap_a_test_error() {
+    fn or_fail_does_not_double_wrap_a_test_error() -> TestResult {
         let original = TestError::assertion("values differ");
         let original_line = original.location.line();
         let failing: Result<(), TestError> = Err(original);
         let error = failing.or_fail().expect_err("err path");
-        assert_eq!(error.kind, ErrorKind::Assertion);
-        assert_eq!(error.location.line(), original_line);
-        assert_eq!(error.message.as_deref(), Some("values differ"));
-        assert!(error.payload.is_none());
+        expect!(error.kind).to(eq(ErrorKind::Assertion)).or_fail()?;
+        expect!(error.location.line())
+            .to(eq(original_line))
+            .or_fail()?;
+        expect!(error.message.as_deref())
+            .to(eq(Some("values differ")))
+            .or_fail()?;
+        expect!(error.payload.is_none()).to(is_true()).or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn or_fail_with_on_err_keeps_the_chain_and_adds_context() {
+    fn or_fail_with_on_err_keeps_the_chain_and_adds_context() -> TestResult {
         let failing: Result<(), std::io::Error> = Err(io_error());
         let error = failing
             .or_fail_with("loading the config file")
             .expect_err("err path");
-        assert!(matches!(error.payload.as_deref(), Some(Payload::Other(_))));
-        assert_eq!(error.context.len(), 1);
-        assert_eq!(error.context[0].message, "loading the config file");
+        expect!(matches!(error.payload.as_deref(), Some(Payload::Other(_))))
+            .to(is_true())
+            .or_fail()?;
+        expect!(error.context.len()).to(eq(1)).or_fail()?;
+        expect!(error.context[0].message.as_ref())
+            .to(eq("loading the config file"))
+            .or_fail()?;
+        Ok(())
     }
 }

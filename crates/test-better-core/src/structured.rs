@@ -148,6 +148,8 @@ impl TestError {
 mod tests {
     use super::*;
     use crate::error::ContextFrame;
+    use crate::{OrFail, TestResult};
+    use test_better_matchers::{eq, expect, is_true};
 
     fn all_kinds() -> [ErrorKind; 6] {
         [
@@ -161,28 +163,38 @@ mod tests {
     }
 
     #[test]
-    fn every_kind_round_trips_through_structured() {
+    fn every_kind_round_trips_through_structured() -> TestResult {
         for kind in all_kinds() {
             let error = TestError::new(kind).with_message("boom");
             let structured = error.to_structured();
-            assert_eq!(structured.kind, kind);
-            assert_eq!(structured.message.as_deref(), Some("boom"));
+            expect!(structured.kind).to(eq(kind)).or_fail()?;
+            expect!(structured.message.as_deref())
+                .to(eq(Some("boom")))
+                .or_fail()?;
         }
+        Ok(())
     }
 
     #[test]
-    fn structured_captures_location_and_context() {
+    fn structured_captures_location_and_context() -> TestResult {
         let error =
             TestError::new(ErrorKind::Assertion).with_context_frame(ContextFrame::new("step one"));
         let structured = error.to_structured();
-        assert_eq!(structured.context.len(), 1);
-        assert_eq!(structured.context[0].message, "step one");
-        assert!(structured.location.file.ends_with("structured.rs"));
-        assert!(structured.location.line > 0);
+        expect!(structured.context.len()).to(eq(1)).or_fail()?;
+        expect!(structured.context[0].message.as_str())
+            .to(eq("step one"))
+            .or_fail()?;
+        expect!(structured.location.file.ends_with("structured.rs"))
+            .to(is_true())
+            .or_fail()?;
+        expect!(structured.location.line > 0)
+            .to(is_true())
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn expected_actual_payload_round_trips() {
+    fn expected_actual_payload_round_trips() -> TestResult {
         let error = TestError::new(ErrorKind::Assertion).with_payload(Payload::ExpectedActual {
             expected: "1".to_string(),
             actual: "2".to_string(),
@@ -194,46 +206,53 @@ mod tests {
                 actual,
                 diff,
             }) => {
-                assert_eq!(expected, "1");
-                assert_eq!(actual, "2");
-                assert_eq!(diff.as_deref(), Some("- 1\n+ 2"));
+                expect!(expected).to(eq("1".to_string())).or_fail()?;
+                expect!(actual).to(eq("2".to_string())).or_fail()?;
+                expect!(diff.as_deref())
+                    .to(eq(Some("- 1\n+ 2")))
+                    .or_fail()?;
             }
             other => panic!("expected ExpectedActual, got {other:?}"),
         }
+        Ok(())
     }
 
     #[test]
-    fn multiple_payload_round_trips_recursively() {
+    fn multiple_payload_round_trips_recursively() -> TestResult {
         let error = TestError::new(ErrorKind::Assertion).with_payload(Payload::Multiple(vec![
             TestError::new(ErrorKind::Assertion).with_message("a"),
             TestError::new(ErrorKind::Setup).with_message("b"),
         ]));
         match error.to_structured().payload {
             Some(StructuredPayload::Multiple(subs)) => {
-                assert_eq!(subs.len(), 2);
-                assert_eq!(subs[0].message.as_deref(), Some("a"));
-                assert_eq!(subs[1].kind, ErrorKind::Setup);
+                expect!(subs.len()).to(eq(2)).or_fail()?;
+                expect!(subs[0].message.as_deref())
+                    .to(eq(Some("a")))
+                    .or_fail()?;
+                expect!(subs[1].kind).to(eq(ErrorKind::Setup)).or_fail()?;
             }
             other => panic!("expected Multiple, got {other:?}"),
         }
+        Ok(())
     }
 
     #[test]
-    fn other_payload_flattens_error_chain() {
+    fn other_payload_flattens_error_chain() -> TestResult {
         let io = std::io::Error::new(std::io::ErrorKind::NotFound, "missing");
         let error = TestError::new(ErrorKind::Custom).with_payload(Payload::Other(Box::new(io)));
         match error.to_structured().payload {
             Some(StructuredPayload::Other { message, chain }) => {
-                assert_eq!(message, "missing");
-                assert!(chain.is_empty());
+                expect!(message).to(eq("missing".to_string())).or_fail()?;
+                expect!(chain.is_empty()).to(is_true()).or_fail()?;
             }
             other => panic!("expected Other, got {other:?}"),
         }
+        Ok(())
     }
 
     #[cfg(feature = "serde")]
     #[test]
-    fn structured_error_json_round_trips() {
+    fn structured_error_json_round_trips() -> TestResult {
         let error = TestError::new(ErrorKind::Property)
             .with_message("shrunk input failed")
             .with_context_frame(ContextFrame::new("checking the round-trip property"))
@@ -243,8 +262,9 @@ mod tests {
                 diff: None,
             });
         let structured = error.to_structured();
-        let json = serde_json::to_string(&structured).expect("serialize");
-        let back: StructuredError = serde_json::from_str(&json).expect("deserialize");
-        assert_eq!(structured, back);
+        let json = serde_json::to_string(&structured).or_fail_with("serialize")?;
+        let back: StructuredError = serde_json::from_str(&json).or_fail_with("deserialize")?;
+        expect!(structured).to(eq(back)).or_fail()?;
+        Ok(())
     }
 }

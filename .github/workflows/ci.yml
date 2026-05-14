@@ -12,7 +12,8 @@ env:
 #   OS:        ubuntu / macos / windows
 #   Toolchain: stable / beta / MSRV (1.95.0)
 #   Jobs:      build, test --all-features, test --no-default-features,
-#              clippy -D warnings, fmt --check, cargo-deny, doc --no-deps
+#              clippy -D warnings, fmt --check, cargo-deny, doc --no-deps,
+#              dogfood (no assert!/unwrap()/expect() under crates/*/src/)
 jobs:
   test:
     name: test / ${{ matrix.os }} / ${{ matrix.toolchain }}
@@ -83,3 +84,13 @@ jobs:
       - uses: EmbarkStudios/cargo-deny-action@v2
         with:
           command: check
+
+  # PROJECT_BUILD_PLAN.md Iteration 2.5: the workspace dogfoods its own API, so
+  # no `assert!`, `assert_eq!`, `.unwrap()`, or `.expect(` may appear under any
+  # crate's `src/`. Allowed under `tests/` and `examples/`.
+  dogfood:
+    name: dogfood
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/check-test-api.sh

@@ -79,33 +79,54 @@ pub(crate) fn color_enabled() -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{OrFail, TestResult};
+    use test_better_matchers::{eq, expect, is_false, is_true};
 
     #[test]
-    fn resolve_handles_every_choice_and_no_color() {
+    fn resolve_handles_every_choice_and_no_color() -> TestResult {
         // Always wins over both `NO_COLOR` and terminal detection.
-        assert!(resolve(ColorChoice::Always, true, false));
+        expect!(resolve(ColorChoice::Always, true, false))
+            .to(is_true())
+            .or_fail()?;
         // Never loses to both.
-        assert!(!resolve(ColorChoice::Never, false, true));
+        expect!(resolve(ColorChoice::Never, false, true))
+            .to(is_false())
+            .or_fail()?;
         // Auto needs a terminal and an unset `NO_COLOR`.
-        assert!(resolve(ColorChoice::Auto, false, true));
-        assert!(!resolve(ColorChoice::Auto, true, true));
-        assert!(!resolve(ColorChoice::Auto, false, false));
+        expect!(resolve(ColorChoice::Auto, false, true))
+            .to(is_true())
+            .or_fail()?;
+        expect!(resolve(ColorChoice::Auto, true, true))
+            .to(is_false())
+            .or_fail()?;
+        expect!(resolve(ColorChoice::Auto, false, false))
+            .to(is_false())
+            .or_fail()?;
+        Ok(())
     }
 
     #[test]
-    fn choice_round_trips_through_the_global_slot() {
+    fn choice_round_trips_through_the_global_slot() -> TestResult {
         let _guard = TEST_LOCK
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         let original = color_choice();
 
         set_color_choice(ColorChoice::Always);
-        assert_eq!(color_choice(), ColorChoice::Always);
+        let after_always = color_choice();
         set_color_choice(ColorChoice::Never);
-        assert_eq!(color_choice(), ColorChoice::Never);
+        let after_never = color_choice();
         set_color_choice(ColorChoice::Auto);
-        assert_eq!(color_choice(), ColorChoice::Auto);
+        let after_auto = color_choice();
 
+        // Restore before any `?` to avoid skipping the restore on early return.
         set_color_choice(original);
+
+        expect!(after_always)
+            .to(eq(ColorChoice::Always))
+            .or_fail()?;
+        expect!(after_never).to(eq(ColorChoice::Never)).or_fail()?;
+        expect!(after_auto).to(eq(ColorChoice::Auto)).or_fail()?;
+        Ok(())
     }
 }

@@ -7,7 +7,7 @@
 //!   [`ContextFrame`], [`Payload`]);
 //! - [`TestResult`], the `?`-friendly return type for tests and helpers;
 //! - [`ContextExt`], which attaches "while doing X" context to a fallible value;
-//! - [`OrFail`], the `?`-friendly replacement for `.unwrap()`;
+//! - [`OrFail`], the `?`-friendly alternative to panicking on the error path;
 //! - [`StructuredError`], the owned/serializable mirror that tooling consumes.
 //!
 //! See PROJECT_BUILD_PLAN.md §6 (Phase 1).

@@ -89,3 +89,13 @@ versioned in lockstep until 1.0.
   `TestError` is returned by value through every `?`, so it is kept small; the
   large `Payload::ExpectedActual` variant lives behind the box. The public
   `Payload` enum and `with_payload` signature are unchanged (Iteration 1.3).
+- Dogfood switchover (Iteration 2.5): every test in the workspace now uses
+  `expect!` and `TestResult` instead of `assert!`/`assert_eq!`/`.unwrap()`/
+  `.expect()`, enforced by `scripts/check-test-api.sh` (a new `dogfood` CI job)
+  scanning `crates/*/src/`. No public API changed. Two implementation notes:
+  `test-better-core` carries `test-better-matchers` as a dev-dependency (a
+  dev-dependency cycle, which Cargo permits) so its own tests can use `expect!`;
+  and because that cycle compiles `test-better-core` twice, its inline tests
+  bridge a matcher result into the test's `TestResult` with a trailing
+  `.or_fail()?` rather than a bare `?`. Tests in dependent crates and in
+  `tests/` directories use the plain `expect!(..).to(..)?` form.

@@ -8,7 +8,7 @@
 //! - the primitive matchers [`eq`], [`ne`], [`lt`], [`le`], [`gt`], [`ge`],
 //!   [`is_true`], [`is_false`], and the test fixtures [`always_matches`] and
 //!   [`never_matches`];
-//! - the [`expect!`] macro and its [`Subject`] type, the entry point for an
+//! - the [`expect!`](crate::expect) macro and its [`Subject`] type, the entry point for an
 //!   assertion;
 //! - the line-oriented [`diff_lines`] renderer, behind the default `diff`
 //!   feature.
