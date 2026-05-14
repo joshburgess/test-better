@@ -41,6 +41,10 @@ diff = ["test-better-matchers/diff"]
 # Forwards `test-better-matchers`'s `regex` feature: the `matches_regex`
 # matcher. Off by default; it is the one matcher that pulls in `regex`.
 regex = ["test-better-matchers/regex"]
+# Forwards `test-better-property`'s `quickcheck` feature: the best-effort
+# `quickcheck` bridge (`arbitrary::<T>()`). Off by default; `proptest` is the
+# primary property-testing backend and needs no feature flag.
+quickcheck = ["test-better-property/quickcheck"]
 # Forwards `test-better-core`'s `serde` feature: derives serde on the
 # structured-failure types (see that crate for details).
 serde = ["test-better-core/serde"]

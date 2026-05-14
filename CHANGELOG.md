@@ -223,6 +223,14 @@ versioned in lockstep until 1.0.
   (`check`, `check_with`, `Strategy`, `ValueTree`, `Runner`, `GenError`,
   `ProptestTree`, `PropertyFailure`, and `Config` renamed `PropertyConfig`), so
   a property test needs only the facade dependency (Iteration 6.1b).
+- `test-better-property`, `test-better`: the best-effort `quickcheck` bridge,
+  behind a new off-by-default `quickcheck` feature. `arbitrary::<T>()` turns any
+  `quickcheck::Arbitrary` type into a seam `Strategy<T>` (`ArbitraryStrategy<T>`,
+  with `QuickcheckTree<T>` adapting `quickcheck`'s linear `shrink` to the
+  `simplify`/`complicate` protocol), so a property test can name
+  `arbitrary::<MyType>()` wherever it would name a `proptest` strategy. The
+  facade forwards the feature and re-exports `arbitrary`, `ArbitraryStrategy`,
+  and `QuickcheckTree` (Iteration 6.1c).
 
 ### Notes
 
@@ -357,3 +365,16 @@ versioned in lockstep until 1.0.
 - `Config` is re-exported from the facade as `PropertyConfig`: at the facade
   root, where one crate's surface meets eight others, a bare `Config` says too
   little (Iteration 6.1b).
+- The `quickcheck` bridge (Iteration 6.1c) ships at documented reduced fidelity
+  rather than being deferred, which PROJECT_BUILD_PLAN.md §11 6.1c lists as an
+  acceptable outcome. Two limitations are inherent to `quickcheck`'s model, not
+  bugs: a `quickcheck::Gen` owns its RNG and cannot be seeded from the seam's
+  `Runner`, so an `arbitrary()` strategy is *not* made reproducible by
+  `Runner::deterministic` (only `proptest` strategies honor it); and shrinking
+  is `quickcheck`'s flat `Arbitrary::shrink` iterator, which the
+  `QuickcheckTree` maps onto the seam's `simplify`/`complicate` protocol
+  faithfully but which does not promise the exact boundary value `proptest`'s
+  integrated shrinking does. Both are documented on the `quickcheck_bridge`
+  module. The `quickcheck` feature pulls a second `rand` major version into the
+  graph; `cargo deny`'s `multiple-versions` is `warn`, so this is a warning, not
+  a failure, and the feature is off by default.

@@ -15,11 +15,20 @@
 //!   `T -> TestResult` predicate, and on failure return a [`PropertyFailure`]
 //!   carrying the shrunk counterexample.
 //!
+//! Behind the off-by-default `quickcheck` feature, [`arbitrary`] bridges a
+//! `quickcheck::Arbitrary` type into the same seam: a best-effort second
+//! backend that proves [`Strategy`] is a real seam (Iteration 6.1c). It is
+//! honest about its reduced fidelity; see the [`quickcheck_bridge`] module docs.
+//!
 //! The `property!` macro (Iteration 6.2) and rich shrunk-failure rendering
 //! (Iteration 6.3) build on this surface.
 
 mod check;
+#[cfg(feature = "quickcheck")]
+pub mod quickcheck_bridge;
 mod strategy;
 
 pub use check::{Config, PropertyFailure, check, check_with};
+#[cfg(feature = "quickcheck")]
+pub use quickcheck_bridge::{ArbitraryStrategy, QuickcheckTree, arbitrary};
 pub use strategy::{GenError, ProptestTree, Runner, Strategy, ValueTree};

@@ -17,11 +17,22 @@ test-better-core = { workspace = true }
 # `wait-timeout` dependencies): the `Strategy<T>` seam only needs `proptest`'s
 # generation and shrinking, which the `std` feature carries.
 proptest = { version = "1", default-features = false, features = ["std"] }
+# The best-effort second backend (BACKLOG.md, Iteration 6.1c), behind the
+# `quickcheck` feature and off by default. `default-features = false` drops
+# `quickcheck`'s `env_logger`/`log` (`use_logging`) dependencies: the bridge
+# only needs `Arbitrary` for generation and shrinking.
+quickcheck = { version = "1", default-features = false, optional = true }
 
 [dev-dependencies]
 # Dogfooding: the crate's own tests assert with `expect!`. A dev-dependency
 # cycle, which Cargo permits (same pattern as `test-better-core`).
 test-better-matchers = { workspace = true }
+
+[features]
+# The `quickcheck` bridge: `arbitrary::<T>()` turns a `quickcheck::Arbitrary`
+# type into a seam `Strategy<T>`. Best-effort and feature-gated; see the
+# `quickcheck` module's docs for the reduced-fidelity caveats.
+quickcheck = ["dep:quickcheck"]
 
 [lints]
 workspace = true

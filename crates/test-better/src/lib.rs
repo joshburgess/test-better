@@ -38,6 +38,11 @@ pub use test_better_property::{
     Config as PropertyConfig, GenError, PropertyFailure, ProptestTree, Runner, Strategy, ValueTree,
     check, check_with,
 };
+// The best-effort `quickcheck` bridge, behind the facade's `quickcheck`
+// feature: `arbitrary::<T>()` turns a `quickcheck::Arbitrary` type into a
+// `Strategy<T>`. Off by default; `proptest` is the primary backend.
+#[cfg(feature = "quickcheck")]
+pub use test_better_property::{ArbitraryStrategy, QuickcheckTree, arbitrary};
 
 /// How to write a custom matcher: see the [`cookbook`] module.
 pub mod cookbook;

@@ -28,9 +28,18 @@ record the decision and its rationale here when the relevant phase begins.
   in `test-better-property` is a deliberately lowest-common-denominator trait
   (`new_tree` plus a `ValueTree` with `current`/`simplify`/`complicate`) that
   `proptest` satisfies through a blanket impl, so a property test names
-  ordinary `proptest` strategies. Whether the `quickcheck` bridge (§11 6.1c)
-  ships in 1.0 is still open and decided when 6.1c is picked up; it is
-  best-effort and explicitly not a 1.0 blocker.
+  ordinary `proptest` strategies.
+- **Phase 6 (§11 6.1c): RESOLVED (Iteration 6.1c).** The `quickcheck` bridge
+  ships in 1.0 at documented reduced fidelity, behind an off-by-default
+  `quickcheck` feature: `arbitrary::<T>()` turns a `quickcheck::Arbitrary` type
+  into a seam `Strategy<T>`, and `QuickcheckTree` maps `quickcheck`'s linear
+  `Arbitrary::shrink` iterator onto the `simplify`/`complicate` protocol. Two
+  limitations are inherent to `quickcheck`'s model and documented on the
+  `quickcheck_bridge` module: a `quickcheck::Gen` cannot be seeded from the
+  seam's `Runner` (so `arbitrary()` strategies are not reproducible via
+  `Runner::deterministic`), and shrinking does not promise the exact boundary
+  value `proptest`'s integrated shrinking reaches. This is the "works at the
+  documented reduced fidelity" outcome §11 6.1c lists as acceptable.
 - **Phase 9 (§9.1):** the structured-output channel the runner consumes
   (marker-wrapped JSON in captured output vs. a side-channel file under
   `target/`). Phases 7.2 and 9.2 both depend on this.
