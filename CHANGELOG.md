@@ -90,6 +90,17 @@ versioned in lockstep until 1.0.
   indented `some:`/`ok:` blocks (Iteration 3.2).
 - `test-better`: the facade crate re-exports the `Option`/`Result` matchers
   (`some`, `none`, `ok`, `err`); the prelude gains them too (Iteration 3.2).
+- `test-better-matchers`: the `Sequence` trait and the collection matchers
+  `have_len`, `is_empty`, `is_not_empty`, `contains`, `contains_all`,
+  `contains_in_order`, `every`, and `at_least_one`. `Sequence` is implemented
+  for `[T]`, `[T; N]`, `Vec<T>`, `VecDeque<T>`, `BTreeSet<T>`, `HashSet<T>`,
+  and `&S`. `contains_all` takes a tuple of matchers (arities 2 through 8, via
+  the `ContainsAll` trait); `contains_in_order` takes an array. Failures name
+  the index of the first item (or, for sets, the offending value) that broke
+  the expectation (Iteration 3.3).
+- `test-better`: the facade crate re-exports the collection matchers and the
+  `Sequence`/`ContainsAll` traits; the prelude gains the matchers (Iteration
+  3.3).
 
 ### Notes
 
@@ -107,6 +118,15 @@ versioned in lockstep until 1.0.
   `TestError` is returned by value through every `?`, so it is kept small; the
   large `Payload::ExpectedActual` variant lives behind the box. The public
   `Payload` enum and `with_payload` signature are unchanged (Iteration 1.3).
+- `Sequence` is *not* implemented for lazy iterators, a deliberate deviation
+  from PROJECT_BUILD_PLAN.md §8 Iteration 3.3 ("iterators, eagerly collected").
+  A blanket `impl<I: Iterator> Sequence for I` overlaps, under coherence, with
+  the concrete `impl Sequence for Vec<T>` (and the other collections), so the
+  two cannot coexist. `Sequence` borrows its items through `&self`, which a
+  lazy iterator cannot offer anyway. Callers collect an iterator into a `Vec`
+  first (`expect!(it.collect::<Vec<_>>())`), which is the "eager collection"
+  the plan asked for, just at the call site. Recorded as an idea in
+  `BACKLOG.md` in case a dedicated adapter is wanted later (Iteration 3.3).
 - Dogfood switchover (Iteration 2.5): every test in the workspace now uses
   `expect!` and `TestResult` instead of `assert!`/`assert_eq!`/`.unwrap()`/
   `.expect()`, enforced by `scripts/check-test-api.sh` (a new `dogfood` CI job)

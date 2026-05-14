@@ -20,9 +20,10 @@ pub use test_better_core::{
 #[cfg(feature = "diff")]
 pub use test_better_matchers::diff_lines;
 pub use test_better_matchers::{
-    Description, MatchResult, Matcher, MatcherTuple, Mismatch, Subject, all_of, always_matches,
-    any_of, eq, err, expect, ge, gt, is_false, is_true, le, lt, ne, never_matches, none, not, ok,
-    some,
+    ContainsAll, Description, MatchResult, Matcher, MatcherTuple, Mismatch, Sequence, Subject,
+    all_of, always_matches, any_of, at_least_one, contains, contains_all, contains_in_order, eq,
+    err, every, expect, ge, gt, have_len, is_empty, is_false, is_not_empty, is_true, le, lt, ne,
+    never_matches, none, not, ok, some,
 };
 
 /// The one `use` a test file should need: `use test_better::prelude::*;`.
@@ -44,7 +45,8 @@ pub use test_better_matchers::{
 pub mod prelude {
     pub use test_better_core::{ContextExt, OrFail, TestError, TestResult};
     pub use test_better_matchers::{
-        all_of, always_matches, any_of, eq, err, ge, gt, is_false, is_true, le, lt, ne,
+        all_of, always_matches, any_of, at_least_one, contains, contains_all, contains_in_order,
+        eq, err, every, ge, gt, have_len, is_empty, is_false, is_not_empty, is_true, le, lt, ne,
         never_matches, none, not, ok, some,
     };
 

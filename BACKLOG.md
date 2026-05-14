@@ -28,4 +28,11 @@ record the decision and its rationale here when the relevant phase begins.
 
 ## Ideas
 
-_(none yet)_
+- **Iterator adapter for `Sequence` (surfaced in Iteration 3.3).** `Sequence`
+  cannot be implemented for lazy iterators: a blanket `impl<I: Iterator>` would
+  collide, under coherence, with the concrete collection impls, and `Sequence`
+  borrows its items through `&self` anyway. Today the caller collects an
+  iterator into a `Vec` before `expect!`. A dedicated newtype (e.g.
+  `items(iter)` returning a `Sequence`-implementing wrapper that eagerly
+  collects on construction) would let `expect!(items(some_iter))` work without
+  a visible `.collect()`. Low priority; the `.collect()` workaround is fine.

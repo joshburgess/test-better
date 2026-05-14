@@ -11,6 +11,9 @@
 //! - the logical combinators [`not`], [`all_of`], and [`any_of`];
 //! - the [`Option`]/[`Result`] matchers [`some`], [`none`], [`ok`], and
 //!   [`err`];
+//! - the collection matchers [`have_len`], [`is_empty`], [`is_not_empty`],
+//!   [`contains`], [`contains_all`], [`contains_in_order`], [`every`], and
+//!   [`at_least_one`], generic over the [`Sequence`] trait;
 //! - the [`expect!`](crate::expect) macro and its [`Subject`] type, the entry point for an
 //!   assertion;
 //! - the line-oriented [`diff_lines`] renderer, behind the default `diff`
@@ -19,6 +22,7 @@
 //! Later iterations add the remaining matcher combinators
 //! (PROJECT_BUILD_PLAN.md §8, Phase 3).
 
+mod collections;
 mod combinators;
 mod description;
 #[cfg(feature = "diff")]
@@ -29,6 +33,10 @@ mod option_result;
 mod primitives;
 mod subject;
 
+pub use collections::{
+    ContainsAll, Sequence, at_least_one, contains, contains_all, contains_in_order, every,
+    have_len, is_empty, is_not_empty,
+};
 pub use combinators::{MatcherTuple, all_of, any_of, not};
 pub use description::Description;
 #[cfg(feature = "diff")]
