@@ -29,3 +29,10 @@ fn test_case_attribute_compile_errors() {
     t.compile_fail("tests/ui/test_case_trailing_garbage.rs");
     t.compile_fail("tests/ui/test_case_missing_label.rs");
 }
+
+#[test]
+fn fixture_attribute_compile_errors() {
+    let t = trybuild::TestCases::new();
+    t.compile_fail("tests/ui/fixture_with_params.rs");
+    t.compile_fail("tests/ui/fixture_bad_scope.rs");
+}

@@ -1,8 +1,9 @@
 //! `test-better-macros`: procedural macros.
 //!
-//! Home of `matches_struct!`, `matches_tuple!`, `matches_variant!`, and the
-//! `#[test_case]` attribute (PROJECT_BUILD_PLAN.md §8, §13), with `#[fixture]`
-//! and the inline snapshot macros still to come (§13, §12).
+//! Home of `matches_struct!`, `matches_tuple!`, `matches_variant!`, the
+//! `#[test_case]` attribute, and the `#[fixture]` / `#[test_with_fixtures]`
+//! attribute pair (PROJECT_BUILD_PLAN.md §8, §13), with the inline snapshot
+//! macros still to come (§12).
 //!
 //! The structural matchers parse a *pattern* of inner matcher expressions and
 //! emit a `Matcher` impl. The matcher holds a projection (a closure that pulls
@@ -17,6 +18,11 @@
 //! function each become a generated `#[test]`, all gathered into a module named
 //! for the function so the cases share a namespace.
 //!
+//! `#[fixture]` turns a `fn() -> TestResult<T>` into a fixture: its failures are
+//! re-categorized as `ErrorKind::Setup` so a setup problem never reads as an
+//! assertion miss. `#[test_with_fixtures]` is the seam that consumes them: each
+//! parameter `name: T` is filled by calling the same-named fixture `fn name()`.
+//!
 //! The generated code refers to the testing library through the `::test_better`
 //! facade crate, so these macros are meant to be used via `test-better`, not by
 //! depending on `test-better-macros` directly.
@@ -29,7 +35,7 @@ use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
-use syn::{Expr, Ident, Index, ItemFn, LitStr, Path, Token, braced, parenthesized};
+use syn::{Expr, FnArg, Ident, Index, ItemFn, LitStr, Pat, Path, Token, braced, parenthesized};
 
 /// A named-field pattern: `Path { field: matcher, ..., .. }`.
 struct StructPattern {
@@ -938,6 +944,271 @@ pub fn test_case(attr: TokenStream, item: TokenStream) -> TokenStream {
         Err(error) => return error.to_compile_error().into(),
     };
     match test_case_impl(first, func) {
+        Ok(tokens) => tokens.into(),
+        Err(error) => error.to_compile_error().into(),
+    }
+}
+
+/// How long a fixture's value is kept: rebuilt for every test, or built once
+/// per module and shared.
+enum FixtureScope {
+    /// The default: the fixture body runs afresh for each test that uses it.
+    Test,
+    /// The fixture body runs once; every test gets a clone of the cached value.
+    Module,
+}
+
+/// The parsed `#[fixture(..)]` arguments. The only knob is `scope`.
+struct FixtureArgs {
+    scope: FixtureScope,
+}
+
+impl Parse for FixtureArgs {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        // A bare `#[fixture]` is per-test scope.
+        if input.is_empty() {
+            return Ok(Self {
+                scope: FixtureScope::Test,
+            });
+        }
+        let key: Ident = input.parse()?;
+        if key != "scope" {
+            return Err(syn::Error::new_spanned(
+                key,
+                "the only `#[fixture]` argument is `scope`",
+            ));
+        }
+        input.parse::<Token![=]>()?;
+        let value: LitStr = input.parse()?;
+        let scope = match value.value().as_str() {
+            "test" => FixtureScope::Test,
+            "module" => FixtureScope::Module,
+            other => {
+                return Err(syn::Error::new_spanned(
+                    value,
+                    format!("unknown fixture scope {other:?}, expected \"test\" or \"module\""),
+                ));
+            }
+        };
+        if !input.is_empty() {
+            return Err(input.error("unexpected tokens after the fixture scope"));
+        }
+        Ok(Self { scope })
+    }
+}
+
+/// Rewrites a `#[fixture]` function into a setup-aware provider.
+///
+/// The original body is kept verbatim in a nested `__tb_fixture_impl`; the
+/// generated outer function (same name, same signature) calls it and, on the
+/// error path, stamps the failure as `ErrorKind::Setup` so it can never read
+/// as an assertion miss.
+fn fixture_impl(args: FixtureArgs, mut func: ItemFn) -> syn::Result<TokenStream2> {
+    if let Some(param) = func.sig.inputs.first() {
+        return Err(syn::Error::new_spanned(
+            param,
+            "a `#[fixture]` function takes no parameters",
+        ));
+    }
+    let return_ty = match &func.sig.output {
+        syn::ReturnType::Type(_, ty) => (**ty).clone(),
+        syn::ReturnType::Default => {
+            return Err(syn::Error::new_spanned(
+                &func.sig,
+                "a `#[fixture]` function must return a `TestResult<T>`",
+            ));
+        }
+    };
+
+    // Everything attached to the function (`#[ignore]` makes no sense here, but
+    // `#[allow(..)]`, `#[cfg(..)]`, doc comments do) is forwarded onto the
+    // generated provider; it also covers the nested impl, which sits inside it.
+    let forwarded: Vec<syn::Attribute> = std::mem::take(&mut func.attrs);
+
+    let fn_name = func.sig.ident.clone();
+    let fn_name_str = fn_name.to_string();
+    let vis = func.vis.clone();
+    let ret = func.sig.output.clone();
+    let body = &func.block;
+    let context_msg = format!("setting up fixture `{fn_name_str}`");
+
+    let impl_fn = quote! {
+        fn __tb_fixture_impl() #ret #body
+    };
+
+    let outer_body = match args.scope {
+        // Per-test: run the body, re-categorize any failure as `Setup` and add
+        // a frame naming the fixture. The successful value is moved straight
+        // out, so the fixture type need not be `Clone`.
+        FixtureScope::Test => quote! {
+            #impl_fn
+            ::core::result::Result::map_err(__tb_fixture_impl(), |__tb_error| {
+                ::test_better::TestError::with_context_frame(
+                    ::test_better::TestError::with_kind(
+                        __tb_error,
+                        ::test_better::ErrorKind::Setup,
+                    ),
+                    ::test_better::ContextFrame::new(#context_msg),
+                )
+            })
+        },
+        // Module: build once into a `LazyLock`, then hand every caller a clone.
+        // The cached `Err` cannot be moved out, so the error path synthesizes a
+        // fresh `Setup` failure carrying the original's rendered text.
+        FixtureScope::Module => quote! {
+            #impl_fn
+            static __TB_FIXTURE_CELL: ::std::sync::LazyLock<#return_ty> =
+                ::std::sync::LazyLock::new(__tb_fixture_impl);
+            match &*__TB_FIXTURE_CELL {
+                ::core::result::Result::Ok(__tb_value) => {
+                    ::core::result::Result::Ok(::core::clone::Clone::clone(__tb_value))
+                }
+                ::core::result::Result::Err(__tb_error) => {
+                    ::core::result::Result::Err(
+                        ::test_better::TestError::with_message(
+                            ::test_better::TestError::new(
+                                ::test_better::ErrorKind::Setup,
+                            ),
+                            ::std::format!(
+                                "module-scoped fixture `{}` failed during setup: {}",
+                                #fn_name_str,
+                                __tb_error,
+                            ),
+                        ),
+                    )
+                }
+            }
+        },
+    };
+
+    Ok(quote! {
+        #(#forwarded)*
+        #vis fn #fn_name() #ret {
+            #outer_body
+        }
+    })
+}
+
+/// Marks a `fn() -> TestResult<T>` as a fixture: a reusable piece of test setup
+/// whose failures surface as `ErrorKind::Setup`, never as assertion misses.
+///
+/// A fixture is consumed by [`macro@test_with_fixtures`]: a test parameter
+/// `name: T` is filled by the same-named fixture `fn name()`.
+///
+/// By default a fixture is per-test (`#[fixture]` or `#[fixture(scope =
+/// "test")]`): the body runs afresh for every test, and the value is moved
+/// straight out, so `T` need not be `Clone`. With `#[fixture(scope = "module")]`
+/// the body runs once and every test gets a clone of the cached value, so `T`
+/// must be `Clone + Send + Sync + 'static`.
+///
+/// ```ignore
+/// use test_better::prelude::*;
+///
+/// #[fixture]
+/// fn answer() -> TestResult<i32> {
+///     Ok(42)
+/// }
+///
+/// #[test_with_fixtures]
+/// fn uses_the_answer(answer: i32) -> TestResult {
+///     expect!(answer).to(eq(42))
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn fixture(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let args = match syn::parse::<FixtureArgs>(attr) {
+        Ok(args) => args,
+        Err(error) => return error.to_compile_error().into(),
+    };
+    let func = match syn::parse::<ItemFn>(item) {
+        Ok(func) => func,
+        Err(error) => return error.to_compile_error().into(),
+    };
+    match fixture_impl(args, func) {
+        Ok(tokens) => tokens.into(),
+        Err(error) => error.to_compile_error().into(),
+    }
+}
+
+/// Rewrites a parameterized test into a zero-argument `#[test]` that resolves
+/// each parameter from its fixture before calling the original body.
+fn test_with_fixtures_impl(mut func: ItemFn) -> syn::Result<TokenStream2> {
+    let mut params = Vec::with_capacity(func.sig.inputs.len());
+    for input in &func.sig.inputs {
+        match input {
+            FnArg::Receiver(receiver) => {
+                return Err(syn::Error::new_spanned(
+                    receiver,
+                    "a `#[test_with_fixtures]` function cannot take `self`",
+                ));
+            }
+            FnArg::Typed(pat_type) => match &*pat_type.pat {
+                Pat::Ident(pat_ident) => params.push(pat_ident.ident.clone()),
+                other => {
+                    return Err(syn::Error::new_spanned(
+                        other,
+                        "each `#[test_with_fixtures]` parameter must be a plain \
+                         `name: Type`, where `name` is the fixture function",
+                    ));
+                }
+            },
+        }
+    }
+
+    // Everything on the function (`#[ignore]`, doc comments, ...) is forwarded
+    // onto the generated `#[test]`.
+    let forwarded: Vec<syn::Attribute> = std::mem::take(&mut func.attrs);
+    let fn_name = func.sig.ident.clone();
+    let vis = func.vis.clone();
+    let ret = func.sig.output.clone();
+
+    // The original function, renamed, becomes a nested helper the generated
+    // test calls once every fixture has been resolved.
+    let mut inner = func;
+    inner.sig.ident = format_ident!("__tb_inner");
+    inner.vis = syn::Visibility::Inherited;
+
+    Ok(quote! {
+        #(#forwarded)*
+        #[test]
+        #vis fn #fn_name() #ret {
+            #inner
+            #( let #params = #params()?; )*
+            __tb_inner(#(#params),*)
+        }
+    })
+}
+
+/// Turns a test whose parameters are fixtures into a runnable `#[test]`.
+///
+/// Each parameter `name: T` is resolved by calling the same-named [`macro@fixture`]
+/// function `fn name() -> TestResult<T>` and `?`-propagating its result, so a
+/// fixture failure aborts the test as an `ErrorKind::Setup` error before the
+/// body runs. The parameters are resolved left to right.
+///
+/// Because the resolved fixtures are `?`-propagated, the test must return a
+/// type that `?` accepts, the usual `-> TestResult` shape.
+///
+/// ```ignore
+/// use test_better::prelude::*;
+///
+/// #[fixture]
+/// fn name() -> TestResult<String> {
+///     Ok(String::from("alice"))
+/// }
+///
+/// #[test_with_fixtures]
+/// fn greets_by_name(name: String) -> TestResult {
+///     expect!(name.as_str()).to(eq("alice"))
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn test_with_fixtures(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let func = match syn::parse::<ItemFn>(item) {
+        Ok(func) => func,
+        Err(error) => return error.to_compile_error().into(),
+    };
+    match test_with_fixtures_impl(func) {
         Ok(tokens) => tokens.into(),
         Err(error) => error.to_compile_error().into(),
     }

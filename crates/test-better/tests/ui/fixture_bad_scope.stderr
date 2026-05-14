@@ -1,0 +1,5 @@
+error: unknown fixture scope "global", expected "test" or "module"
+ --> tests/ui/fixture_bad_scope.rs:4:19
+  |
+4 | #[fixture(scope = "global")]
+  |                   ^^^^^^^^

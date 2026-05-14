@@ -190,6 +190,18 @@ impl TestError {
         self
     }
 
+    /// Overrides the [`kind`](Self::kind), consuming and returning `self`.
+    ///
+    /// This is how a failure is re-categorized after the fact: the `#[fixture]`
+    /// macro (Phase 8) uses it to turn whatever a fixture body produced into an
+    /// [`ErrorKind::Setup`] failure, so a setup problem never masquerades as an
+    /// assertion miss.
+    #[must_use]
+    pub fn with_kind(mut self, kind: ErrorKind) -> Self {
+        self.kind = kind;
+        self
+    }
+
     /// Overrides the [`location`](Self::location), consuming and returning
     /// `self`.
     ///

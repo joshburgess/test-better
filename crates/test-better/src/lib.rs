@@ -17,7 +17,9 @@ pub use test_better_core::{
     StructuredContextFrame, StructuredError, StructuredPayload, TestError, TestResult, Trace,
     TraceEntry, color_choice, set_color_choice,
 };
-pub use test_better_macros::{matches_struct, matches_tuple, matches_variant, test_case};
+pub use test_better_macros::{
+    fixture, matches_struct, matches_tuple, matches_variant, test_case, test_with_fixtures,
+};
 // The property-testing bridge (Phase 6). `Config` is renamed `PropertyConfig`
 // here: at the facade root, where one crate's surface meets eight others, a
 // bare `Config` says too little.
@@ -74,9 +76,12 @@ pub mod cookbook;
 /// `define_matcher` appear below with `pub use crate::...;`; later phases add
 /// their `#[macro_export]` macros the same way.
 ///
-/// Procedural macros (`matches_struct!`, `matches_tuple!`, `matches_variant!`)
-/// are different: they are ordinary items of `test-better-macros`, so a plain
-/// `pub use` re-exports them and they need no special treatment.
+/// Procedural macros (`matches_struct!`, `matches_tuple!`, `matches_variant!`,
+/// and the `#[fixture]` / `#[test_with_fixtures]` attribute pair) are different:
+/// they are ordinary items of `test-better-macros`, so a plain `pub use`
+/// re-exports them and they need no special treatment. `#[fixture]` and
+/// `#[test_with_fixtures]` are in the prelude (unlike `#[test_case]`, they do
+/// not collide with anything in `std`'s prelude).
 ///
 /// The one exception is `#[test_case]`: it lives at the facade root
 /// (`test_better::test_case`) but is kept *out* of the prelude, because `std`'s
@@ -98,7 +103,9 @@ pub mod prelude {
     // frameworks one), and two glob imports of the same name are ambiguous at
     // the use site. It is available as `test_better::test_case`; import it
     // explicitly.
-    pub use test_better_macros::{matches_struct, matches_tuple, matches_variant};
+    pub use test_better_macros::{
+        fixture, matches_struct, matches_tuple, matches_variant, test_with_fixtures,
+    };
 
     pub use crate::{define_matcher, expect, property};
 }

@@ -1,0 +1,5 @@
+error: a `#[fixture]` function takes no parameters
+ --> tests/ui/fixture_with_params.rs:6:7
+  |
+6 | fn db(_url: &str) -> Result<i32, ()> {
+  |       ^^^^^^^^^^

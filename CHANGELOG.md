@@ -313,6 +313,20 @@ versioned in lockstep until 1.0.
   (Iteration 8.2).
 - `test-better`: the facade crate re-exports `Trace` and `TraceEntry` at its
   root (Iteration 8.2).
+- `test-better-macros`: the `#[fixture]` and `#[test_with_fixtures]` attribute
+  pair. `#[fixture]` turns a `fn() -> TestResult<T>` into a fixture whose
+  failures are re-categorized as `ErrorKind::Setup` (with a context frame naming
+  the fixture), so a setup problem never reads as an assertion miss. Fixtures
+  are per-test by default; `#[fixture(scope = "module")]` runs the body once via
+  a `LazyLock` and hands every test a clone (`T: Clone + Send + Sync + 'static`).
+  `#[test_with_fixtures]` rewrites a parameterized test into a zero-argument
+  `#[test]` that resolves each parameter `name: T` by calling the same-named
+  fixture `fn name()` and `?`-propagating it, left to right (Iteration 8.3).
+- `test-better-core`: `TestError::with_kind`, which overrides an error's kind,
+  consuming and returning `self`. The `#[fixture]` macro uses it to re-stamp a
+  fixture failure as `ErrorKind::Setup` (Iteration 8.3).
+- `test-better`: the facade crate re-exports `fixture` and `test_with_fixtures`
+  at its root and, unlike `test_case`, in the prelude (Iteration 8.3).
 
 ### Notes
 
@@ -561,3 +575,16 @@ versioned in lockstep until 1.0.
   source break for any code that built them with an exhaustive struct literal;
   inside the workspace only the internal `TestError::at` did, and it was
   updated.
+- The `#[fixture]` system (Iteration 8.3) is two cooperating attribute macros
+  rather than the single `#[fixture]` sketched in PROJECT_BUILD_PLAN.md §13: a
+  `#[test_with_fixtures]` is needed because a plain `#[test]` cannot take
+  parameters, so the parameter-to-fixture wiring needs its own attribute. Both
+  go in the prelude (they collide with nothing in `std`, unlike `#[test_case]`).
+  The convention is name-based: a parameter `db: Db` is filled by `fn db()`, so
+  the fixture function name *is* the dependency name. Per-test scope moves the
+  value straight out, so `T` need not be `Clone`; module scope caches in a
+  `LazyLock` and clones, and because a cached `Err` cannot be moved out, the
+  module-scope error path synthesizes a fresh `Setup` error carrying the
+  original's rendered text rather than the original `TestError` itself. Fixture
+  compile-fail behavior (a `#[fixture]` with parameters, an unknown `scope`) is
+  pinned by `trybuild` tests in `crates/test-better/tests/ui/`.
