@@ -31,10 +31,23 @@
 //! [`GroupedReport`]: structured failures bucketed by their top
 //! [`ContextFrame`](test_better::ContextFrame) message, plus a flat list of
 //! unstructured ones. [`run`] prints that report after the wrapped build exits.
+//!
+//! # Progress and summary (Phase 9.3)
+//!
+//! [`scan_output`] also reads libtest's own `test result:` lines into a
+//! [`RunSummary`] (passed/failed/ignored counts, summed across every test
+//! binary), which [`run`] prints as a one-line summary table once the build
+//! exits, alongside the wall-clock duration it measured itself.
+//!
+//! While the build runs, [`run`] keeps a live progress counter. It is gated
+//! on stderr being a TTY: on a terminal the per-test `... ok` lines are
+//! replaced by an updating `running: done/total` line on stderr; piped or
+//! redirected, the output is the plain `cargo test` stream, unchanged.
 
 use std::ffi::{OsStr, OsString};
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, IsTerminal, Write};
 use std::process::{Command, Stdio};
+use std::time::{Duration, Instant};
 
 use test_better::StructuredError;
 pub use test_better::{RUNNER_ENV, STRUCTURED_MARKER};
@@ -76,12 +89,15 @@ where
 }
 
 /// Runs the wrapped `cargo test` to completion and returns the exit code to
-/// propagate, after printing the grouped failure report.
+/// propagate, after printing the grouped failure report and the run summary.
 ///
 /// Stdout is piped so the runner can pick out the structured-error marker
 /// lines; every other line is teed straight through, so the wrapped build
 /// still looks like an ordinary `cargo test` run. Stderr is inherited
-/// untouched. The report is printed once the child has exited.
+/// untouched. While the build runs, a live progress counter is shown on stderr
+/// when stderr is a TTY (and the per-test `... ok` lines are then folded into
+/// it instead of being teed). The grouped report and summary table are printed
+/// once the child has exited.
 ///
 /// A process ended by a signal reports no exit code; that maps to `101`, the
 /// code cargo itself uses for an abnormally terminated test binary, so the
@@ -98,21 +114,37 @@ where
 {
     let mut command = cargo_test_command(args);
     command.stdout(Stdio::piped());
+
+    let started = Instant::now();
     let mut child = command.spawn()?;
 
-    // Drain the child's stdout while it runs: scan for marker lines and tee
-    // everything else to our own stdout. `take` leaves `None` behind, so the
-    // borrow ends before `wait`.
+    // Drain the child's stdout while it runs: scan for marker lines, drive the
+    // live progress counter, and tee everything else to our own stdout. `take`
+    // leaves `None` behind, so the borrow ends before `wait`.
     let report = match child.stdout.take() {
         Some(stdout) => {
             let lines = BufReader::new(stdout).lines().map_while(Result::ok);
-            scan_output(lines, |line| println!("{line}"))
+            let mut progress = Progress::new(std::io::stderr().is_terminal());
+            let report = scan_output(lines, |line| {
+                let event = progress_event(line);
+                // On a TTY the per-test `... ok` lines are the progress
+                // counter's job; everywhere else they are teed as usual.
+                if !(progress.enabled && matches!(event, Some(ProgressEvent::Completed))) {
+                    println!("{line}");
+                }
+                if let Some(event) = event {
+                    progress.observe(event);
+                }
+            });
+            progress.clear();
+            report
         }
         None => GroupedReport::default(),
     };
 
     let status = child.wait()?;
     print_report(&report);
+    print_summary(&report.summary, started.elapsed());
     Ok(status.code().unwrap_or(101))
 }
 
@@ -135,8 +167,26 @@ pub struct ContextGroup {
     pub failures: Vec<StructuredFailure>,
 }
 
+/// The pass/fail/ignored tallies of a wrapped `cargo test` run, summed across
+/// every test binary (libtest prints one `test result:` line per binary, and
+/// [`scan_output`] adds them up).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct RunSummary {
+    /// Tests that passed.
+    pub passed: usize,
+    /// Tests that failed.
+    pub failed: usize,
+    /// Tests skipped with `#[ignore]` or filtered out by name.
+    pub ignored: usize,
+    /// Benchmarks measured (libtest's `measured` count; zero for `cargo test`).
+    pub measured: usize,
+    /// Tests excluded by a name filter (`cargo test <filter>`).
+    pub filtered_out: usize,
+}
+
 /// The result of scanning a wrapped `cargo test` run: structured failures
-/// bucketed by feature area, plus the unstructured ones left ungrouped.
+/// bucketed by feature area, the unstructured ones left ungrouped, and the
+/// run's pass/fail/ignored summary.
 #[derive(Debug, Clone, Default)]
 pub struct GroupedReport {
     /// Structured failures, grouped by their top context frame.
@@ -144,6 +194,8 @@ pub struct GroupedReport {
     /// Names of failing tests that emitted no structured payload (a plain
     /// `panic!`, or non-`test-better` code). Shown ungrouped, never parsed.
     pub unstructured: Vec<String>,
+    /// The pass/fail/ignored tallies, summed across every test binary.
+    pub summary: RunSummary,
 }
 
 /// Scans a wrapped `cargo test`'s stdout, line by line, into a [`GroupedReport`].
@@ -156,7 +208,8 @@ pub struct GroupedReport {
 /// The scan is a small state machine over libtest's failure-replay format. A
 /// `---- <name> stdout ----` header starts a test section; a marker line seen
 /// inside one attaches a structured error to that test. Any test that opened a
-/// section but emitted no parseable marker is recorded as unstructured.
+/// section but emitted no parseable marker is recorded as unstructured. Each
+/// `test result:` line is parsed and its counts added into the summary.
 pub fn scan_output<L, E>(lines: L, mut echo: E) -> GroupedReport
 where
     L: IntoIterator<Item = String>,
@@ -166,6 +219,7 @@ where
     let mut structured: Vec<StructuredFailure> = Vec::new();
     let mut sectioned: Vec<String> = Vec::new();
     let mut with_marker: Vec<String> = Vec::new();
+    let mut summary = RunSummary::default();
 
     for line in lines {
         if let Some(payload) = marker_payload(&line) {
@@ -188,6 +242,13 @@ where
                 sectioned.push(name.to_string());
             }
         }
+        if let Some(line_summary) = parse_result_line(&line) {
+            summary.passed += line_summary.passed;
+            summary.failed += line_summary.failed;
+            summary.ignored += line_summary.ignored;
+            summary.measured += line_summary.measured;
+            summary.filtered_out += line_summary.filtered_out;
+        }
         echo(&line);
     }
 
@@ -198,6 +259,7 @@ where
     GroupedReport {
         groups: group(structured),
         unstructured,
+        summary,
     }
 }
 
@@ -239,6 +301,128 @@ fn test_section_header(line: &str) -> Option<&str> {
     line.strip_prefix("---- ")?.strip_suffix(" stdout ----")
 }
 
+/// The count `segment` reports for `label`, if it ends with that label.
+///
+/// libtest's `test result:` line is a `;`-separated list of segments like
+/// `5 passed` or `0 filtered out`; the count is the last whitespace-delimited
+/// token before the label.
+fn segment_count(segment: &str, label: &str) -> Option<usize> {
+    segment
+        .trim()
+        .strip_suffix(label)?
+        .trim_end()
+        .rsplit(' ')
+        .next()
+        .and_then(|count| count.parse().ok())
+}
+
+/// If `line` is a libtest `test result:` summary line, parses its
+/// passed/failed/ignored/measured/filtered tallies into a [`RunSummary`].
+///
+/// libtest prints one such line per test binary; [`scan_output`] sums them.
+fn parse_result_line(line: &str) -> Option<RunSummary> {
+    let line = line.trim();
+    if !line.starts_with("test result:") {
+        return None;
+    }
+    let mut summary = RunSummary::default();
+    let mut matched = false;
+    for segment in line.split(';') {
+        if let Some(count) = segment_count(segment, "passed") {
+            summary.passed = count;
+            matched = true;
+        } else if let Some(count) = segment_count(segment, "failed") {
+            summary.failed = count;
+            matched = true;
+        } else if let Some(count) = segment_count(segment, "ignored") {
+            summary.ignored = count;
+            matched = true;
+        } else if let Some(count) = segment_count(segment, "measured") {
+            summary.measured = count;
+            matched = true;
+        } else if let Some(count) = segment_count(segment, "filtered out") {
+            summary.filtered_out = count;
+            matched = true;
+        }
+    }
+    matched.then_some(summary)
+}
+
+/// A step in the wrapped run's progress, recovered from one line of libtest
+/// output by [`progress_event`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ProgressEvent {
+    /// A `running N tests` line: `N` more tests are about to run.
+    Discovered(usize),
+    /// A `test <name> ... <outcome>` line: one more test has finished.
+    Completed,
+}
+
+/// Classifies one line of libtest output as a [`ProgressEvent`], or `None` if
+/// it is neither a test-count announcement nor a per-test outcome line.
+#[must_use]
+pub fn progress_event(line: &str) -> Option<ProgressEvent> {
+    let line = line.trim();
+    if let Some(rest) = line.strip_prefix("running ") {
+        // `running 5 tests` / `running 1 test`.
+        let count = rest.split(' ').next()?.parse().ok()?;
+        return Some(ProgressEvent::Discovered(count));
+    }
+    // `test <name> ... ok` / `... FAILED` / `... ignored`. The `test result:`
+    // summary line also starts with `test `, so it is excluded explicitly.
+    if line.starts_with("test ") && !line.starts_with("test result:") && line.contains(" ... ") {
+        return Some(ProgressEvent::Completed);
+    }
+    None
+}
+
+/// A live `running: done/total` counter, shown on stderr while the wrapped
+/// build runs. Disabled (every method a no-op) when stderr is not a TTY.
+struct Progress {
+    /// Whether the counter renders; false when stderr is not a terminal.
+    enabled: bool,
+    /// Tests announced by `running N tests` lines so far.
+    total: usize,
+    /// Tests finished so far.
+    done: usize,
+}
+
+impl Progress {
+    /// Creates a counter, rendering only when `enabled`.
+    fn new(enabled: bool) -> Self {
+        Self {
+            enabled,
+            total: 0,
+            done: 0,
+        }
+    }
+
+    /// Folds one [`ProgressEvent`] into the counter and repaints it.
+    fn observe(&mut self, event: ProgressEvent) {
+        match event {
+            ProgressEvent::Discovered(count) => self.total += count,
+            ProgressEvent::Completed => self.done += 1,
+        }
+        if self.enabled {
+            // `\r` returns to the line start; the trailing spaces overwrite a
+            // previously longer count. Errors writing the bar are ignored: it
+            // is cosmetic, and the real output goes to stdout regardless.
+            let mut stderr = std::io::stderr();
+            let _ = write!(stderr, "\r  running: {}/{} tests   ", self.done, self.total);
+            let _ = stderr.flush();
+        }
+    }
+
+    /// Erases the counter line, so the final report starts on a clean line.
+    fn clear(&self) {
+        if self.enabled {
+            let mut stderr = std::io::stderr();
+            let _ = write!(stderr, "\r\u{1b}[K");
+            let _ = stderr.flush();
+        }
+    }
+}
+
 /// Prints the grouped failure report to stdout, after the wrapped build's own
 /// output. Nothing is printed when there were no failures at all.
 fn print_report(report: &GroupedReport) {
@@ -272,6 +456,19 @@ fn print_report(report: &GroupedReport) {
             println!("    {test}");
         }
     }
+}
+
+/// Prints the one-line run summary table to stdout, after the grouped report:
+/// the pass/fail/ignored tallies and the wall-clock `duration` the runner
+/// measured around the wrapped build.
+fn print_summary(summary: &RunSummary, duration: Duration) {
+    println!();
+    println!("test-better: summary");
+    println!(
+        "  {} passed, {} failed, {} ignored",
+        summary.passed, summary.failed, summary.ignored,
+    );
+    println!("  finished in {:.2}s", duration.as_secs_f64());
 }
 
 #[cfg(test)]
@@ -428,5 +625,63 @@ mod tests {
 
         expect!(report.groups.len()).to(eq(1))?;
         expect!(report.groups[0].context.as_str()).to(eq(NO_CONTEXT))
+    }
+
+    #[test]
+    fn parses_a_test_result_line_into_a_summary() -> TestResult {
+        let summary = parse_result_line(
+            "test result: FAILED. 5 passed; 2 failed; 1 ignored; 0 measured; 3 filtered out; \
+             finished in 0.42s",
+        )
+        .or_fail_with("the line is a test result line")?;
+        expect!(summary).to(eq(RunSummary {
+            passed: 5,
+            failed: 2,
+            ignored: 1,
+            measured: 0,
+            filtered_out: 3,
+        }))
+    }
+
+    #[test]
+    fn a_non_result_line_is_not_a_summary() -> TestResult {
+        expect!(parse_result_line("running 3 tests").is_none()).to(is_true())?;
+        expect!(parse_result_line("test math::adds ... ok").is_none()).to(is_true())
+    }
+
+    #[test]
+    fn scan_output_sums_the_summary_across_test_binaries() -> TestResult {
+        let lines = vec![
+            "test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; \
+             finished in 0.01s"
+                .to_string(),
+            "test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; \
+             finished in 0.02s"
+                .to_string(),
+        ];
+
+        let report = scan_output(lines, |_| {});
+
+        expect!(report.summary).to(eq(RunSummary {
+            passed: 4,
+            failed: 2,
+            ignored: 1,
+            measured: 0,
+            filtered_out: 0,
+        }))
+    }
+
+    #[test]
+    fn classifies_progress_events() -> TestResult {
+        expect!(progress_event("running 5 tests")).to(eq(Some(ProgressEvent::Discovered(5))))?;
+        expect!(progress_event("running 1 test")).to(eq(Some(ProgressEvent::Discovered(1))))?;
+        expect!(progress_event("test math::adds ... ok")).to(eq(Some(ProgressEvent::Completed)))?;
+        expect!(progress_event("test math::divides ... FAILED"))
+            .to(eq(Some(ProgressEvent::Completed)))?;
+        expect!(progress_event("test math::slow ... ignored"))
+            .to(eq(Some(ProgressEvent::Completed)))?;
+        // The `test result:` summary line is not a per-test outcome.
+        expect!(progress_event("test result: ok. 1 passed; 0 failed")).to(eq(None))?;
+        expect!(progress_event("some other line")).to(eq(None))
     }
 }

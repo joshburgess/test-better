@@ -349,6 +349,12 @@ versioned in lockstep until 1.0.
   non-`test-better` code) is listed ungrouped and labelled "unstructured",
   never parsed. New public surface: `scan_output`, `GroupedReport`,
   `ContextGroup`, `StructuredFailure` (Iteration 9.2).
+- `test-better-runner`: `run` now prints a one-line summary table after the
+  wrapped build (passed/failed/ignored counts, plus the wall-clock duration the
+  runner measures itself), and shows a live `running: done/total` counter on
+  stderr while the build runs, gated on stderr being a TTY. New public surface:
+  `RunSummary`, `ProgressEvent`, `progress_event`, and a `summary` field on
+  `GroupedReport` (Iteration 9.3).
 
 ### Notes
 
@@ -633,3 +639,15 @@ versioned in lockstep until 1.0.
   end-to-end acceptance is pinned by a third fixture workspace,
   `structured-failures`, which depends on `test-better-core` (built with
   `serde`) and fails in two context areas plus one plain `panic!`.
+- Iteration 9.3's summary counts are read from libtest's own `test result:`
+  lines, not from the structured channel: passing and ignored tests emit no
+  marker, so their counts have no other source. This is not a violation of the
+  "never parse rendered failure text" rule, which is about not re-parsing
+  `test-better`'s *own* renderer; the `test result:` line is libtest's stable
+  output. The run duration is measured by the runner around the child process
+  rather than summed from the per-binary `finished in` values, which would
+  double-count tests that ran in parallel. The summary-counts acceptance is
+  pinned by a fourth fixture workspace, `mixed-results` (three passing, two
+  failing, one ignored, dependency-free). The live progress counter's TTY path
+  is not covered by an automated test (it requires a pseudo-terminal); its pure
+  pieces, `progress_event` and `parse_result_line`, are unit-tested instead.

@@ -1,0 +1,18 @@
+# Fixture workspace for `test-better-runner`'s run-summary test
+# (PROJECT_BUILD_PLAN.md Iteration 9.3). The empty `[workspace]` table makes
+# this its own workspace root, keeping it out of the parent workspace.
+#
+# It has a known mix of outcomes: three passing tests, two failing, one
+# `#[ignore]`d. `cargo test-better` against it must print a summary table with
+# exactly those counts and exit non-zero. It has no dependencies, so the nested
+# `cargo test` builds in a moment.
+[workspace]
+
+[package]
+name = "mixed-results-fixture"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "src/lib.rs"
