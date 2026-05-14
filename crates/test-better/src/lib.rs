@@ -13,9 +13,9 @@
 //! is the seam that hides that split from users.
 
 pub use test_better_core::{
-    ColorChoice, ContextExt, ContextFrame, ErrorKind, OrFail, Payload, SourceLocation,
-    StructuredContextFrame, StructuredError, StructuredPayload, TestError, TestResult, Trace,
-    TraceEntry, color_choice, set_color_choice,
+    ColorChoice, ContextExt, ContextFrame, ErrorKind, OrFail, Payload, RUNNER_ENV,
+    STRUCTURED_MARKER, SourceLocation, StructuredContextFrame, StructuredError, StructuredPayload,
+    TestError, TestResult, Trace, TraceEntry, color_choice, set_color_choice,
 };
 pub use test_better_macros::{
     fixture, matches_struct, matches_tuple, matches_variant, test_case, test_with_fixtures,

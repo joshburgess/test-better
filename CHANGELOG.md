@@ -335,6 +335,20 @@ versioned in lockstep until 1.0.
   `run`, plus `RUNNER_ENV` and `STRUCTURED_MARKER`: the names of the
   environment variable and output sentinel of the structured-output channel
   the runner will consume from Phase 9.2 on (Iteration 9.1).
+- `test-better-core`: the emitting side of the structured-output channel. When
+  `RUNNER_ENV` is set in the environment (the runner sets it), `TestError`'s
+  `Debug` appends one `STRUCTURED_MARKER`-wrapped JSON line carrying the
+  `StructuredError`, after the human-readable render. `RUNNER_ENV` and
+  `STRUCTURED_MARKER` are now defined here and re-exported through the facade;
+  the JSON payload needs the `serde` feature, which now also pulls in
+  `serde_json` (Iteration 9.2).
+- `test-better-runner`: `run` now pipes the wrapped `cargo test`'s stdout,
+  tees every non-marker line through unchanged, and groups the structured
+  failures it finds by their top context frame, printing a `GroupedReport`
+  after the build exits. A failure with no marker line (a plain `panic!`, or
+  non-`test-better` code) is listed ungrouped and labelled "unstructured",
+  never parsed. New public surface: `scan_output`, `GroupedReport`,
+  `ContextGroup`, `StructuredFailure` (Iteration 9.2).
 
 ### Notes
 
@@ -607,3 +621,15 @@ versioned in lockstep until 1.0.
   `cargo test` against the has-failures fixture prints its own `FAILED` lines
   into the parent run's output; that noise is expected, and the parent suite
   still exits `0`.
+- Iteration 9.2 wired the emitting and consuming ends of that channel. As of
+  9.2 the runner no longer inherits stdout: it pipes it so the marker lines can
+  be picked out, teeing every other line through unchanged (stderr is still
+  inherited). The marker is emitted from `TestError`'s `Debug`, so it rides
+  along whenever the stock harness prints a returned `Err` (or any other
+  `{:?}` of a `TestError`) while `RUNNER_ENV` is set; an ordinary `cargo test`
+  never sets that variable, so its output is byte-for-byte unchanged. Grouping
+  uses the *top* context frame (`context[0]`, the first one attached), so a
+  test names its feature area with a single outer `.context(..)`. The
+  end-to-end acceptance is pinned by a third fixture workspace,
+  `structured-failures`, which depends on `test-better-core` (built with
+  `serde`) and fails in two context areas plus one plain `panic!`.

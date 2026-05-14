@@ -14,10 +14,14 @@ keywords.workspace = true
 name = "cargo-test-better"
 path = "src/main.rs"
 
-# The runner's own tests dogfood `expect!`/`TestResult` through the facade,
-# like every other crate in the workspace.
-[dev-dependencies]
-test-better = { workspace = true }
+[dependencies]
+# The runner consumes the structured failure form (`StructuredError`), so it
+# needs the facade built with `serde`. It also dogfoods `expect!`/`TestResult`,
+# so this single dependency covers both the runtime and the test needs.
+test-better = { workspace = true, features = ["serde"] }
+# The wire format of the structured-output channel: each marker-wrapped line is
+# one `serde_json`-encoded `StructuredError`.
+serde_json = "1.0"
 
 [lints]
 workspace = true

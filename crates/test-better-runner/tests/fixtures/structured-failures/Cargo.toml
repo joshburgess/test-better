@@ -1,0 +1,22 @@
+# Fixture workspace for `test-better-runner`'s context-grouping test
+# (PROJECT_BUILD_PLAN.md Iteration 9.2). The empty `[workspace]` table makes
+# this its own workspace root, keeping it out of the parent workspace.
+#
+# Its failing tests carry context chains in two distinct "feature areas" plus
+# one plain `panic!`, so `cargo test-better` against it must group the first
+# two and list the third as unstructured. It depends only on `test-better-core`
+# (built with `serde`, so the structured-output channel is live), which keeps
+# the nested build small and fast.
+[workspace]
+
+[package]
+name = "structured-failures-fixture"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+test-better-core = { path = "../../../../test-better-core", features = ["serde"] }

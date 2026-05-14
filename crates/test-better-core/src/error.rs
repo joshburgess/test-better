@@ -249,8 +249,15 @@ impl fmt::Debug for TestError {
     /// harness (which prints returned errors with `{:?}`) is already useful
     /// (PROJECT_BUILD_PLAN.md §6.1). Unlike `Display`, this may emit ANSI
     /// color, gated by the process-wide [`ColorChoice`](crate::ColorChoice).
+    ///
+    /// When the `cargo test-better` runner is driving the run (it sets
+    /// [`RUNNER_ENV`](crate::RUNNER_ENV)), a trailing marker line carrying the
+    /// structured failure is appended after the human-readable render, for the
+    /// runner's structured-output channel. An ordinary `cargo test` run never
+    /// sets that variable, so it never sees that line.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        crate::render::render(self, f, crate::color::color_enabled())
+        crate::render::render(self, f, crate::color::color_enabled())?;
+        crate::runner::write_structured_marker(self, f)
     }
 }
 
@@ -305,8 +312,15 @@ mod tests {
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         let error = sample_assertion();
-        expect!(format!("{error:?}"))
-            .to(eq(format!("{error}")))
+        // `Debug` also appends the structured-output marker line when the
+        // runner is driving the run (`RUNNER_ENV` set); compare only the
+        // human-readable render, which is what `Display` produces.
+        let debug = format!("{error:?}");
+        let human = debug
+            .split_once(crate::STRUCTURED_MARKER)
+            .map_or(debug.as_str(), |(before, _)| before.trim_end());
+        expect!(human)
+            .to(eq(format!("{error}").as_str()))
             .or_fail()?;
         Ok(())
     }
