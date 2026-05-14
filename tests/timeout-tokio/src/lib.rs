@@ -1,5 +1,6 @@
-//! Integration coverage for `expect!(fut).to_complete_within(..)` on the Tokio
-//! runtime (PROJECT_BUILD_PLAN.md Iteration 5.2).
+//! Integration coverage for the runtime-gated async assertions on the Tokio
+//! runtime: `expect!(fut).to_complete_within(..)` (PROJECT_BUILD_PLAN.md
+//! Iteration 5.2) and `eventually` (Iteration 5.3).
 //!
 //! This crate is excluded from the workspace so its `tokio` runtime feature is
 //! never unified with the `async-std`/`smol` crates. It is run on its own:
@@ -7,6 +8,7 @@
 
 #[cfg(test)]
 mod tests {
+    use std::cell::Cell;
     use std::time::Duration;
 
     use test_better::prelude::*;
@@ -42,6 +44,31 @@ mod tests {
         expect!(error.to_string().contains("slow")).to(is_true())?;
         // ...and the failure points at the call site, not at the `.await`.
         expect!(error.location.line()).to(eq(line))?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn eventually_stops_polling_once_the_probe_passes() -> TestResult {
+        let polls = Cell::new(0u32);
+        eventually(Duration::from_secs(5), || {
+            polls.set(polls.get() + 1);
+            let done = polls.get() >= 3;
+            async move { done }
+        })
+        .await?;
+        // The probe passed on its third call; `eventually` must return at once.
+        expect!(polls.get()).to(eq(3u32))?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn eventually_reports_elapsed_and_probe_count_on_timeout() -> TestResult {
+        let error = eventually(Duration::from_millis(30), || async { false })
+            .await
+            .expect_err("a probe that is never true must time out");
+        let rendered = error.to_string();
+        expect!(rendered.contains("was not met within")).to(is_true())?;
+        expect!(rendered.contains("probe")).to(is_true())?;
         Ok(())
     }
 }

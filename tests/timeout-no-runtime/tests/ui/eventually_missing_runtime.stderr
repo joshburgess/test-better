@@ -1,0 +1,19 @@
+error[E0277]: this async timing assertion needs a runtime, but no runtime feature is enabled
+  --> tests/ui/eventually_missing_runtime.rs:12:48
+   |
+12 |     let _ = eventually(Duration::from_secs(1), || async { true });
+   |             ----------                         ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+   |             |
+   |             required by a bound introduced by this call
+   |
+   = help: the trait `RuntimeAvailable` is not implemented for closure `{closure@$DIR/tests/ui/eventually_missing_runtime.rs:12:48: 12:50}`
+   = note: enable exactly one runtime feature on `test-better`: `tokio`, `async-std`, or `smol`
+   = note: or, for `eventually`, use the runtime-free `eventually_blocking`
+note: required by a bound in `test_better::eventually`
+  --> $WORKSPACE/crates/test-better-async/src/lib.rs
+   |
+   | pub fn eventually<F, Fut>(timeout: Duration, probe: F) -> impl Future<Output = TestResult>
+   |        ---------- required by a bound in this function
+   | where
+   |     F: FnMut() -> Fut + RuntimeAvailable,
+   |                         ^^^^^^^^^^^^^^^^ required by this bound in `eventually`

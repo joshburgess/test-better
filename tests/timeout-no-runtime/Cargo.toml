@@ -1,6 +1,6 @@
 [package]
 name = "timeout-no-runtime"
-description = "Compile-fail coverage: `to_complete_within` without a runtime feature."
+description = "Compile-fail coverage: runtime-gated async assertions without a runtime feature."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

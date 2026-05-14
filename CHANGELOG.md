@@ -194,6 +194,19 @@ versioned in lockstep until 1.0.
 - `test-better`, `test-better-matchers`: `tokio`, `async-std`, and `smol`
   features, each forwarding down to `test-better-async`'s, plus re-exports of
   `Elapsed` and `RuntimeAvailable` (Iteration 5.2).
+- `test-better-async`: `eventually` and `eventually_blocking`, the polling
+  helpers that retry a `bool`-returning probe until it passes or a `Duration`
+  deadline is reached, replacing `sleep + assert` flakiness. They sleep between
+  probes on an exponential `Backoff` schedule (configurable via the
+  `eventually_with` / `eventually_blocking_with` variants), and the failure
+  reports how long they waited and how many times they probed. `eventually` is
+  async and runtime-gated like `to_complete_within`; `eventually_blocking`
+  sleeps with `std::thread::sleep` and needs no runtime feature
+  (Iteration 5.3).
+- `test-better`, `test-better-matchers`: re-exports of `eventually`,
+  `eventually_blocking`, `eventually_with`, `eventually_blocking_with`, and
+  `Backoff`. The prelude gains the two common-path functions, `eventually` and
+  `eventually_blocking` (Iteration 5.3).
 
 ### Notes
 
@@ -286,3 +299,24 @@ versioned in lockstep until 1.0.
   `tests/timeout-no-runtime`, enables no runtime feature and so is a safe
   workspace member; its `trybuild` test confirms the missing-runtime
   diagnostic (Iteration 5.2).
+- `eventually` (Iteration 5.3) is a free function in `test-better-async`, not a
+  `Subject` method: it polls a probe closure rather than asserting on a single
+  captured value, so there is nothing for `expect!` to wrap. Its async form is
+  runtime-gated the same way as `to_complete_within` (the deferred
+  `RuntimeAvailable` bound, here on the probe closure type), since the
+  inter-probe sleep is runtime-provided; `eventually_blocking` is the
+  runtime-free escape hatch and carries no such bound. The
+  `#[diagnostic::on_unimplemented]` message on `RuntimeAvailable` was broadened
+  from naming `to_complete_within` specifically to "this async timing
+  assertion", with an extra note pointing at `eventually_blocking`. The
+  `eventually` acceptance tests live in the per-runtime crates (real runtimes
+  drive the inter-probe sleep); `eventually_blocking` is covered by inline tests
+  and a facade integration test, and `tests/timeout-no-runtime` gains a second
+  `trybuild` case for the gated `eventually` (Iteration 5.3).
+- `Backoff`'s `initial`/`ceiling`/`factor` knobs are exposed through the
+  `eventually_with` / `eventually_blocking_with` variants rather than widening
+  the two-argument signature PROJECT_BUILD_PLAN.md §10 Iteration 5.3 sketches.
+  The plain `eventually` / `eventually_blocking` use `Backoff::default` (1ms
+  initial, doubling, 100ms ceiling). Only the two default-schedule functions are
+  in the prelude; `Backoff` and the `_with` variants are imported by name, in
+  keeping with the deliberately small prelude (Iteration 5.3).

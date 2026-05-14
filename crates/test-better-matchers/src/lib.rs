@@ -27,6 +27,9 @@
 //!   awaits it and matches its output, and `to_complete_within` awaits it
 //!   under a time limit (the latter behind a runtime feature: `tokio`,
 //!   `async-std`, or `smol`);
+//! - [`eventually`] and [`eventually_blocking`], which retry a `bool` probe on
+//!   an exponential [`Backoff`] schedule until it passes or a deadline is hit,
+//!   replacing `sleep + assert` flakiness;
 //! - [`soft`] and its [`SoftAsserter`]/[`SoftScope`], which collect several
 //!   failures in one test run instead of stopping at the first, with nestable
 //!   context sub-scopes;
@@ -71,8 +74,12 @@ pub use soft::{SoftAsserter, SoftScope, soft};
 pub use strings::matches_regex;
 pub use strings::{contains_str, ends_with, starts_with};
 pub use subject::Subject;
-// Re-exported from `test-better-async` so they are nameable on the public
-// surface (both appear in `Subject::to_complete_within`'s signature).
-pub use test_better_async::{Elapsed, RuntimeAvailable};
+// Re-exported from `test-better-async`: `Elapsed` and `RuntimeAvailable` appear
+// in `Subject::to_complete_within`'s signature, and the `eventually` family is
+// the polling counterpart to the timeout assertion.
+pub use test_better_async::{
+    Backoff, Elapsed, RuntimeAvailable, eventually, eventually_blocking, eventually_blocking_with,
+    eventually_with,
+};
 // `expect!` and `define_matcher!` are `#[macro_export]`, so they already live
 // at the crate root.

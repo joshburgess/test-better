@@ -1,4 +1,4 @@
-error[E0277]: `to_complete_within` needs an async runtime, but no runtime feature is enabled
+error[E0277]: this async timing assertion needs a runtime, but no runtime feature is enabled
   --> tests/ui/missing_runtime_feature.rs:10:13
    |
 10 |     let _ = expect!(async {}).to_complete_within(Duration::from_secs(1));
@@ -8,6 +8,7 @@ error[E0277]: `to_complete_within` needs an async runtime, but no runtime featur
    |
    = help: the trait `RuntimeAvailable` is not implemented for `{async block@$DIR/tests/ui/missing_runtime_feature.rs:10:21: 10:26}`
    = note: enable exactly one runtime feature on `test-better`: `tokio`, `async-std`, or `smol`
+   = note: or, for `eventually`, use the runtime-free `eventually_blocking`
 note: required by a bound in `Subject::<T>::to_complete_within`
   --> $WORKSPACE/crates/test-better-matchers/src/subject.rs
    |
