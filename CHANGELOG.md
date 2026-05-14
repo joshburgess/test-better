@@ -149,6 +149,14 @@ versioned in lockstep until 1.0.
   companion to the `cookbook` module: a `define_matcher!` matcher, a
   hand-written `impl Matcher<T>`, and a matcher that takes an inner matcher
   (Iteration 3.8).
+- `test-better-matchers`: soft assertions, `soft` and `SoftAsserter`. `soft`
+  runs a closure in a scope where `SoftAsserter::expect` and
+  `SoftAsserter::check` *record* failures instead of returning early; on scope
+  exit `soft` returns `Ok(())` or a single `TestError` collecting every
+  recorded failure under `Payload::Multiple`, each sub-failure keeping its own
+  source location (Iteration 4.1).
+- `test-better`: the facade crate re-exports `soft` and `SoftAsserter`; the
+  prelude gains `soft` (Iteration 4.1).
 
 ### Notes
 
@@ -197,3 +205,9 @@ versioned in lockstep until 1.0.
   output names `::test_better` and a proc-macro crate's output can only name the
   consumer's direct dependencies. Compile-fail behavior is pinned by `trybuild`
   tests in `crates/test-better/tests/ui/` (Iteration 3.7).
+- `scripts/check-test-api.sh` now matches `.expect("` (the panic call followed
+  by its string-literal message) rather than a bare `.expect(`. The soft
+  assertion API (Iteration 4.1) names a method `SoftAsserter::expect`, and a
+  bare `.expect(` could not tell `s.expect(&actual, matcher)` apart from
+  `Result::expect("...")`. A non-test `.expect` with a non-literal message is
+  still denied by the workspace's `clippy::expect_used` lint (Iteration 4.1).
