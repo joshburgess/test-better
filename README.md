@@ -11,14 +11,38 @@ tests with `?` strictly better than panicking tests. It replaces `.unwrap()` and
 failure output and compose cleanly across async, property, snapshot, and
 parameterized tests.
 
+```rust
+use test_better::prelude::*;
+
+#[test]
+fn parses_a_valid_port() -> TestResult {
+    let port = parse_port("8080").or_fail_with("8080 is a valid port")?;
+    expect!(port).to(eq(8080))?;
+    expect!(port).to_not(lt(1024))?;
+    Ok(())
+}
+```
+
+A failure renders the expression that failed, the expected and actual values,
+the source location, and any context attached on the way down: no panic, no
+`assert_eq!`, no backtrace through the test harness.
+
+## Documentation
+
+- The prose guide is the **`test-better` book** under [`book/`](./book/):
+  Getting Started, Migrating from `assert!`, Writing Matchers, Async Testing,
+  Property Testing, Snapshots, Fixtures, and Recipes. Build it with
+  `mdbook build book`.
+- The API reference is the rustdoc: `cargo doc --open -p test-better`.
+
 ## Status
 
-Early development. The canonical build plan lives in
+In development. The canonical build plan lives in
 [`PROJECT_BUILD_PLAN.md`](./PROJECT_BUILD_PLAN.md): it defines the mission,
 design principles, and the phased iteration plan this repository is executed
-against.
-
-This repository is currently at **Phase 0 (Foundation & Scaffolding)**.
+against. The library surface (core, matchers, macros, async, property,
+snapshot, runner) is implemented; the project is in Phase 10, the
+documentation and release pass.
 
 ## Workspace layout
 

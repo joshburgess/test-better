@@ -365,6 +365,13 @@ versioned in lockstep until 1.0.
   returns a pure value that is a bug to discard. No items were added or
   removed; this iteration is additive attributes plus the snapshot tooling
   (Iteration 10.1).
+- Documentation: the prose guide is now an mdBook under `book/`, with an
+  Introduction and eight chapters (Getting Started, migrating from the stock
+  assertion macros, Writing Matchers, Async Testing, Property Testing,
+  Snapshots, Fixtures, and Recipes). A `book` CI job builds it with mdBook on
+  every push. `README.md` gained a usage example and a Documentation section,
+  and the facade crate's landing rustdoc was expanded with a runnable example
+  (Iteration 10.2).
 
 ### Notes
 

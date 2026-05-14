@@ -120,3 +120,13 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo install cargo-public-api --locked
       - run: ./scripts/check-public-api.sh
+
+  # PROJECT_BUILD_PLAN.md Iteration 10.2: the prose guide in `book/` must build
+  # with mdBook.
+  book:
+    name: book
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cargo install mdbook --locked
+      - run: mdbook build book

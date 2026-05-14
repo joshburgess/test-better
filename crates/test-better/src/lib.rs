@@ -1,16 +1,39 @@
-//! `test-better`: facade crate.
+//! `test-better`: `Result`-returning Rust tests with `?`.
 //!
-//! This is the crate users depend on. It re-exports the public surface of the
-//! `test-better` testing library so a test file needs a single dependency and,
-//! ideally, a single `use`:
+//! `test-better` makes a test that returns [`TestResult`] and uses `?` strictly
+//! better than a panicking one: a failure is a value that carries the
+//! expression that failed, the values involved, the source location, and the
+//! context you attached on the way down.
+//!
+//! This is the facade crate, the one users depend on. It re-exports the public
+//! surface of the workspace's focused crates (`test-better-core`,
+//! `test-better-matchers`, and so on, per PROJECT_BUILD_PLAN.md §2) so a test
+//! file needs a single dependency and, ideally, a single `use`:
 //!
 //! ```
 //! use test_better::prelude::*;
+//!
+//! fn parse_port(input: &str) -> Option<u16> {
+//!     input.parse().ok()
+//! }
+//!
+//! # fn main() -> TestResult {
+//! // `or_fail_with` is the `?`-friendly stand-in for a panicking unwrap;
+//! // `expect!` captures the expression text so a failure names `port`,
+//! // not just its value.
+//! let port = parse_port("8080").or_fail_with("8080 is a valid port")?;
+//! expect!(port).to(eq(8080))?;
+//! expect!(port).to_not(lt(1024))?;
+//! # Ok(())
+//! # }
 //! ```
 //!
-//! The workspace is split into focused crates (`test-better-core`,
-//! `test-better-matchers`, and so on, per PROJECT_BUILD_PLAN.md §2); this crate
-//! is the seam that hides that split from users.
+//! In a real test file the body above is a `#[test] fn ... -> TestResult`
+//! ending in `Ok(())`. See the [`prelude`] for the one import a test file
+//! needs, and the [`cookbook`] for writing custom matchers. The prose guide
+//! (Getting Started, migrating from the stock assertion macros, async,
+//! property, snapshot, and fixture testing) is the `test-better` book under
+//! `book/`.
 
 pub use test_better_core::{
     ColorChoice, ContextExt, ContextFrame, ErrorKind, OrFail, Payload, RUNNER_ENV,

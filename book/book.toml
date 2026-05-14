@@ -1,0 +1,11 @@
+[book]
+title = "The test-better Book"
+description = "A guide to writing Result-returning Rust tests with test-better."
+authors = ["Josh Burgess"]
+language = "en"
+src = "src"
+
+[output.html]
+default-theme = "rust"
+git-repository-url = "https://github.com/joshburgess/test-better"
+edit-url-template = "https://github.com/joshburgess/test-better/edit/main/book/{path}"
