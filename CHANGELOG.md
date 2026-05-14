@@ -47,6 +47,9 @@ versioned in lockstep until 1.0.
   result types `MatchResult` and `Mismatch`, and `Description`, the composable
   account of a matcher's expectation (`text`, `and`, `or`, `labeled`, and
   `std::ops::Not`). No public matchers yet (Iteration 2.1).
+- `test-better-matchers`: the primitive matchers `eq`, `ne`, `lt`, `le`, `gt`,
+  `ge`, `is_true`, `is_false`, and the test fixtures `always_matches` and
+  `never_matches` (Iteration 2.2).
 
 ### Notes
 
