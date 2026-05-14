@@ -15,6 +15,14 @@ test-better-core = { workspace = true }
 # The workspace pins this with `default-features = false`; this crate's own
 # `diff` feature is the single switch that turns the matcher diff renderer on.
 test-better-matchers = { workspace = true }
+# The structural matcher macros (`matches_struct!` and friends). Their
+# generated code refers back to this facade crate, so they ship through it.
+test-better-macros = { workspace = true }
+
+[dev-dependencies]
+# Drives the compile-fail tests for the structural matcher macros: a missing
+# field without `..`, an unknown field, a misplaced `..` (Iteration 3.7).
+trybuild = "1.0"
 
 [features]
 default = ["diff"]

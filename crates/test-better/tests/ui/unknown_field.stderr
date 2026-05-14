@@ -1,0 +1,11 @@
+error[E0609]: no field `z` on type `&Point`
+  --> tests/ui/unknown_field.rs:13:65
+   |
+13 |     let _ = expect!(point).to(matches_struct!(Point { x: eq(1), z: eq(0), .. }));
+   |                                                                 ^ unknown field
+   |
+help: a field with a similar name exists
+   |
+13 -     let _ = expect!(point).to(matches_struct!(Point { x: eq(1), z: eq(0), .. }));
+13 +     let _ = expect!(point).to(matches_struct!(Point { x: eq(1), x: eq(0), .. }));
+   |

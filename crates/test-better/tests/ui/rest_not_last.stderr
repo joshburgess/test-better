@@ -1,0 +1,5 @@
+error: `..` must be the final element of the pattern
+  --> tests/ui/rest_not_last.rs:13:57
+   |
+13 |     let _ = expect!(point).to(matches_struct!(Point { .., x: eq(1) }));
+   |                                                         ^

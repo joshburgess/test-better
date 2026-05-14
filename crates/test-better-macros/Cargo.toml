@@ -13,5 +13,12 @@ keywords.workspace = true
 [lib]
 proc-macro = true
 
+[dependencies]
+# `matches_struct!` and friends parse a struct/tuple/enum pattern of inner
+# matcher expressions and emit a `Matcher` impl (Iteration 3.7).
+syn = { version = "2", features = ["full"] }
+quote = "1"
+proc-macro2 = "1"
+
 [lints]
 workspace = true

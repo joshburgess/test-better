@@ -124,6 +124,18 @@ versioned in lockstep until 1.0.
   the named expectation rather than the useless `<closure>` (Iteration 3.6).
 - `test-better`: the facade crate re-exports `satisfies`; the prelude gains it
   (Iteration 3.6).
+- `test-better-macros`: the structural matcher macros `matches_struct!`,
+  `matches_tuple!`, and `matches_variant!`. Each takes a type (or `Enum::Variant`)
+  and a brace/paren list of `field: matcher` (or positional `matcher`) entries,
+  with an optional trailing `..` to ignore the rest; it expands to a `Matcher`
+  for that shape. A field's failure is wrapped in a `field:`-headed `Description`.
+  Without `..`, every field must be listed (a missing field is a compile error
+  from the generated exhaustiveness check); an unknown field and a misplaced `..`
+  are also compile errors (Iteration 3.7).
+- `test-better`: the facade crate re-exports `matches_struct!`, `matches_tuple!`,
+  and `matches_variant!`; the prelude gains them. The macros' generated code
+  refers to `::test_better`, so they are usable through the facade only
+  (Iteration 3.7).
 
 ### Notes
 
@@ -160,3 +172,15 @@ versioned in lockstep until 1.0.
   bridge a matcher result into the test's `TestResult` with a trailing
   `.or_fail()?` rather than a bare `?`. Tests in dependent crates and in
   `tests/` directories use the plain `expect!(..).to(..)?` form.
+- The structural matcher macros (Iteration 3.7) cannot name a struct's field
+  types, and an impl's generic parameters cannot be unified with concrete types
+  from a destructure. The generated code therefore uses a projection closure
+  whose `Fn(&S) -> (&F0, &F1, ...)` type pins both the subject type and the
+  field types; the closure is threaded through a generated generic constructor
+  function carrying the `Fn` bound, which forces the higher-ranked inference a
+  bare struct field would not get. This is the googletest-style projection
+  pattern, a deviation from any single-struct sketch in PROJECT_BUILD_PLAN.md §8.
+  The macros are re-exported through the `test-better` facade only, since their
+  output names `::test_better` and a proc-macro crate's output can only name the
+  consumer's direct dependencies. Compile-fail behavior is pinned by `trybuild`
+  tests in `crates/test-better/tests/ui/` (Iteration 3.7).

@@ -17,6 +17,7 @@ pub use test_better_core::{
     StructuredContextFrame, StructuredError, StructuredPayload, TestError, TestResult,
     color_choice, set_color_choice,
 };
+pub use test_better_macros::{matches_struct, matches_tuple, matches_variant};
 #[cfg(feature = "diff")]
 pub use test_better_matchers::diff_lines;
 #[cfg(feature = "regex")]
@@ -45,6 +46,10 @@ pub use test_better_matchers::{
 /// the macro is named here explicitly. That is why `expect` appears below with
 /// `pub use crate::expect;`; later phases add their `#[macro_export]` macros the
 /// same way.
+///
+/// Procedural macros (`matches_struct!`, `matches_tuple!`, `matches_variant!`)
+/// are different: they are ordinary items of `test-better-macros`, so a plain
+/// `pub use` re-exports them and they need no special treatment.
 pub mod prelude {
     pub use test_better_core::{ContextExt, OrFail, TestError, TestResult};
     #[cfg(feature = "regex")]
@@ -55,6 +60,8 @@ pub mod prelude {
         is_false, is_finite, is_nan, is_not_empty, is_true, le, lt, ne, never_matches, none, not,
         ok, satisfies, some, starts_with,
     };
+
+    pub use test_better_macros::{matches_struct, matches_tuple, matches_variant};
 
     pub use crate::expect;
 }

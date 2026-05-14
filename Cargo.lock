@@ -187,7 +187,9 @@ name = "test-better"
 version = "0.0.0"
 dependencies = [
  "test-better-core",
+ "test-better-macros",
  "test-better-matchers",
+ "trybuild",
 ]
 
 [[package]]
@@ -206,6 +208,11 @@ dependencies = [
 [[package]]
 name = "test-better-macros"
 version = "0.0.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "test-better-matchers"
