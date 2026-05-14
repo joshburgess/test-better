@@ -31,6 +31,9 @@ regex = ["dep:regex"]
 # Drives the compile-fail test that a forgotten `?` on `expect!(..)` is a
 # warning (Iteration 2.3).
 trybuild = "1.0"
+# A dependency-free `block_on`, so the async `expect!` tests and doc examples
+# can drive a future without pulling in a full runtime (Iteration 5.1).
+pollster = "0.4"
 
 [lints]
 workspace = true

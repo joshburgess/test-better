@@ -23,7 +23,8 @@
 //! - the [`define_matcher!`](crate::define_matcher) macro, the declarative
 //!   shortcut for the common custom-matcher case;
 //! - the [`expect!`](crate::expect) macro and its [`Subject`] type, the entry point for an
-//!   assertion;
+//!   assertion; when the subject is a [`Future`], the `resolves_to` method
+//!   awaits it and matches its output;
 //! - [`soft`] and its [`SoftAsserter`]/[`SoftScope`], which collect several
 //!   failures in one test run instead of stopping at the first, with nestable
 //!   context sub-scopes;

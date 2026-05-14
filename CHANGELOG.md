@@ -168,6 +168,18 @@ versioned in lockstep until 1.0.
   written to stderr and the panic is re-raised unchanged, so a panic inside a
   soft scope still fails the test as a panic rather than being swallowed
   (Iteration 4.3).
+- `test-better-matchers`: `Subject::resolves_to`, the async counterpart of
+  `to`. When the expression handed to `expect!` is a `Future`,
+  `expect!(fut).resolves_to(matcher).await?` awaits it and matches its output.
+  The method is `#[track_caller]` and returns a future (an `async fn` cannot be
+  `#[track_caller]`), so the failure location is the call site, not the await
+  point. It is runtime-agnostic: it only awaits, so it works under
+  `#[tokio::test]`, `pollster::block_on`, and any other executor
+  (Iteration 5.1).
+- `test-better-core`: `TestError::with_location`, a builder that overrides the
+  captured location. It backs the async `expect!` methods, which capture the
+  caller's location synchronously and thread it through once the awaited
+  assertion has a result (Iteration 5.1).
 
 ### Notes
 
@@ -222,3 +234,11 @@ versioned in lockstep until 1.0.
   bare `.expect(` could not tell `s.expect(&actual, matcher)` apart from
   `Result::expect("...")`. A non-test `.expect` with a non-literal message is
   still denied by the workspace's `clippy::expect_used` lint (Iteration 4.1).
+- The async `expect!` acceptance tests (Iteration 5.1) cover `pollster` and
+  `tokio` but not `async-std`, which PROJECT_BUILD_PLAN.md §10 also names.
+  `async-std` is unmaintained as of 2025; `resolves_to` only awaits the future
+  and touches no runtime API, so two unrelated executors already demonstrate
+  the runtime-agnosticism the plan asks for. A `trybuild` test
+  (`tests/ui/sync_to_on_future.rs`) locks that the sync `to` cannot be pointed
+  at a future-typed subject with an output matcher: that path must go through
+  `resolves_to` (Iteration 5.1).

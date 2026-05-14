@@ -21,8 +21,14 @@ test-better-macros = { workspace = true }
 
 [dev-dependencies]
 # Drives the compile-fail tests for the structural matcher macros: a missing
-# field without `..`, an unknown field, a misplaced `..` (Iteration 3.7).
+# field without `..`, an unknown field, a misplaced `..` (Iteration 3.7). Also
+# locks that the sync `to` is not usable on a future-typed subject (5.1).
 trybuild = "1.0"
+# Two runtimes for the async `expect!` integration tests, demonstrating that
+# `resolves_to` is runtime-agnostic: `pollster` is a dependency-free
+# `block_on`, `tokio` drives the `#[tokio::test]` path (Iteration 5.1).
+pollster = "0.4"
+tokio = { version = "1", features = ["rt", "macros", "time"] }
 
 [features]
 default = ["diff"]

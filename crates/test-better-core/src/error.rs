@@ -182,6 +182,21 @@ impl TestError {
         self
     }
 
+    /// Overrides the [`location`](Self::location), consuming and returning
+    /// `self`.
+    ///
+    /// The `#[track_caller]` constructors capture the caller's location for
+    /// themselves, so this is rarely needed. It exists for the case where the
+    /// location must be captured separately from where the error is built: an
+    /// `async fn` cannot be `#[track_caller]`, so the async `expect!` methods
+    /// capture [`Location::caller`] synchronously at the call site and thread
+    /// it through here once the awaited assertion has a result.
+    #[must_use]
+    pub fn with_location(mut self, location: &'static Location<'static>) -> Self {
+        self.location = location;
+        self
+    }
+
     /// Sets the [`payload`](Self::payload), consuming and returning `self`.
     #[must_use]
     pub fn with_payload(mut self, payload: Payload) -> Self {

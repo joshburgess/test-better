@@ -8,11 +8,19 @@
 //!
 //! # Async
 //!
-//! Phase 5 needs `expect!(some_future())` to grow `await`-based methods. The
+//! When the expression handed to `expect!` is a [`Future`], the resulting
+//! `Subject` grows an `await`-based method, [`Subject::resolves_to`]. The
 //! decision (recorded in `BACKLOG.md`) is to keep a single `Subject<T>` and add
-//! those methods to *this* impl block with method-level `where T: Future`
-//! bounds and distinct names: a blanket `impl<T> Subject<T>` and an overlapping
+//! that method to *this* impl block with a method-level `where T: Future`
+//! bound and a distinct name: a blanket `impl<T> Subject<T>` and an overlapping
 //! `impl<F: Future> Subject<F>` cannot coexist as inherent impls.
+//!
+//! `resolves_to` is runtime-agnostic: it just awaits the future, so it works
+//! under `#[tokio::test]`, `#[async_std::test]`, `pollster::block_on`, or any
+//! other executor. (Runtime-specific timing methods arrive in Phase 5.2.)
+
+use std::future::Future;
+use std::panic::Location;
 
 use test_better_core::{ErrorKind, Payload, TestError, TestResult};
 
@@ -66,6 +74,48 @@ impl<T> Subject<T> {
             Err(unexpected_match_error(self.expr, matcher.description()))
         } else {
             Ok(())
+        }
+    }
+
+    /// Awaits the future and asserts that its output satisfies `matcher`.
+    ///
+    /// This is the async counterpart of [`to`](Self::to): reach for it when
+    /// the expression handed to [`expect!`](crate::expect) is a [`Future`].
+    /// The matcher runs against the future's *output*, so
+    /// `expect!(fut).resolves_to(eq(4))` is exactly `expect!(fut.await).to(eq(4))`
+    /// without the intermediate binding.
+    ///
+    /// The method itself is *not* `async`: it is `#[track_caller]` and returns
+    /// a future. The call-site location is captured synchronously when
+    /// `resolves_to` is called (an `async fn` could not be `#[track_caller]`),
+    /// then carried into the failure once the returned future is awaited.
+    ///
+    /// ```
+    /// use test_better_core::TestResult;
+    /// use test_better_matchers::{eq, expect};
+    ///
+    /// # fn main() -> TestResult {
+    /// pollster::block_on(async {
+    ///     expect!(async { 2 + 2 }).resolves_to(eq(4)).await?;
+    ///     TestResult::Ok(())
+    /// })
+    /// # }
+    /// ```
+    #[track_caller]
+    pub fn resolves_to<M>(self, matcher: M) -> impl Future<Output = TestResult>
+    where
+        T: Future,
+        M: Matcher<T::Output>,
+    {
+        // Captured here, synchronously, before the returned future is ever
+        // polled: this is the user's `expect!(..).resolves_to(..)` call site.
+        let location = Location::caller();
+        async move {
+            let output = self.actual.await;
+            match matcher.check(&output).failure {
+                None => Ok(()),
+                Some(mismatch) => Err(mismatch_error(self.expr, mismatch).with_location(location)),
+            }
         }
     }
 }
@@ -164,5 +214,40 @@ mod tests {
         let error = expect!(true).to_not(is_true()).expect_err("true is true");
         expect!(error.location.line()).to(eq(line))?;
         Ok(())
+    }
+
+    #[test]
+    fn resolves_to_returns_ok_when_the_output_matches() -> TestResult {
+        pollster::block_on(async {
+            let result = expect!(async { 2 + 2 }).resolves_to(eq(4)).await;
+            expect!(result.is_ok()).to(is_true())
+        })
+    }
+
+    #[test]
+    fn resolves_to_failure_mentions_the_expression_and_the_output() -> TestResult {
+        pollster::block_on(async {
+            let error = expect!(async { 2 + 2 })
+                .resolves_to(eq(5))
+                .await
+                .expect_err("2 + 2 does not resolve to 5");
+            let rendered = error.to_string();
+            expect!(rendered.contains("async { 2 + 2 }")).to(is_true())?;
+            expect!(rendered.contains("equal to 5")).to(is_true())?;
+            expect!(rendered.contains("actual: 4")).to(is_true())
+        })
+    }
+
+    #[test]
+    fn resolves_to_failure_captures_the_call_site_not_the_await() -> TestResult {
+        // The location is captured where `resolves_to` is *called*, even
+        // though the future is awaited on a later line.
+        pollster::block_on(async {
+            let line = line!() + 1;
+            let pending = expect!(async { 2 + 2 }).resolves_to(eq(5));
+            let error = pending.await.expect_err("2 + 2 does not resolve to 5");
+            expect!(error.location.line()).to(eq(line))?;
+            expect!(error.location.file().ends_with("subject.rs")).to(is_true())
+        })
     }
 }
