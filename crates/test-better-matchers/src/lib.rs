@@ -9,6 +9,8 @@
 //!   [`is_true`], [`is_false`], and the test fixtures [`always_matches`] and
 //!   [`never_matches`];
 //! - the logical combinators [`not`], [`all_of`], and [`any_of`];
+//! - the [`Option`]/[`Result`] matchers [`some`], [`none`], [`ok`], and
+//!   [`err`];
 //! - the [`expect!`](crate::expect) macro and its [`Subject`] type, the entry point for an
 //!   assertion;
 //! - the line-oriented [`diff_lines`] renderer, behind the default `diff`
@@ -23,6 +25,7 @@ mod description;
 mod diff;
 mod fixtures;
 mod matcher;
+mod option_result;
 mod primitives;
 mod subject;
 
@@ -32,6 +35,7 @@ pub use description::Description;
 pub use diff::diff_lines;
 pub use fixtures::{always_matches, never_matches};
 pub use matcher::{MatchResult, Matcher, Mismatch};
+pub use option_result::{err, none, ok, some};
 pub use primitives::{eq, ge, gt, is_false, is_true, le, lt, ne};
 pub use subject::Subject;
 // `expect!` is `#[macro_export]`, so it already lives at the crate root.

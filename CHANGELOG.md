@@ -83,6 +83,13 @@ versioned in lockstep until 1.0.
 - `test-better`: the facade crate re-exports the logical combinators (`not`,
   `all_of`, `any_of`, `MatcherTuple`); the prelude gains `not`, `all_of`, and
   `any_of` (Iteration 3.1).
+- `test-better-matchers`: the `Option`/`Result` matchers `some`, `none`, `ok`,
+  and `err`. `some`, `ok`, and `err` take an inner matcher and apply it to the
+  wrapped value, so they nest (`some(ok(eq(42)))`); a nested failure wraps each
+  layer's expectation in a `label:`-headed `Description`, rendering aligned,
+  indented `some:`/`ok:` blocks (Iteration 3.2).
+- `test-better`: the facade crate re-exports the `Option`/`Result` matchers
+  (`some`, `none`, `ok`, `err`); the prelude gains them too (Iteration 3.2).
 
 ### Notes
 
