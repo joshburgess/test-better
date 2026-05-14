@@ -25,8 +25,10 @@ quickcheck = { version = "1", default-features = false, optional = true }
 
 [dev-dependencies]
 # Dogfooding: the crate's own tests assert with `expect!`. A dev-dependency
-# cycle, which Cargo permits (same pattern as `test-better-core`).
-test-better-matchers = { workspace = true }
+# cycle, which Cargo permits (same pattern as `test-better-core`). Declared
+# path-only so Cargo drops it from the published manifest and the cycle does
+# not block `cargo publish`.
+test-better-matchers = { path = "../test-better-matchers", default-features = false }
 
 [features]
 # The `quickcheck` bridge: `arbitrary::<T>()` turns a `quickcheck::Arbitrary`

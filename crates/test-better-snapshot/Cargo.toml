@@ -33,9 +33,13 @@ required-features = ["accept"]
 [dev-dependencies]
 # Dogfooding: this crate's own tests assert with `expect!`. `test-better-matchers`
 # depends on `test-better-snapshot`, so this is a dev-dependency cycle, which
-# Cargo permits (the same arrangement as `test-better-async`).
-test-better-core = { workspace = true }
-test-better-matchers = { workspace = true }
+# Cargo permits (the same arrangement as `test-better-async`). Both are declared
+# path-only so Cargo drops them from the published manifest and the cycle does
+# not block `cargo publish`. `test-better-core` is not itself a cycle, but is
+# kept path-only for consistency (it is published before this crate, so a
+# versioned entry would also be valid).
+test-better-core = { path = "../test-better-core" }
+test-better-matchers = { path = "../test-better-matchers", default-features = false }
 
 [lints]
 workspace = true

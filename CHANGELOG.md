@@ -11,6 +11,18 @@ versioned in lockstep until 1.0.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-05-14
+
+The first stable release. `test-better` makes a `Result`-returning test that
+uses `?` strictly better than a panicking one: a failure is a value carrying
+the expression that failed, the values involved, the source location, and the
+context attached on the way down. This release covers the full surface: the
+core error and result types, the `Matcher` trait with the standard matcher
+library and `expect!`, the structural and parameterized macros, async and
+timing helpers, the property-testing bridge, snapshot testing, and the
+optional `cargo-test-better` runner. The public API of every crate is captured
+as a committed snapshot, and the prose guide is the `test-better` book.
+
 ### Added
 
 - Phase 0 scaffolding: workspace with eight member crates, pinned toolchain
@@ -708,3 +720,6 @@ versioned in lockstep until 1.0.
   the iteration count is kept modest (10M/loop) to stay fast in the suite. The
   measured ratios are machine-dependent; the chapter and CHANGELOG state the
   order-of-magnitude bound, not a fixed number.
+
+[Unreleased]: https://github.com/joshburgess/test-better/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/joshburgess/test-better/releases/tag/v1.0.0

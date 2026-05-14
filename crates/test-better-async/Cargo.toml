@@ -34,8 +34,10 @@ smol = ["dep:smol"]
 pollster = "0.4"
 # Dogfooding: the crate's own tests assert with `expect!`. This is a
 # dev-dependency cycle (`test-better-matchers` depends on `test-better-async`),
-# which Cargo permits, mirroring the `test-better-core` arrangement.
-test-better-matchers = { workspace = true }
+# which Cargo permits, mirroring the `test-better-core` arrangement. Declared
+# path-only so Cargo drops it from the published manifest and the cycle does
+# not block `cargo publish`.
+test-better-matchers = { path = "../test-better-matchers", default-features = false }
 
 [lints]
 workspace = true
