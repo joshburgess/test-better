@@ -116,7 +116,11 @@ pub struct TestError {
     /// The context chain, outermost first.
     pub context: Vec<ContextFrame>,
     /// Structured detail, when applicable.
-    pub payload: Option<Payload>,
+    ///
+    /// Boxed so `TestError` stays small: it is returned by value through every
+    /// `?` in a test, and [`Payload::ExpectedActual`] would otherwise inline
+    /// three `String`s into the struct.
+    pub payload: Option<Box<Payload>>,
 }
 
 impl TestError {
@@ -181,7 +185,7 @@ impl TestError {
     /// Sets the [`payload`](Self::payload), consuming and returning `self`.
     #[must_use]
     pub fn with_payload(mut self, payload: Payload) -> Self {
-        self.payload = Some(payload);
+        self.payload = Some(Box::new(payload));
         self
     }
 
@@ -216,7 +220,7 @@ impl fmt::Debug for TestError {
 
 impl std::error::Error for TestError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match &self.payload {
+        match self.payload.as_deref() {
             Some(Payload::Other(inner)) => Some(inner.as_ref()),
             _ => None,
         }
@@ -326,7 +330,7 @@ mod tests {
         let error = TestError::from_expected_actual(4, 5);
         assert_eq!(error.kind, ErrorKind::Assertion);
         assert_eq!(error.location.line(), line);
-        match error.payload {
+        match error.payload.map(|payload| *payload) {
             Some(Payload::ExpectedActual {
                 expected,
                 actual,

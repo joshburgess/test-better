@@ -28,6 +28,11 @@ versioned in lockstep until 1.0.
 - `test-better-core`: `TestError` convenience constructors `assertion`,
   `custom`, and `from_expected_actual`, each `#[track_caller]` so the captured
   location is the caller's (Iteration 1.2).
+- `test-better-core`: `ContextExt`, implemented for `Result<T, E>` and
+  `Option<T>`, with `context` and `with_context` (the latter computes its
+  message only on the failure path). Both are `#[track_caller]`. A `Result`
+  whose error already is a `TestError` is not double-wrapped: the context
+  frame is pushed onto it directly (Iteration 1.3).
 
 ### Notes
 
@@ -38,3 +43,7 @@ versioned in lockstep until 1.0.
 - `clippy.toml` gained `allow-panic-in-tests = true`, completing the
   "allowed in tests" intent of PROJECT_BUILD_PLAN.md §3 (Phase 0 set only the
   unwrap/expect equivalents).
+- `TestError::payload` is `Option<Box<Payload>>` rather than `Option<Payload>`.
+  `TestError` is returned by value through every `?`, so it is kept small; the
+  large `Payload::ExpectedActual` variant lives behind the box. The public
+  `Payload` enum and `with_payload` signature are unchanged (Iteration 1.3).

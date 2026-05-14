@@ -139,7 +139,7 @@ impl TestError {
                     location: frame.location.map(SourceLocation::from_std),
                 })
                 .collect(),
-            payload: self.payload.as_ref().map(StructuredPayload::from_payload),
+            payload: self.payload.as_deref().map(StructuredPayload::from_payload),
         }
     }
 }

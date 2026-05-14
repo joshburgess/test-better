@@ -24,7 +24,7 @@ pub(crate) fn render(error: &TestError, f: &mut fmt::Formatter<'_>) -> fmt::Resu
         writeln!(f, "  while {}", frame.message)?;
     }
 
-    if let Some(payload) = &error.payload {
+    if let Some(payload) = error.payload.as_deref() {
         render_payload(payload, f)?;
     }
 
