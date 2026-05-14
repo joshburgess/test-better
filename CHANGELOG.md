@@ -112,6 +112,13 @@ versioned in lockstep until 1.0.
   `regex` feature forwarding to `test-better-matchers/regex`; the prelude gains
   the string matchers (`matches_regex` only when `regex` is enabled)
   (Iteration 3.4).
+- `test-better-matchers`: the numeric matchers `close_to`, `between`,
+  `is_nan`, and `is_finite`, generic over a sealed `Float` trait implemented
+  for `f32` and `f64`. `close_to`'s failure shows the tolerance and the actual
+  difference; `NaN` is correctly not close to, between, or equal to anything
+  (Iteration 3.5).
+- `test-better`: the facade crate re-exports the numeric matchers and the
+  `Float` trait; the prelude gains the matchers (Iteration 3.5).
 
 ### Notes
 

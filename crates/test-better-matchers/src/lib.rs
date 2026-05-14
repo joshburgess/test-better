@@ -16,6 +16,8 @@
 //!   [`at_least_one`], generic over the [`Sequence`] trait;
 //! - the string matchers [`contains_str`], [`starts_with`], [`ends_with`], and
 //!   (behind the `regex` feature) `matches_regex`;
+//! - the numeric matchers [`close_to`], [`between`], [`is_nan`], and
+//!   [`is_finite`], generic over the sealed [`Float`] trait;
 //! - the [`expect!`](crate::expect) macro and its [`Subject`] type, the entry point for an
 //!   assertion;
 //! - the line-oriented [`diff_lines`] renderer, behind the default `diff`
@@ -31,6 +33,7 @@ mod description;
 mod diff;
 mod fixtures;
 mod matcher;
+mod numeric;
 mod option_result;
 mod primitives;
 mod strings;
@@ -46,6 +49,7 @@ pub use description::Description;
 pub use diff::diff_lines;
 pub use fixtures::{always_matches, never_matches};
 pub use matcher::{MatchResult, Matcher, Mismatch};
+pub use numeric::{Float, between, close_to, is_finite, is_nan};
 pub use option_result::{err, none, ok, some};
 pub use primitives::{eq, ge, gt, is_false, is_true, le, lt, ne};
 #[cfg(feature = "regex")]
