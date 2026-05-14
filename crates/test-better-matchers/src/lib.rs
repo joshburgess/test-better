@@ -24,8 +24,9 @@
 //!   shortcut for the common custom-matcher case;
 //! - the [`expect!`](crate::expect) macro and its [`Subject`] type, the entry point for an
 //!   assertion;
-//! - [`soft`] and its [`SoftAsserter`], which collect several failures in one
-//!   test run instead of stopping at the first;
+//! - [`soft`] and its [`SoftAsserter`]/[`SoftScope`], which collect several
+//!   failures in one test run instead of stopping at the first, with nestable
+//!   context sub-scopes;
 //! - the line-oriented [`diff_lines`] renderer, behind the default `diff`
 //!   feature.
 //!
@@ -62,7 +63,7 @@ pub use numeric::{Float, between, close_to, is_finite, is_nan};
 pub use option_result::{err, none, ok, some};
 pub use primitives::{eq, ge, gt, is_false, is_true, le, lt, ne};
 pub use satisfies::satisfies;
-pub use soft::{SoftAsserter, soft};
+pub use soft::{SoftAsserter, SoftScope, soft};
 #[cfg(feature = "regex")]
 pub use strings::matches_regex;
 pub use strings::{contains_str, ends_with, starts_with};

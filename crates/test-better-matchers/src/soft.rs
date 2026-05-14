@@ -1,12 +1,18 @@
-//! Soft assertions: [`soft`] and [`SoftAsserter`].
+//! Soft assertions: [`soft`], [`SoftAsserter`], and [`SoftScope`].
 //!
 //! A normal assertion returns its `TestError` through `?`, so the first failure
 //! ends the test. [`soft`] opens a scope in which assertions are *recorded*
 //! rather than propagated; when the scope closes, every recorded failure is
 //! reported together under a single [`Payload::Multiple`], each sub-failure
 //! keeping its own location (PROJECT_BUILD_PLAN.md §9, Iteration 4.1).
+//!
+//! [`SoftAsserter::context`] opens a sub-scope: failures recorded through the
+//! returned [`SoftScope`] carry an extra context frame, and nested sub-scopes
+//! stack their frames outermost-first (Iteration 4.2).
 
-use test_better_core::{ErrorKind, Payload, TestError, TestResult};
+use std::borrow::Cow;
+
+use test_better_core::{ContextFrame, ErrorKind, Payload, TestError, TestResult};
 
 use crate::matcher::Matcher;
 
@@ -47,6 +53,10 @@ where
 #[derive(Default)]
 pub struct SoftAsserter {
     errors: Vec<TestError>,
+    /// The context frames currently in effect, outermost first. Pushed by
+    /// [`SoftAsserter::context`] and popped when the returned [`SoftScope`] is
+    /// dropped.
+    context: Vec<ContextFrame>,
 }
 
 impl SoftAsserter {
@@ -69,14 +79,13 @@ impl SoftAsserter {
         M: Matcher<T>,
     {
         if let Some(mismatch) = matcher.check(actual).failure {
-            self.errors
-                .push(
-                    TestError::new(ErrorKind::Assertion).with_payload(Payload::ExpectedActual {
-                        expected: mismatch.expected.to_string(),
-                        actual: mismatch.actual,
-                        diff: mismatch.diff,
-                    }),
-                );
+            self.record(TestError::new(ErrorKind::Assertion).with_payload(
+                Payload::ExpectedActual {
+                    expected: mismatch.expected.to_string(),
+                    actual: mismatch.actual,
+                    diff: mismatch.diff,
+                },
+            ));
         }
     }
 
@@ -85,8 +94,30 @@ impl SoftAsserter {
     #[track_caller]
     pub fn check(&mut self, result: TestResult) {
         if let Err(error) = result {
-            self.errors.push(error);
+            self.record(error);
         }
+    }
+
+    /// Opens a context sub-scope. Failures recorded through the returned
+    /// [`SoftScope`] carry `message` as a context frame; the frame is removed
+    /// when the `SoftScope` is dropped. Sub-scopes nest: a `SoftScope` can open
+    /// further sub-scopes, and their frames stack outermost-first.
+    #[track_caller]
+    pub fn context(&mut self, message: impl Into<Cow<'static, str>>) -> SoftScope<'_> {
+        self.context.push(ContextFrame::new(message));
+        SoftScope { asserter: self }
+    }
+
+    /// Collects a failure, wrapping it in the context frames currently in
+    /// effect. The scope frames are the *outer* circumstance, so they precede
+    /// the error's own frames, which `TestError` already orders outermost-first.
+    fn record(&mut self, mut error: TestError) {
+        if !self.context.is_empty() {
+            let mut frames = self.context.clone();
+            frames.append(&mut error.context);
+            error.context = frames;
+        }
+        self.errors.push(error);
     }
 
     /// Consumes the recorder, folding the collected failures into one result:
@@ -109,12 +140,58 @@ impl SoftAsserter {
     }
 }
 
+/// A context sub-scope of a [`SoftAsserter`], returned by
+/// [`SoftAsserter::context`].
+///
+/// Recording through a `SoftScope` behaves exactly like recording through the
+/// underlying [`SoftAsserter`], except every recorded failure also carries the
+/// scope's context frame (and the frames of any enclosing scopes). Dropping the
+/// `SoftScope` removes its frame, so the context applies only to failures
+/// recorded *while the scope is alive*.
+pub struct SoftScope<'a> {
+    asserter: &'a mut SoftAsserter,
+}
+
+impl SoftScope<'_> {
+    /// Records whether `actual` satisfies `matcher`, attaching this scope's
+    /// context to a miss. See [`SoftAsserter::expect`].
+    #[track_caller]
+    pub fn expect<T, M>(&mut self, actual: &T, matcher: M)
+    where
+        T: ?Sized,
+        M: Matcher<T>,
+    {
+        self.asserter.expect(actual, matcher);
+    }
+
+    /// Records the result of a fallible step, attaching this scope's context to
+    /// an `Err`. See [`SoftAsserter::check`].
+    #[track_caller]
+    pub fn check(&mut self, result: TestResult) {
+        self.asserter.check(result);
+    }
+
+    /// Opens a nested context sub-scope. Its frame stacks *under* this scope's,
+    /// so failures recorded through it carry both. See
+    /// [`SoftAsserter::context`].
+    #[track_caller]
+    pub fn context(&mut self, message: impl Into<Cow<'static, str>>) -> SoftScope<'_> {
+        self.asserter.context(message)
+    }
+}
+
+impl Drop for SoftScope<'_> {
+    fn drop(&mut self) {
+        self.asserter.context.pop();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use test_better_core::{Payload, TestError, TestResult};
 
     use super::*;
-    use crate::{eq, expect, is_true};
+    use crate::{contains_str, eq, expect, is_true};
 
     #[test]
     fn soft_with_no_failures_returns_ok() -> TestResult {
@@ -173,6 +250,84 @@ mod tests {
         match error.payload.as_deref() {
             Some(Payload::Multiple(errors)) => {
                 expect!(errors[0].location.line()).to(eq(recorded_line))?;
+            }
+            _ => return Err(TestError::assertion("expected a Multiple payload")),
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn context_scope_attaches_a_frame_to_recorded_failures() -> TestResult {
+        let result = soft(|s| {
+            let mut scope = s.context("while validating the user");
+            scope.expect(&1, eq(2));
+        });
+        let error = result.expect_err("one soft assertion failed");
+        match error.payload.as_deref() {
+            Some(Payload::Multiple(errors)) => {
+                let frames: Vec<&str> = errors[0]
+                    .context
+                    .iter()
+                    .map(|frame| frame.message.as_ref())
+                    .collect();
+                expect!(frames).to(eq(vec!["while validating the user"]))?;
+            }
+            _ => return Err(TestError::assertion("expected a Multiple payload")),
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn context_scope_ends_when_the_scope_is_dropped() -> TestResult {
+        let result = soft(|s| {
+            {
+                let mut scope = s.context("inside the scope");
+                scope.expect(&1, eq(2));
+            }
+            // The scope has been dropped; this failure carries no context.
+            s.expect(&3, eq(4));
+        });
+        let error = result.expect_err("two soft assertions failed");
+        match error.payload.as_deref() {
+            Some(Payload::Multiple(errors)) => {
+                expect!(errors[0].context.len()).to(eq(1usize))?;
+                expect!(errors[1].context.len()).to(eq(0usize))?;
+            }
+            _ => return Err(TestError::assertion("expected a Multiple payload")),
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn nested_context_scopes_stack_outermost_first() -> TestResult {
+        let result = soft(|s| {
+            let mut outer = s.context("while validating the user");
+            outer.expect(&1, eq(2));
+            let mut inner = outer.context("while checking the email");
+            inner.expect(&"bad", contains_str("@"));
+        });
+        let error = result.expect_err("two soft assertions failed");
+        let rendered = error.to_string();
+        expect!(rendered.contains("while validating the user")).to(is_true())?;
+        expect!(rendered.contains("while checking the email")).to(is_true())?;
+
+        match error.payload.as_deref() {
+            Some(Payload::Multiple(errors)) => {
+                let outer_frames: Vec<&str> = errors[0]
+                    .context
+                    .iter()
+                    .map(|frame| frame.message.as_ref())
+                    .collect();
+                let inner_frames: Vec<&str> = errors[1]
+                    .context
+                    .iter()
+                    .map(|frame| frame.message.as_ref())
+                    .collect();
+                expect!(outer_frames).to(eq(vec!["while validating the user"]))?;
+                expect!(inner_frames).to(eq(vec![
+                    "while validating the user",
+                    "while checking the email",
+                ]))?;
             }
             _ => return Err(TestError::assertion("expected a Multiple payload")),
         }

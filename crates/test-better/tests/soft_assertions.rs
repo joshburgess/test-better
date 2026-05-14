@@ -49,3 +49,20 @@ fn soft_scope_collects_propagated_errors_via_check() -> TestResult {
     expect!(error.to_string().contains("1 failure")).to(is_true())?;
     Ok(())
 }
+
+#[test]
+fn soft_scope_nested_context_renders_for_each_failure() -> TestResult {
+    let result = soft(|s| {
+        let mut user = s.context("while validating the user");
+        user.expect(&1, eq(2));
+        let mut email = user.context("while checking the email");
+        email.expect(&"bad", contains_str("@"));
+    });
+    let error = result.expect_err("two soft assertions failed");
+    let rendered = error.to_string();
+
+    // The outer frame appears for both failures; the inner only for the second.
+    expect!(rendered.matches("while validating the user").count()).to(eq(2usize))?;
+    expect!(rendered.matches("while checking the email").count()).to(eq(1usize))?;
+    Ok(())
+}

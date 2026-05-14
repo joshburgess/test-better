@@ -157,6 +157,12 @@ versioned in lockstep until 1.0.
   source location (Iteration 4.1).
 - `test-better`: the facade crate re-exports `soft` and `SoftAsserter`; the
   prelude gains `soft` (Iteration 4.1).
+- `test-better-matchers`: `SoftAsserter::context` and the `SoftScope` it
+  returns. `context` opens a sub-scope whose `expect`/`check` attach an extra
+  context frame to every recorded failure; the frame is removed when the
+  `SoftScope` is dropped, and nested sub-scopes stack their frames
+  outermost-first (Iteration 4.2).
+- `test-better`: the facade crate re-exports `SoftScope` (Iteration 4.2).
 
 ### Notes
 
