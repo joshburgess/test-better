@@ -32,7 +32,7 @@ pub mod quickcheck_bridge;
 mod strategy;
 
 pub use check::{Config, PropertyFailure, check, check_with};
-pub use property::run_property;
+pub use property::{render_failure, run_property};
 #[cfg(feature = "quickcheck")]
 pub use quickcheck_bridge::{ArbitraryStrategy, QuickcheckTree, arbitrary};
 pub use strategy::{GenError, ProptestTree, Runner, Strategy, ValueTree, any};

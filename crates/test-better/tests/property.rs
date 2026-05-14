@@ -66,6 +66,7 @@ fn property_macro_failure_names_the_shrunk_input_and_keeps_the_matcher_descripti
     .err()
     .or_fail_with("values at or above 500 exist in 0..1000")?;
     let rendered = error.to_string();
-    expect!(rendered.contains("shrunk to 500")).to(is_true())?;
+    expect!(rendered.contains("the shrunk (minimal) input is 500")).to(is_true())?;
+    expect!(rendered.contains("the original failing input was")).to(is_true())?;
     expect!(rendered.contains("less than 500")).to(is_true())
 }

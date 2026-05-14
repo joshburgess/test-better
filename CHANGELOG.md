@@ -239,6 +239,13 @@ versioned in lockstep until 1.0.
   as a `TestError`. It expands to an expression, so `property!(...)` is the body
   of an ordinary `#[test]` function. The facade re-exports `property!` and
   `any`, and the prelude gains `property!` (Iteration 6.2).
+- `test-better-property`: a failing property now renders the original failing
+  input, the shrunk minimal input, and the matcher's own structured
+  description. `render_failure` keeps the matcher failure whole and wraps three
+  context frames (the case count, the original input, the shrunk input) around
+  it, promoting the kind to `ErrorKind::Property`. A golden-file test
+  (`tests/shrink_output.rs`, with the golden under `tests/golden/`) pins the
+  exact output (Iteration 6.3).
 
 ### Notes
 
@@ -384,12 +391,19 @@ versioned in lockstep until 1.0.
   shrunk-failure output without touching the macro. The strategy-inference
   branch requires the binding type to be `proptest::arbitrary::Arbitrary`; the
   `using` clause sidesteps that for any seam `Strategy`.
-- The shrunk-failure rendering `property!` produces in Iteration 6.2 is
-  deliberately basic: the matcher's own failure is kept whole, with a context
-  frame naming the case count and the shrunk input wrapped around it, and the
-  kind promoted to `ErrorKind::Property`. Iteration 6.3 owns the polished layout
-  (the original input alongside the shrunk one, a golden-file test); the macro
-  and `run_property` do not change then.
+- The shrunk-failure rendering `property!` produces is built from `TestError`
+  context frames rather than a new `Payload` variant: the matcher's own failure
+  is kept whole (its `message` and `ExpectedActual` payload carry the structured
+  description), and the property metadata (case count, original input, shrunk
+  input) is added as three context frames around it. A dedicated
+  `Payload::Property` would have meant boxing the matcher failure inside it,
+  since a `TestError` has one payload slot and the matcher's is already
+  `ExpectedActual`; the structured form of a property failure is the typed
+  `PropertyFailure<T>` that `check` returns, not a payload variant. The
+  golden-file test (Iteration 6.3) pins the rendered output; it builds the
+  `PropertyFailure` by hand so the golden file is deterministic and not coupled
+  to the backend's RNG, and normalizes the environment-specific `  at` line.
+  Regenerate it with `BLESS_GOLDEN=1`.
 - The `quickcheck` bridge (Iteration 6.1c) ships at documented reduced fidelity
   rather than being deferred, which PROJECT_BUILD_PLAN.md §11 6.1c lists as an
   acceptable outcome. Two limitations are inherent to `quickcheck`'s model, not

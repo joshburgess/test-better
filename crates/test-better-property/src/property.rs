@@ -6,10 +6,11 @@
 //! property, and turns a [`PropertyFailure`](crate::PropertyFailure) into a
 //! [`TestError`] so the call site is an ordinary `?`-returning expression.
 //!
-//! The shrunk-failure *rendering* this module produces is deliberately basic:
-//! the case count and the shrunk input, wrapped around the matcher's own
-//! failure. Iteration 6.3 enriches it (the original input, a polished layout,
-//! a golden-file test); the macro and [`run_property`] do not change then.
+//! The shrunk-failure *rendering* lives in [`render_failure`]: the matcher's
+//! own failure is kept whole, and context frames naming the case count, the
+//! original failing input, and the shrunk minimal input are wrapped around it
+//! (Iteration 6.3). A golden-file test (`tests/shrink_output.rs`) pins the
+//! exact output.
 
 use std::fmt::Debug;
 
@@ -32,29 +33,41 @@ where
 {
     match check(strategy, property) {
         Ok(()) => Ok(()),
-        Err(failure) => Err(render(failure)),
+        Err(failure) => Err(render_failure(failure)),
     }
 }
 
-/// Turns the structured [`PropertyFailure`] into a [`TestError`].
+/// Turns the structured [`PropertyFailure`] into a rendered [`TestError`].
 ///
-/// The matcher's own failure is kept whole (that is the "full matcher
-/// description" Iteration 6.2 calls for); a context frame describing the
-/// shrunk counterexample and the case count is wrapped around it, and the kind
-/// is promoted to [`ErrorKind::Property`] so the failure reads as a property
-/// failure, not a bare assertion.
-fn render<T: Debug>(failure: PropertyFailure<T>) -> TestError {
+/// The matcher's own failure is kept whole: its message and payload (the
+/// "structured `Description`" Iteration 6.3 calls for) are left untouched.
+/// Three context frames are wrapped around it, outermost-first: the property
+/// summary and case count, the original failing input, and the shrunk minimal
+/// input. The kind is promoted to [`ErrorKind::Property`] so the failure reads
+/// as a property failure, not a bare assertion.
+///
+/// `#[doc(hidden)]` plumbing: [`run_property`] (and so [`property!`]) call it,
+/// and the golden-file test pins its output. Callers wanting the structured
+/// failure use [`check`] and read [`PropertyFailure`] directly.
+#[doc(hidden)]
+pub fn render_failure<T: Debug>(failure: PropertyFailure<T>) -> TestError {
     let PropertyFailure {
+        original,
         shrunk,
         failure,
         cases,
-        ..
     } = failure;
     let plural = if cases == 1 { "" } else { "s" };
     let mut error = failure;
     error.kind = ErrorKind::Property;
     error.push_context(ContextFrame::new(format!(
-        "property failed after {cases} generated case{plural}; shrunk to {shrunk:?}"
+        "checking a property; it failed after {cases} generated case{plural}"
+    )));
+    error.push_context(ContextFrame::new(format!(
+        "the original failing input was {original:?}"
+    )));
+    error.push_context(ContextFrame::new(format!(
+        "the shrunk (minimal) input is {shrunk:?}"
     )));
     error
 }
@@ -136,8 +149,8 @@ mod tests {
     #[test]
     fn a_failing_property_renders_a_property_kind_error_naming_the_shrunk_input() -> TestResult {
         // "every u32 is below 100" is false; the macro must surface a
-        // `Property`-kind failure that names the shrunk counterexample and
-        // still carries the matcher's own description.
+        // `Property`-kind failure that names the original and shrunk
+        // counterexamples and still carries the matcher's own description.
         let error = property!(|n: u32| {
             expect!(n).to(lt(100u32))
         } using proptest::num::u32::ANY)
@@ -145,7 +158,9 @@ mod tests {
         .or_fail_with("a property false for most u32 must fail")?;
         let rendered = error.to_string();
         // The shrunk counterexample (proptest shrinks to exactly 100) is named.
-        expect!(rendered.contains("shrunk to 100")).to(is_true())?;
+        expect!(rendered.contains("the shrunk (minimal) input is 100")).to(is_true())?;
+        // The original failing input is named too.
+        expect!(rendered.contains("the original failing input was")).to(is_true())?;
         // The matcher's full description survives.
         expect!(rendered.contains("less than 100")).to(is_true())?;
         // And the failure reads as a property failure.

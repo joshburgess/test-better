@@ -1,0 +1,7 @@
+property failed: expect!(n)
+  while checking a property; it failed after 47 generated cases
+  while the original failing input was 3000000000
+  while the shrunk (minimal) input is 100
+  expected: less than 100
+    actual: 100
+  at <location>
