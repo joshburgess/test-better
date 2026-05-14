@@ -9,4 +9,5 @@
 - [Property Testing](./property-testing.md)
 - [Snapshots](./snapshots.md)
 - [Fixtures](./fixtures.md)
+- [Performance](./performance.md)
 - [Recipes](./recipes.md)

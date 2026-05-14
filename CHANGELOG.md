@@ -378,6 +378,12 @@ versioned in lockstep until 1.0.
   (transition functions and `matches_variant!`), `property-roundtrip` (a
   `property!` roundtrip with an inferred strategy), and `snapshot-html`
   (inline-snapshotting a small HTML renderer) (Iteration 10.3).
+- Benchmarks: `crates/test-better/benches/expect_overhead.rs`, a
+  `harness = false` benchmark that times `expect!` against the stock assert
+  macros on a hot loop. For a passing primitive matcher, `expect!` stays within
+  an order of magnitude of `assert_eq!` (a single-digit-nanosecond per-call
+  cost). The book gains a "Performance" chapter writing up the result
+  (Iteration 10.4).
 
 ### Notes
 
@@ -694,3 +700,11 @@ versioned in lockstep until 1.0.
   only runs `[[example]]` targets. A member crate gives each example its own
   `Cargo.toml`, dependency set, and a real test suite a reader can run with
   `cargo test -p <name>-example`.
+- Iteration 10.4's benchmark is `harness = false`: a plain `fn main` timed with
+  `std::time::Instant`, not a `criterion` (or other framework) bench. This
+  keeps the dependency tree empty of a benchmark framework (PROJECT_BUILD_PLAN.md
+  §3 defers `criterion` interop to a later release) and lets the bench build and
+  run on stable. A side effect is that `cargo test` runs the bench's `main`, so
+  the iteration count is kept modest (10M/loop) to stay fast in the suite. The
+  measured ratios are machine-dependent; the chapter and CHANGELOG state the
+  order-of-magnitude bound, not a fixed number.

@@ -37,6 +37,13 @@ trybuild = "1.0"
 pollster = "0.4"
 tokio = { version = "1", features = ["rt", "macros", "time"] }
 
+# `expect!` overhead versus the stock assert macros (Iteration 10.4). A
+# `harness = false` benchmark: an ordinary `fn main` timed with `Instant`, so
+# it needs no benchmark framework and adds nothing to the dependency tree.
+[[bench]]
+name = "expect_overhead"
+harness = false
+
 [features]
 default = ["diff"]
 # Forwards `test-better-matchers`'s `diff` feature: a line-oriented diff for
