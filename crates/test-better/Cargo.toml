@@ -10,5 +10,14 @@ authors.workspace = true
 categories.workspace = true
 keywords.workspace = true
 
+[dependencies]
+test-better-core = { workspace = true }
+
+[features]
+default = []
+# Forwards `test-better-core`'s `serde` feature: derives serde on the
+# structured-failure types (see that crate for details).
+serde = ["test-better-core/serde"]
+
 [lints]
 workspace = true

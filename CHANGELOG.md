@@ -38,6 +38,11 @@ versioned in lockstep until 1.0.
   `or_fail_with`. `or_fail` on `None` names the expected type; on `Err` it
   preserves the underlying error chain. All methods are `#[track_caller]`
   (Iteration 1.4).
+- `test-better`: the facade crate now re-exports the public surface of
+  `test-better-core` and exposes a `prelude` module, so a test file needs one
+  dependency and one `use test_better::prelude::*;`. A `serde` feature forwards
+  to `test-better-core`'s. The prelude documents the macro re-export pattern
+  Phase 2 will slot into (Iteration 1.5).
 
 ### Notes
 
