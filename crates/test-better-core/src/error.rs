@@ -140,6 +140,37 @@ impl TestError {
         Self::at(kind, Location::caller())
     }
 
+    /// Creates an [`ErrorKind::Assertion`] error with the given message.
+    ///
+    /// This is the common path for a hand-written failure: `return
+    /// Err(TestError::assertion("..."))`.
+    #[track_caller]
+    #[must_use]
+    pub fn assertion(message: impl Into<Cow<'static, str>>) -> Self {
+        Self::at(ErrorKind::Assertion, Location::caller()).with_message(message)
+    }
+
+    /// Creates an [`ErrorKind::Custom`] error with the given message, for a
+    /// failure that does not fit a more specific kind.
+    #[track_caller]
+    #[must_use]
+    pub fn custom(message: impl Into<Cow<'static, str>>) -> Self {
+        Self::at(ErrorKind::Custom, Location::caller()).with_message(message)
+    }
+
+    /// Creates an [`ErrorKind::Assertion`] error from a mismatched
+    /// expected/actual pair, capturing each value's `Debug` representation into
+    /// a [`Payload::ExpectedActual`].
+    #[track_caller]
+    #[must_use]
+    pub fn from_expected_actual(expected: impl fmt::Debug, actual: impl fmt::Debug) -> Self {
+        Self::at(ErrorKind::Assertion, Location::caller()).with_payload(Payload::ExpectedActual {
+            expected: format!("{expected:?}"),
+            actual: format!("{actual:?}"),
+            diff: None,
+        })
+    }
+
     /// Sets the [`message`](Self::message), consuming and returning `self`.
     #[must_use]
     pub fn with_message(mut self, message: impl Into<Cow<'static, str>>) -> Self {
@@ -267,5 +298,45 @@ mod tests {
         let rendered = error.to_string();
         assert!(rendered.contains("first"), "{rendered}");
         assert!(rendered.contains("second"), "{rendered}");
+    }
+
+    #[test]
+    fn assertion_constructor_sets_kind_message_and_caller_location() {
+        let line = line!() + 1;
+        let error = TestError::assertion("values differ");
+        assert_eq!(error.kind, ErrorKind::Assertion);
+        assert_eq!(error.message.as_deref(), Some("values differ"));
+        assert_eq!(error.location.line(), line);
+        assert!(error.location.file().ends_with("error.rs"));
+    }
+
+    #[test]
+    fn custom_constructor_sets_kind_message_and_caller_location() {
+        let line = line!() + 1;
+        let error = TestError::custom("something off");
+        assert_eq!(error.kind, ErrorKind::Custom);
+        assert_eq!(error.message.as_deref(), Some("something off"));
+        assert_eq!(error.location.line(), line);
+        assert!(error.location.file().ends_with("error.rs"));
+    }
+
+    #[test]
+    fn from_expected_actual_captures_debug_values_and_caller_location() {
+        let line = line!() + 1;
+        let error = TestError::from_expected_actual(4, 5);
+        assert_eq!(error.kind, ErrorKind::Assertion);
+        assert_eq!(error.location.line(), line);
+        match error.payload {
+            Some(Payload::ExpectedActual {
+                expected,
+                actual,
+                diff,
+            }) => {
+                assert_eq!(expected, "4");
+                assert_eq!(actual, "5");
+                assert!(diff.is_none());
+            }
+            other => panic!("expected ExpectedActual, got {other:?}"),
+        }
     }
 }

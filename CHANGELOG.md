@@ -23,6 +23,11 @@ versioned in lockstep until 1.0.
   `StructuredContextFrame`, `StructuredPayload`) and `TestError::to_structured`,
   the owned/serializable form tooling consumes. An optional `serde` feature
   derives `Serialize`/`Deserialize` on the structured types (Iteration 1.1).
+- `test-better-core`: `TestResult<T = ()>`, the `?`-friendly result alias
+  returned by tests and helpers (Iteration 1.2).
+- `test-better-core`: `TestError` convenience constructors `assertion`,
+  `custom`, and `from_expected_actual`, each `#[track_caller]` so the captured
+  location is the caller's (Iteration 1.2).
 
 ### Notes
 
