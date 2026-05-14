@@ -163,6 +163,11 @@ versioned in lockstep until 1.0.
   `SoftScope` is dropped, and nested sub-scopes stack their frames
   outermost-first (Iteration 4.2).
 - `test-better`: the facade crate re-exports `SoftScope` (Iteration 4.2).
+- `test-better-matchers`: `soft` is now panic-safe. The closure runs under
+  `catch_unwind`; if it panics, any failures recorded before the panic are
+  written to stderr and the panic is re-raised unchanged, so a panic inside a
+  soft scope still fails the test as a panic rather than being swallowed
+  (Iteration 4.3).
 
 ### Notes
 

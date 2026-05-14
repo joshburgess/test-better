@@ -51,6 +51,27 @@ fn soft_scope_collects_propagated_errors_via_check() -> TestResult {
 }
 
 #[test]
+fn a_panic_inside_soft_is_re_raised_after_recording_failures() -> TestResult {
+    // The closure records a soft failure, then panics for an unrelated reason.
+    // `soft` runs it under `catch_unwind`, so the panic is re-raised here
+    // rather than swallowed — this nested `catch_unwind` catches it.
+    let outcome = std::panic::catch_unwind(|| {
+        soft(|s| {
+            s.expect(&1, eq(2));
+            panic!("unrelated explosion");
+        })
+    });
+
+    let panic = outcome.expect_err("the panic must propagate out of soft");
+    let message = panic
+        .downcast_ref::<&str>()
+        .copied()
+        .or_else(|| panic.downcast_ref::<String>().map(String::as_str));
+    expect!(message).to(eq(Some("unrelated explosion")))?;
+    Ok(())
+}
+
+#[test]
 fn soft_scope_nested_context_renders_for_each_failure() -> TestResult {
     let result = soft(|s| {
         let mut user = s.context("while validating the user");

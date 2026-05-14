@@ -9,6 +9,12 @@
 //! [`SoftAsserter::context`] opens a sub-scope: failures recorded through the
 //! returned [`SoftScope`] carry an extra context frame, and nested sub-scopes
 //! stack their frames outermost-first (Iteration 4.2).
+//!
+//! A panic inside the [`soft`] closure does not mask the failures recorded
+//! before it: [`soft`] runs the closure under [`catch_unwind`], reports the
+//! collected failures, and re-raises the panic afterward (Iteration 4.3).
+//!
+//! [`catch_unwind`]: std::panic::catch_unwind
 
 use std::borrow::Cow;
 
@@ -21,6 +27,11 @@ use crate::matcher::Matcher;
 /// Inside `f`, failures recorded on the [`SoftAsserter`] do not end the
 /// closure. When `f` returns, `soft` returns `Ok(())` if nothing was recorded,
 /// or a single [`TestError`] collecting every recorded failure.
+///
+/// If `f` *panics*, the panic does not swallow what was already recorded:
+/// `soft` runs `f` under [`catch_unwind`](std::panic::catch_unwind), prints the
+/// collected soft failures to standard error, and then re-raises the panic so
+/// the test still fails on it.
 ///
 /// ```
 /// use test_better_core::TestResult;
@@ -40,8 +51,29 @@ where
     F: FnOnce(&mut SoftAsserter),
 {
     let mut asserter = SoftAsserter::new();
-    f(&mut asserter);
-    asserter.into_result()
+
+    // `f` captures `&mut asserter`, and `&mut T` is not `UnwindSafe`. Asserting
+    // unwind-safety is sound here: the only state `f` mutates is
+    // `asserter.errors` and `asserter.context`, both plain `Vec`s. A panic can
+    // leave them partially populated, but a partially-filled `Vec` is still a
+    // valid, fully-readable value — there is no torn invariant for the code
+    // after the `catch_unwind` to observe.
+    let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&mut asserter)));
+
+    let result = asserter.into_result();
+
+    match outcome {
+        Ok(()) => result,
+        Err(panic) => {
+            // A panic cut the closure short. Surface the failures recorded
+            // before it — otherwise the panic would mask them — then re-raise
+            // so the test still fails on the panic itself.
+            if let Err(ref soft_failures) = result {
+                eprintln!("soft assertions recorded before the panic:\n{soft_failures}");
+            }
+            std::panic::resume_unwind(panic);
+        }
+    }
 }
 
 /// The recorder passed to a [`soft`] closure.
