@@ -50,6 +50,14 @@ versioned in lockstep until 1.0.
 - `test-better-matchers`: the primitive matchers `eq`, `ne`, `lt`, `le`, `gt`,
   `ge`, `is_true`, `is_false`, and the test fixtures `always_matches` and
   `never_matches` (Iteration 2.2).
+- `test-better-matchers`: the `expect!` macro and its `Subject<T>` type, with
+  `to` and `to_not` returning `TestResult` (`#[track_caller]`, and `#[must_use]`
+  via `Result` so a forgotten `?` is a warning). `expect!` captures the source
+  text of its argument, so a failure names the expression, not just its value.
+  A `trybuild` test pins down the forgotten-`?` warning (Iteration 2.3).
+- `test-better`: the facade crate now re-exports the matcher surface and the
+  `expect!` macro; the prelude gains `expect!` and the matcher constructors
+  (Iteration 2.3).
 
 ### Notes
 
@@ -60,6 +68,9 @@ versioned in lockstep until 1.0.
 - `clippy.toml` gained `allow-panic-in-tests = true`, completing the
   "allowed in tests" intent of PROJECT_BUILD_PLAN.md §3 (Phase 0 set only the
   unwrap/expect equivalents).
+- The async-`Subject` design (PROJECT_BUILD_PLAN.md §7.3) is resolved: a single
+  `Subject<T>` type, with Phase 5's `await`-based methods added to the same impl
+  block under method-level `where T: Future` bounds. Rationale in `BACKLOG.md`.
 - `TestError::payload` is `Option<Box<Payload>>` rather than `Option<Payload>`.
   `TestError` is returned by value through every `?`, so it is kept small; the
   large `Payload::ExpectedActual` variant lives behind the box. The public

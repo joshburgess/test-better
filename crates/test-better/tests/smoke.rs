@@ -1,7 +1,9 @@
-//! Phase 1 smoke test: a test file that depends only on `test-better` and
-//! imports only `test_better::prelude::*` can write a `?`-driven test.
+//! Smoke test: a test file that depends only on `test-better` and imports only
+//! `test_better::prelude::*` can write a `?`-driven test with `expect!` and the
+//! `?`-friendly conversions.
 //!
-//! This is the acceptance check for PROJECT_BUILD_PLAN.md Iteration 1.5.
+//! This is the acceptance check for PROJECT_BUILD_PLAN.md Iterations 1.5 and
+//! 2.3 (the facade wiring of `expect!` and the matchers).
 
 use test_better::prelude::*;
 
@@ -13,16 +15,23 @@ fn load_answer(present: bool) -> TestResult<i32> {
 }
 
 #[test]
-fn prelude_supports_a_question_mark_driven_test() -> TestResult {
+fn prelude_supports_an_expect_driven_test() -> TestResult {
     let answer = load_answer(true).context("loading the answer")?;
-    if answer != 42 {
-        return Err(TestError::from_expected_actual(42, answer));
-    }
+    expect!(answer).to(eq(42))?;
+    expect!(answer).to_not(lt(0))?;
     Ok(())
 }
 
 #[test]
-fn failure_path_carries_context_and_message() {
+fn expect_failure_names_the_expression_and_values() {
+    let error = expect!(2 + 2).to(eq(5)).expect_err("2 + 2 is not 5");
+    let rendered = error.to_string();
+    assert!(rendered.contains("2 + 2"), "{rendered}");
+    assert!(rendered.contains("equal to 5"), "{rendered}");
+}
+
+#[test]
+fn or_fail_failure_path_carries_context_and_message() {
     let failure = load_answer(false)
         .context("loading the answer")
         .expect_err("the missing answer should fail");

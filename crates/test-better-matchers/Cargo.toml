@@ -10,5 +10,13 @@ authors.workspace = true
 categories.workspace = true
 keywords.workspace = true
 
+[dependencies]
+test-better-core = { workspace = true }
+
+[dev-dependencies]
+# Drives the compile-fail test that a forgotten `?` on `expect!(..)` is a
+# warning (Iteration 2.3).
+trybuild = "1.0"
+
 [lints]
 workspace = true

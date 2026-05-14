@@ -12,6 +12,7 @@ keywords.workspace = true
 
 [dependencies]
 test-better-core = { workspace = true }
+test-better-matchers = { workspace = true }
 
 [features]
 default = []

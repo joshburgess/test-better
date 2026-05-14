@@ -12,9 +12,14 @@ plan as an iteration cycle (or a new phase) and delete it from this file.
 These are explicitly deferred decision points called out by the build plan;
 record the decision and its rationale here when the relevant phase begins.
 
-- **Phase 2 (§7.3):** the async-`Subject` design (distinct `AsyncSubject<F>` vs.
-  a separately-named `Future`-bounded method). Phase 5 inherits whatever is
-  chosen here.
+- **Phase 2 (§7.3): RESOLVED (Iteration 2.3).** The async-`Subject` design is
+  option (b): a single `Subject<T>` type. Phase 5 adds `await`-based methods to
+  the existing `impl<T> Subject<T>` block with method-level `where T: Future`
+  bounds and distinct names (e.g. `to_complete_within`). Rationale: a blanket
+  `impl<T> Subject<T>` and an overlapping `impl<F: Future> Subject<F>` cannot
+  coexist as inherent impls, and option (a)'s distinct `AsyncSubject<F>` would
+  need `expect!` to dispatch on whether its argument is a future, which a
+  syntactic macro cannot do. Phase 5 inherits this decision.
 - **Phase 6 (§11.1):** the primary property-testing backend (recommended:
   `proptest`) and whether the `quickcheck` bridge ships in 1.0 or is deferred.
 - **Phase 9 (§9.1):** the structured-output channel the runner consumes
