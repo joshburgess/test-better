@@ -43,6 +43,10 @@ versioned in lockstep until 1.0.
   dependency and one `use test_better::prelude::*;`. A `serde` feature forwards
   to `test-better-core`'s. The prelude documents the macro re-export pattern
   Phase 2 will slot into (Iteration 1.5).
+- `test-better-matchers`: the `Matcher<T: ?Sized>` trait with its structured
+  result types `MatchResult` and `Mismatch`, and `Description`, the composable
+  account of a matcher's expectation (`text`, `and`, `or`, `labeled`, and
+  `std::ops::Not`). No public matchers yet (Iteration 2.1).
 
 ### Notes
 
