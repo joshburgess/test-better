@@ -16,6 +16,7 @@
 //! the `snapshot_error`/`inline_snapshot_error` unit tests in
 //! `test-better-matchers`.
 
+use test_better::Redactions;
 use test_better::prelude::*;
 
 #[test]
@@ -45,4 +46,23 @@ fn a_multi_line_value_matches_its_inline_snapshot() -> TestResult {
         status: active
         "#,
     )
+}
+
+#[test]
+fn a_redacted_value_matches_its_committed_snapshot() -> TestResult {
+    let redactions = Redactions::new().redact_uuids();
+    // Two "runs", two different UUIDs: redaction stabilizes both onto the same
+    // committed snapshot, which is the whole point of the feature.
+    let first = format!("session {} opened", "550e8400-e29b-41d4-a716-446655440000");
+    expect!(first).to_match_snapshot_with("redacted_session", &redactions)?;
+    let second = format!("session {} opened", "11111111-2222-3333-4444-555555555555");
+    expect!(second).to_match_snapshot_with("redacted_session", &redactions)?;
+    Ok(())
+}
+
+#[test]
+fn a_redacted_value_matches_its_inline_snapshot() -> TestResult {
+    let redactions = Redactions::new().redact_rfc3339_timestamps();
+    let rendered = format!("event at {}", "2026-05-14T12:34:56Z");
+    expect!(rendered).to_match_inline_snapshot_with("event at [timestamp]", &redactions)
 }

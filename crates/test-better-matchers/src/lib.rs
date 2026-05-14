@@ -29,7 +29,9 @@
 //!   `async-std`, or `smol`); `to_match_snapshot` compares a
 //!   [`Display`](std::fmt::Display) value against a file-backed snapshot, and
 //!   `to_match_inline_snapshot` against a snapshot literal in the test source
-//!   (`test-better-snapshot`);
+//!   (`test-better-snapshot`); the `*_with` variants of each run a
+//!   `Redactions` set over the value first, stabilizing non-deterministic
+//!   content (UUIDs, timestamps) before the comparison;
 //! - [`eventually`] and [`eventually_blocking`], which retry a `bool` probe on
 //!   an exponential [`Backoff`] schedule until it passes or a deadline is hit,
 //!   replacing `sleep + assert` flakiness;

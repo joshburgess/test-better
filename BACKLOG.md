@@ -62,6 +62,19 @@ record the decision and its rationale here when the relevant phase begins.
   dependency-free for ordinary runs. Pending patches are one-file-per-patch
   (`<pid>-<seq>.patch`) to avoid concurrent-append contention between parallel
   tests.
+- **Phase 7 (§12 7.3): RESOLVED (Iteration 7.3).** Redactions are closure-based,
+  not regex-based: `Redactions` is an ordered `Vec` of boxed
+  `Fn(&str) -> String` rules, with hand-written byte scanners behind the
+  built-in `redact_uuids` and `redact_rfc3339_timestamps`. The UUID and RFC 3339
+  grammars are rigid enough to scan by hand, and doing so keeps
+  `test-better-snapshot` dependency-free in its default build, preserving the
+  std-only property `regex` would have broken for every user. Redaction is
+  applied at the matcher boundary (`to_match_snapshot_with` /
+  `to_match_inline_snapshot_with` redact the value, then delegate to the
+  unchanged assert functions), so the comparison core stayed untouched. A
+  regex-backed `redact_regex` behind a feature is the obvious next step if the
+  built-ins plus the `redact_with` escape hatch are not enough; deferred until
+  there is a concrete need.
 - **Phase 9 (§9.1):** the structured-output channel the runner consumes
   (marker-wrapped JSON in captured output vs. a side-channel file under
   `target/`). Phase 9.2 depends on this. (Iteration 7.2 turned out not to: the

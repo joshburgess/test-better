@@ -49,9 +49,9 @@ pub use test_better_property::{ArbitraryStrategy, QuickcheckTree, arbitrary};
 // are built on, for callers that need an explicit directory or mode, or that
 // drive the `test-better-accept` companion binary.
 pub use test_better_snapshot::{
-    InlineLocation, InlineSnapshotFailure, SnapshotFailure, SnapshotMode, assert_inline_snapshot,
-    assert_snapshot, assert_snapshot_in, normalize_inline_literal, parse_pending_patch,
-    pending_patch_dir, snapshot_path,
+    InlineLocation, InlineSnapshotFailure, Redactions, SnapshotFailure, SnapshotMode,
+    assert_inline_snapshot, assert_snapshot, assert_snapshot_in, normalize_inline_literal,
+    parse_pending_patch, pending_patch_dir, snapshot_path,
 };
 
 /// How to write a custom matcher: see the [`cookbook`] module.

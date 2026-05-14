@@ -26,7 +26,9 @@ use std::time::Duration;
 
 use test_better_async::{Elapsed, RuntimeAvailable, run_within};
 use test_better_core::{ErrorKind, Payload, TestError, TestResult};
-use test_better_snapshot::{InlineLocation, InlineSnapshotFailure, SnapshotFailure, SnapshotMode};
+use test_better_snapshot::{
+    InlineLocation, InlineSnapshotFailure, Redactions, SnapshotFailure, SnapshotMode,
+};
 
 use crate::description::Description;
 use crate::matcher::{Matcher, Mismatch};
@@ -198,7 +200,37 @@ impl<T> Subject<T> {
     where
         T: Display,
     {
-        let actual = self.actual.to_string();
+        self.to_match_snapshot_with(name, &Redactions::new())
+    }
+
+    /// Like [`to_match_snapshot`](Self::to_match_snapshot), but runs
+    /// `redactions` over the value first.
+    ///
+    /// Use this when the rendered value carries content that is not stable run
+    /// to run (a generated UUID, a timestamp): the redactions rewrite those
+    /// spans to fixed placeholders, so the snapshot file stays meaningful.
+    /// Because the redactions run on every comparison, the placeholder is what
+    /// is stored and what later runs compare against.
+    ///
+    /// ```no_run
+    /// use test_better_core::TestResult;
+    /// use test_better_matchers::expect;
+    /// use test_better_snapshot::Redactions;
+    ///
+    /// # fn main() -> TestResult {
+    /// let rendered = format!("created {}", uuid_of_new_record());
+    /// expect!(rendered)
+    ///     .to_match_snapshot_with("record", &Redactions::new().redact_uuids())?;
+    /// # Ok(())
+    /// # }
+    /// # fn uuid_of_new_record() -> &'static str { "00000000-0000-0000-0000-000000000000" }
+    /// ```
+    #[track_caller]
+    pub fn to_match_snapshot_with(self, name: &str, redactions: &Redactions) -> TestResult
+    where
+        T: Display,
+    {
+        let actual = redactions.apply(&self.actual.to_string());
         match test_better_snapshot::assert_snapshot(self.module_path, name, &actual) {
             Ok(()) => Ok(()),
             Err(failure) => Err(snapshot_error(self.expr, name, failure)),
@@ -235,7 +267,43 @@ impl<T> Subject<T> {
     where
         T: Display,
     {
-        let actual = self.actual.to_string();
+        self.to_match_inline_snapshot_with(expected, &Redactions::new())
+    }
+
+    /// Like [`to_match_inline_snapshot`](Self::to_match_inline_snapshot), but
+    /// runs `redactions` over the value first.
+    ///
+    /// The inline-snapshot counterpart of
+    /// [`to_match_snapshot_with`](Self::to_match_snapshot_with): redaction
+    /// rewrites non-deterministic spans to fixed placeholders before the
+    /// comparison, so `UPDATE_SNAPSHOTS=1` records the *redacted* value as the
+    /// literal and later runs stay green.
+    ///
+    /// ```no_run
+    /// use test_better_core::TestResult;
+    /// use test_better_matchers::expect;
+    /// use test_better_snapshot::Redactions;
+    ///
+    /// # fn main() -> TestResult {
+    /// let rendered = format!("at {}", now_rfc3339());
+    /// expect!(rendered).to_match_inline_snapshot_with(
+    ///     "at [timestamp]",
+    ///     &Redactions::new().redact_rfc3339_timestamps(),
+    /// )?;
+    /// # Ok(())
+    /// # }
+    /// # fn now_rfc3339() -> &'static str { "2026-05-14T12:34:56Z" }
+    /// ```
+    #[track_caller]
+    pub fn to_match_inline_snapshot_with(
+        self,
+        expected: &str,
+        redactions: &Redactions,
+    ) -> TestResult
+    where
+        T: Display,
+    {
+        let actual = redactions.apply(&self.actual.to_string());
         let caller = Location::caller();
         let location = InlineLocation {
             file: caller.file().to_string(),

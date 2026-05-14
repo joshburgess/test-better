@@ -281,6 +281,19 @@ versioned in lockstep until 1.0.
   `normalize_inline_literal`, `parse_pending_patch`, `pending_patch_dir`);
   `to_match_inline_snapshot` rides along on the re-exported `Subject`
   (Iteration 7.2).
+- `test-better-snapshot`: `Redactions`, an ordered set of text rewrites applied
+  to a value before it is compared against (or stored as) a snapshot. Built-in
+  rules `redact_uuids` and `redact_rfc3339_timestamps` stabilize the two most
+  common sources of run-to-run noise; `replace` handles a known literal and
+  `redact_with` is the escape hatch. The built-ins are hand-written scanners,
+  so the crate stays `std`-only (Iteration 7.3).
+- `test-better-matchers`: `Subject::to_match_snapshot_with` and
+  `to_match_inline_snapshot_with`, the redaction-aware variants of the snapshot
+  methods. They run a `Redactions` set over the value before the comparison, so
+  the placeholder (not the noise) is what is stored and matched against
+  (Iteration 7.3).
+- `test-better`: the facade crate re-exports `Redactions`; the `*_with` snapshot
+  methods ride along on the re-exported `Subject` (Iteration 7.3).
 
 ### Notes
 
@@ -489,3 +502,18 @@ versioned in lockstep until 1.0.
   `test-better-snapshot/tests/accept.rs` against a scratch fixture file. As with
   file-backed snapshots, the facade `tests/snapshot.rs` asserts only the
   matching inline case.
+- Redactions (Iteration 7.3) are deliberately closure-based rather than
+  regex-based: `Redactions` holds an ordered `Vec` of boxed `Fn(&str) -> String`
+  rules, and the built-in `redact_uuids` / `redact_rfc3339_timestamps` are
+  hand-written byte scanners. The UUID and RFC 3339 grammars are rigid enough to
+  scan directly, and writing them by hand keeps `test-better-snapshot`
+  dependency-free in its default build (it gained `syn` only behind the
+  non-default `accept` feature in 7.2; pulling in `regex` for redaction would
+  have undone the std-only property for everyone). A regex-backed
+  `redact_regex` could be added later behind a feature if the built-ins and the
+  `redact_with` escape hatch prove too limited. Redaction is applied at the
+  matcher boundary (`Subject::to_match_snapshot_with` and the inline variant
+  redact the value, then delegate to the unchanged `assert_snapshot` /
+  `assert_inline_snapshot`), so the storage-and-comparison core never had to
+  learn about redactions; `to_match_snapshot` is now `to_match_snapshot_with`
+  with an empty `Redactions`.

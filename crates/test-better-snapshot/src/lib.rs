@@ -23,6 +23,10 @@
 //! under `UPDATE_SNAPSHOTS=1` records a pending patch under `target/`, which
 //! the `test-better-accept` companion binary (built with the `accept` feature)
 //! applies back to the source.
+//!
+//! [`Redactions`] (the `redact` module) stabilize non-deterministic content
+//! (UUIDs, timestamps) before either kind of snapshot is compared or stored, so
+//! the noise never reaches the snapshot.
 
 use std::error::Error;
 use std::fmt;
@@ -30,11 +34,13 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 mod inline;
+mod redact;
 
 pub use inline::{
     InlineLocation, InlineSnapshotFailure, assert_inline_snapshot, normalize_inline_literal,
     parse_pending_patch, pending_patch_dir,
 };
+pub use redact::Redactions;
 
 // The accept step is the only part of the crate that needs `syn`, so it is
 // gated behind the `accept` feature along with the `test-better-accept` binary
