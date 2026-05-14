@@ -372,6 +372,12 @@ versioned in lockstep until 1.0.
   every push. `README.md` gained a usage example and a Documentation section,
   and the facade crate's landing rustdoc was expanded with a runnable example
   (Iteration 10.2).
+- Examples: four worked examples join `examples/custom-matcher`, each a runnable
+  workspace crate with a dogfooded test suite: `web-handler-tests` (testing
+  request handlers with structural matchers and `soft`), `state-machine`
+  (transition functions and `matches_variant!`), `property-roundtrip` (a
+  `property!` roundtrip with an inferred strategy), and `snapshot-html`
+  (inline-snapshotting a small HTML renderer) (Iteration 10.3).
 
 ### Notes
 
@@ -680,3 +686,11 @@ versioned in lockstep until 1.0.
   the `expect!` entry point. The only changes were `#[must_use]` attributes,
   which `cargo-public-api` does not surface, so the snapshots capture the
   surface as it stood once the review was complete.
+- Iteration 10.3's examples are workspace member crates with `#[cfg(test)]`
+  suites, not `examples/*.rs` target files, matching the existing
+  `examples/custom-matcher` layout. They are therefore exercised by
+  `cargo test --workspace` (the CI `test` job) rather than the
+  `cargo test --examples` named in PROJECT_BUILD_PLAN.md Iteration 10.3, which
+  only runs `[[example]]` targets. A member crate gives each example its own
+  `Cargo.toml`, dependency set, and a real test suite a reader can run with
+  `cargo test -p <name>-example`.

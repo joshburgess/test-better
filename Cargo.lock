@@ -602,6 +602,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "property-roundtrip-example"
+version = "0.0.0"
+dependencies = [
+ "test-better",
+]
+
+[[package]]
 name = "proptest"
 version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -843,6 +850,20 @@ dependencies = [
  "async-process",
  "blocking",
  "futures-lite",
+]
+
+[[package]]
+name = "snapshot-html-example"
+version = "0.0.0"
+dependencies = [
+ "test-better",
+]
+
+[[package]]
+name = "state-machine-example"
+version = "0.0.0"
+dependencies = [
+ "test-better",
 ]
 
 [[package]]
@@ -1168,6 +1189,13 @@ dependencies = [
  "hashbrown 0.15.5",
  "indexmap",
  "semver",
+]
+
+[[package]]
+name = "web-handler-tests-example"
+version = "0.0.0"
+dependencies = [
+ "test-better",
 ]
 
 [[package]]

@@ -10,6 +10,10 @@ members = [
     "crates/test-better-snapshot",
     "crates/test-better-runner",
     "examples/custom-matcher",
+    "examples/web-handler-tests",
+    "examples/state-machine",
+    "examples/property-roundtrip",
+    "examples/snapshot-html",
     # Confirms `to_complete_within` is a compile error with no runtime feature.
     # Safe as a member: it enables no runtime feature (Iteration 5.2).
     "tests/timeout-no-runtime",

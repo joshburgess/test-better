@@ -1,0 +1,16 @@
+[package]
+name = "state-machine-example"
+description = "Testing a state machine with `test-better`: transitions, variants, and sequences."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+[dependencies]
+test-better = { workspace = true }
+
+[lints]
+workspace = true
