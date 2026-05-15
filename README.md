@@ -23,7 +23,7 @@ Add the facade crate to your dev-dependencies:
 
 ```toml
 [dev-dependencies]
-test-better = "1.0"
+test-better = "0.1"
 ```
 
 Write a test that returns `TestResult` and reach for `?`:

@@ -82,8 +82,8 @@ impl Default for Runner {
 /// A source of values of type `T`, with shrinking, for property testing.
 ///
 /// This is the seam between `test-better`'s property runner
-/// ([`check`](crate::check)) and a concrete generation/shrinking backend. v1.0
-/// ships exactly one backend, `proptest`: every `proptest::strategy::Strategy`
+/// ([`check`](crate::check)) and a concrete generation/shrinking backend. The
+/// crate ships exactly one backend, `proptest`: every `proptest::strategy::Strategy`
 /// is a `Strategy` here through a blanket impl.
 ///
 /// # The blanket impl and its one limitation
@@ -91,9 +91,9 @@ impl Default for Runner {
 /// Because the blanket `impl<S: proptest::strategy::Strategy> Strategy for S`
 /// covers every `proptest` strategy, a user type that *also* happens to be a
 /// `proptest::strategy::Strategy` cannot carry a hand-written `Strategy` impl
-/// (coherence cannot prove the two do not overlap). This is acceptable for
-/// v1.0, where `proptest` is the one backend and every strategy is a `proptest`
-/// strategy already. The trait is a seam for a future backend, not a finished
+/// (coherence cannot prove the two do not overlap). This is acceptable today:
+/// `proptest` is the one backend and every strategy is a `proptest` strategy
+/// already. The trait is a seam for a future backend, not a finished
 /// portability layer.
 pub trait Strategy<T> {
     /// The shrinkable, in-progress value this strategy produces.

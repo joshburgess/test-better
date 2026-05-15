@@ -10,9 +10,9 @@ introduces it is merged.** All crates are versioned in lockstep.
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-05-14
+## [0.1.0] - 2026-05-15
 
-The first stable release. `test-better` makes a `Result`-returning test that
+The initial public release. `test-better` makes a `Result`-returning test that
 uses `?` strictly better than a panicking one: a failure is a value carrying
 the expression that failed, the values involved, the source location, and the
 context attached on the way down. This release covers the full surface: the
@@ -482,7 +482,7 @@ as a committed snapshot, and the prose guide is the `test-better` book.
   initial, doubling, 100ms ceiling). Only the two default-schedule functions are
   in the prelude; `Backoff` and the `_with` variants are imported by name, in
   keeping with the deliberately small prelude.
-- `proptest` is the property-testing backend for v1.0: it ships integrated shrinking, the feature the
+- `proptest` is the property-testing backend for the initial release: it ships integrated shrinking, the feature the
   `ValueTree` protocol is built on. It is depended on with
   `default-features = false, features = ["std"]`, which drops the `fork` /
   `timeout` machinery (and `rusty-fork` / `libc` / `wait-timeout`) the bridge
@@ -690,5 +690,5 @@ as a committed snapshot, and the prose guide is the `test-better` book.
   measured ratios are machine-dependent; the chapter and CHANGELOG state the
   order-of-magnitude bound, not a fixed number.
 
-[Unreleased]: https://github.com/joshburgess/test-better/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/joshburgess/test-better/releases/tag/v1.0.0
+[Unreleased]: https://github.com/joshburgess/test-better/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/joshburgess/test-better/releases/tag/v0.1.0

@@ -8,8 +8,8 @@
 //! property-testing backend. It has two pieces:
 //!
 //! - the [`Strategy`] seam (with [`ValueTree`], [`Runner`], [`GenError`]): a
-//!   deliberately small trait the runner is written against. v1.0's backend is
-//!   `proptest`, which satisfies it through a blanket impl, so a property test
+//!   deliberately small trait the runner is written against. The shipped
+//!   backend is `proptest`, which satisfies it through a blanket impl, so a property test
 //!   names ordinary `proptest` strategies (BACKLOG.md);
 //! - the runner: [`check`] (and [`check_with`]) generate cases, run a
 //!   `T -> TestResult` predicate, and on failure return a [`PropertyFailure`]

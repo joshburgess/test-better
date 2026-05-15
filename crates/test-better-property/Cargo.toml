@@ -14,7 +14,7 @@ readme = "../../README.md"
 
 [dependencies]
 test-better-core = { workspace = true }
-# The v1.0 property-testing backend (BACKLOG.md). `default-features = false`
+# The property-testing backend (BACKLOG.md). `default-features = false`
 # drops `fork`/`timeout` (and their `rusty-fork`/`libc`/`wait-timeout`
 # dependencies): the `Strategy<T>` seam only needs `proptest`'s generation and
 # shrinking, which the `std` feature carries.
