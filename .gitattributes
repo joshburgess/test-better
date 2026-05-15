@@ -1,10 +1,12 @@
-# Snapshot files are compared byte-for-byte against the in-memory rendered
-# value, so they must check out with the same line endings everywhere. Force
-# LF regardless of the contributor's git config (Windows' default
-# `core.autocrlf=true` would otherwise rewrite them to CRLF on checkout).
-*.snap text eol=lf
+# Force LF line endings for every text file in the repo, on every platform.
+# Without this, git's default `core.autocrlf=true` on Windows rewrites text
+# files to CRLF on checkout, which breaks any test that compares against a
+# byte-exact golden / snapshot fixture.
+*           text=auto eol=lf
 
-# Pending inline-snapshot patches under `target/.test-better/` are produced
-# with LF by the runtime. Treat them the same on the off-chance one gets
-# committed by accident.
-*.patch text eol=lf
+# Snapshot and golden fixtures are the explicit reason this file exists: they
+# are compared byte-for-byte against the in-memory rendered value. Pin them
+# even if the global rule above is ever loosened.
+*.snap      text eol=lf
+*.patch     text eol=lf
+*.txt       text eol=lf
