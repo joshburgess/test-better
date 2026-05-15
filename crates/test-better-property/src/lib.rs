@@ -10,20 +10,20 @@
 //! - the [`Strategy`] seam (with [`ValueTree`], [`Runner`], [`GenError`]): a
 //!   deliberately small trait the runner is written against. v1.0's backend is
 //!   `proptest`, which satisfies it through a blanket impl, so a property test
-//!   names ordinary `proptest` strategies (BACKLOG.md, Iteration 6.1a);
+//!   names ordinary `proptest` strategies (BACKLOG.md);
 //! - the runner: [`check`] (and [`check_with`]) generate cases, run a
 //!   `T -> TestResult` predicate, and on failure return a [`PropertyFailure`]
 //!   carrying the shrunk counterexample.
 //!
 //! Behind the off-by-default `quickcheck` feature, [`arbitrary`] bridges a
 //! `quickcheck::Arbitrary` type into the same seam: a best-effort second
-//! backend that proves [`Strategy`] is a real seam (Iteration 6.1c). It is
+//! backend that proves [`Strategy`] is a real seam. It is
 //! honest about its reduced fidelity; see the [`quickcheck_bridge`] module docs.
 //!
 //! The [`property!`] macro is the test-facing front for all of this: it takes
 //! a closure, infers a [`Strategy`] from the binding's type (or takes one with
 //! a `using` clause), and runs it through [`check`]. Rich shrunk-failure
-//! rendering (Iteration 6.3) builds on the same surface.
+//! rendering builds on the same surface.
 
 mod check;
 mod property;

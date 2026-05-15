@@ -5,7 +5,7 @@
 //! serialize, compare, or send across a process boundary. [`StructuredError`]
 //! is its fully-owned, `PartialEq`, optionally-`serde` mirror.
 //!
-//! This is the form tooling and the Phase 9 runner consume: no consumer ever
+//! This is the form tooling and the runner consume: no consumer ever
 //! recovers structure by parsing rendered text.
 
 use std::panic::Location;

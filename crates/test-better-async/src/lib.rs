@@ -1,7 +1,7 @@
 //! `test-better-async`: async and timing helpers.
 //!
 //! Home of the runtime-agnostic timeout abstraction that backs
-//! `expect!(fut).to_complete_within(..)` (Phase 5).
+//! `expect!(fut).to_complete_within(..)`.
 //!
 //! # The runtime gate
 //!

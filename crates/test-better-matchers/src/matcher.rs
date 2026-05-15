@@ -4,7 +4,7 @@
 //! A matcher is a reusable expectation: it inspects a borrowed value and
 //! reports, in structured form, whether the value met the expectation and — if
 //! not — what was expected, what was found, and an optional diff. The `expect!`
-//! macro (Iteration 2.3) turns that structured result into a [`TestError`].
+//! macro turns that structured result into a [`TestError`].
 //!
 //! [`TestError`]: test_better_core::TestError
 
@@ -66,8 +66,8 @@ pub struct Mismatch {
     pub expected: Description,
     /// The `Debug` rendering of the actual value.
     pub actual: String,
-    /// An optional pre-rendered diff between expected and actual. Populated by
-    /// the diff renderer (Iteration 2.4); `None` until then.
+    /// An optional pre-rendered diff between expected and actual. `None` when
+    /// no diff is available.
     pub diff: Option<String>,
 }
 

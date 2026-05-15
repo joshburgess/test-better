@@ -2,7 +2,7 @@
 //!
 //! Home of `matches_struct!`, `matches_tuple!`, `matches_variant!`, the
 //! `#[test_case]` attribute, and the `#[fixture]` / `#[test_with_fixtures]`
-//! attribute pair (Phase 8), with the inline snapshot macros still to come.
+//! attribute pair, with the inline snapshot macros still to come.
 //!
 //! The structural matchers parse a *pattern* of inner matcher expressions and
 //! emit a `Matcher` impl. The matcher holds a projection (a closure that pulls

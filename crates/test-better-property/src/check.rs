@@ -1,11 +1,11 @@
 //! The property runner: generate cases, run the predicate, shrink on failure.
 //!
-//! [`check`] is the whole of Iteration 6.1b's user-facing surface. It draws
-//! values from a [`Strategy`], runs a `T -> TestResult` predicate against each,
-//! and, on the first failure, drives the [`ValueTree`] shrink protocol to a
-//! minimal counterexample. The `property!` macro (Iteration 6.2) is a thin
-//! syntactic wrapper over this; the shrunk-failure *rendering* is Iteration
-//! 6.3's job, so a [`PropertyFailure`] here is plain structured data.
+//! [`check`] is the user-facing surface. It draws values from a [`Strategy`],
+//! runs a `T -> TestResult` predicate against each, and, on the first failure,
+//! drives the [`ValueTree`] shrink protocol to a minimal counterexample. The
+//! `property!` macro is a thin syntactic wrapper over this; the shrunk-failure
+//! *rendering* is handled separately, so a [`PropertyFailure`] here is plain
+//! structured data.
 
 use test_better_core::{TestError, TestResult};
 

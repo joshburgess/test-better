@@ -1,4 +1,4 @@
-//! [`Trace`]: in-test breadcrumbs (Phase 8).
+//! [`Trace`]: in-test breadcrumbs.
 //!
 //! A `Trace` records a chronological list of steps and key/value pairs while a
 //! test runs. The entries live in a thread-local for the trace's lifetime, so

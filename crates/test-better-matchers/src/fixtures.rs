@@ -1,10 +1,10 @@
 //! Trivial matchers that ignore their input: [`always_matches`] and
 //! [`never_matches`].
 //!
-//! These exist to test the matcher machinery itself: combinators (Phase 3),
-//! the `expect!` macro (Iteration 2.3), and failure rendering all need a
-//! matcher with a known, fixed outcome. They are not meant for real
-//! assertions, where a matcher that ignores its input says nothing useful.
+//! These exist to test the matcher machinery itself: combinators, the `expect!`
+//! macro, and failure rendering all need a matcher with a known, fixed outcome.
+//! They are not meant for real assertions, where a matcher that ignores its
+//! input says nothing useful.
 
 use crate::description::Description;
 use crate::matcher::{MatchResult, Matcher, Mismatch};

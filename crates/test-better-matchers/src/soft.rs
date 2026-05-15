@@ -8,11 +8,11 @@
 //!
 //! [`SoftAsserter::context`] opens a sub-scope: failures recorded through the
 //! returned [`SoftScope`] carry an extra context frame, and nested sub-scopes
-//! stack their frames outermost-first (Iteration 4.2).
+//! stack their frames outermost-first.
 //!
 //! A panic inside the [`soft`] closure does not mask the failures recorded
 //! before it: [`soft`] runs the closure under [`catch_unwind`], reports the
-//! collected failures, and re-raises the panic afterward (Iteration 4.3).
+//! collected failures, and re-raises the panic afterward.
 //!
 //! [`catch_unwind`]: std::panic::catch_unwind
 

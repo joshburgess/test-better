@@ -15,7 +15,7 @@ members = [
     "examples/property-roundtrip",
     "examples/snapshot-html",
     # Confirms `to_complete_within` is a compile error with no runtime feature.
-    # Safe as a member: it enables no runtime feature (Iteration 5.2).
+    # Safe as a member: it enables no runtime feature.
     "tests/timeout-no-runtime",
 ]
 # The per-runtime `to_complete_within` integration crates are deliberately
@@ -23,8 +23,7 @@ members = [
 # `smol` on `test-better`; if they were members, a workspace-wide
 # `--all-features` build would unify all three runtime features into one
 # `test-better`, and tests written for one runtime would run against another.
-# Each is exercised on its own (`cargo test --manifest-path ...`) in CI
-# (Iteration 5.2).
+# Each is exercised on its own (`cargo test --manifest-path ...`) in CI.
 exclude = [
     "tests/timeout-tokio",
     "tests/timeout-async-std",

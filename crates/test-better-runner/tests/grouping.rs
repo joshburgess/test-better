@@ -1,6 +1,6 @@
-//! Iteration 9.2 acceptance: `cargo test-better` groups failures by their
-//! context chain, and a failure with no `test-better` structure still shows up
-//! in the summary, ungrouped, without crashing the runner.
+//! Acceptance test: `cargo test-better` groups failures by their context chain,
+//! and a failure with no `test-better` structure still shows up in the summary,
+//! ungrouped, without crashing the runner.
 //!
 //! This drives the freshly built `cargo-test-better` binary against the
 //! `structured-failures` fixture workspace (its own `[workspace]` root, so the

@@ -1,6 +1,6 @@
-//! Iteration 9.3 acceptance: `cargo test-better` prints a run-summary table
-//! with the right pass/fail/ignored counts, and propagates the wrapped build's
-//! exit code.
+//! Acceptance test: `cargo test-better` prints a run-summary table with the
+//! right pass/fail/ignored counts, and propagates the wrapped build's exit
+//! code.
 //!
 //! This drives the freshly built `cargo-test-better` binary against the
 //! `mixed-results` fixture workspace (its own `[workspace]` root, dependency

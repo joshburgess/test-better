@@ -10,10 +10,10 @@
 #
 # The `.expect` pattern is matched only when followed by a string literal
 # (`.expect("`), the universal shape of the panic-on-`None`/`Err` call. This
-# deliberately does not match `SoftAsserter::expect(&actual, matcher)`
-# (Iteration 4.1), which is the library's own soft-assertion API, not a panic
-# operator. A non-test `.expect` with a non-literal message is still caught by
-# the workspace's `clippy::expect_used = "deny"` lint.
+# deliberately does not match `SoftAsserter::expect(&actual, matcher)`, which
+# is the library's own soft-assertion API, not a panic operator. A non-test
+# `.expect` with a non-literal message is still caught by the workspace's
+# `clippy::expect_used = "deny"` lint.
 #
 # Run from the repository root. Exits non-zero (and prints the offenders) if
 # any banned pattern is found.

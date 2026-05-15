@@ -17,7 +17,7 @@ default = []
 # Derives `serde::{Serialize, Deserialize}` on the structured-failure types
 # (`StructuredError` and friends) and pulls in `serde_json`, which the runner
 # channel (`crate::runner`) uses as its wire format. The structured form is
-# what tooling and the Phase 9 runner consume.
+# what tooling and the runner consume.
 serde = ["dep:serde", "dep:serde_json"]
 
 [dependencies]

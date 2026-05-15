@@ -8,9 +8,8 @@
 //!
 //! The shrunk-failure *rendering* lives in [`render_failure`]: the matcher's
 //! own failure is kept whole, and context frames naming the case count, the
-//! original failing input, and the shrunk minimal input are wrapped around it
-//! (Iteration 6.3). A golden-file test (`tests/shrink_output.rs`) pins the
-//! exact output.
+//! original failing input, and the shrunk minimal input are wrapped around it.
+//! A golden-file test (`tests/shrink_output.rs`) pins the exact output.
 
 use std::fmt::Debug;
 
@@ -39,8 +38,8 @@ where
 
 /// Turns the structured [`PropertyFailure`] into a rendered [`TestError`].
 ///
-/// The matcher's own failure is kept whole: its message and payload (the
-/// "structured `Description`" Iteration 6.3 calls for) are left untouched.
+/// The matcher's own failure is kept whole: its message and payload are left
+/// untouched.
 /// Three context frames are wrapped around it, outermost-first: the property
 /// summary and case count, the original failing input, and the shrunk minimal
 /// input. The kind is promoted to [`ErrorKind::Property`] so the failure reads

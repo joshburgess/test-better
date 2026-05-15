@@ -1,9 +1,8 @@
 //! `test-better-runner`: optional pretty runner.
 //!
-//! Library half of the `cargo-test-better` subcommand (Phase 9). It wraps
-//! `cargo test`, forwarding every argument and
-//! propagating the exit code; from Phase 9.2 on it also groups failures by
-//! their context chain.
+//! Library half of the `cargo-test-better` subcommand. It wraps `cargo test`,
+//! forwarding every argument and propagating the exit code; it also groups
+//! failures by their context chain.
 //!
 //! # The structured-output channel
 //!
@@ -24,7 +23,7 @@
 //!   code) is shown ungrouped and labelled "unstructured"; the runner never
 //!   falls back to parsing prose.
 //!
-//! # Grouping (Phase 9.2)
+//! # Grouping
 //!
 //! [`run`] pipes the wrapped `cargo test`'s stdout, tees every non-marker line
 //! straight through, and feeds the stream to [`scan_output`], which builds a
@@ -32,7 +31,7 @@
 //! [`ContextFrame`](test_better::ContextFrame) message, plus a flat list of
 //! unstructured ones. [`run`] prints that report after the wrapped build exits.
 //!
-//! # Progress and summary (Phase 9.3)
+//! # Progress and summary
 //!
 //! [`scan_output`] also reads libtest's own `test result:` lines into a
 //! [`RunSummary`] (passed/failed/ignored counts, summed across every test

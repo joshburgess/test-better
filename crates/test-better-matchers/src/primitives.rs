@@ -2,7 +2,7 @@
 //!
 //! These are the leaves of the matcher library. They compare the actual value
 //! against a stored expected value (`eq`, `lt`, ...) or against a fixed truth
-//! (`is_true`, `is_false`). Combinators (Phase 3) build on top of them.
+//! (`is_true`, `is_false`). Combinators build on top of them.
 
 use std::fmt;
 

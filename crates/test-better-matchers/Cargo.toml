@@ -15,16 +15,15 @@ readme = "../../README.md"
 [dependencies]
 test-better-core = { workspace = true }
 # Backs `Subject::to_complete_within`: the runtime-agnostic timeout primitive
-# and the `RuntimeAvailable` gate (Iteration 5.2). The runtime features below
-# forward to it.
+# and the `RuntimeAvailable` gate. The runtime features below forward to it.
 test-better-async = { workspace = true }
 # Backs `Subject::to_match_snapshot`: the file-backed snapshot store and its
-# compare/update logic (Iteration 7.1). This crate renders the resulting
-# `SnapshotFailure` into a `TestError`, with a diff when the `diff` feature is on.
+# compare/update logic. This crate renders the resulting `SnapshotFailure` into
+# a `TestError`, with a diff when the `diff` feature is on.
 test-better-snapshot = { workspace = true }
-# Backs the `diff` feature's line-oriented diff renderer (Iteration 2.4).
+# Backs the `diff` feature's line-oriented diff renderer.
 similar = { version = "2", optional = true }
-# Backs the `regex` feature's `matches_regex` matcher (Iteration 3.4).
+# Backs the `regex` feature's `matches_regex` matcher.
 regex = { version = "1", optional = true }
 
 [features]
@@ -38,18 +37,17 @@ diff = ["dep:similar"]
 regex = ["dep:regex"]
 # Runtime selectors for `Subject::to_complete_within`, forwarded to
 # `test-better-async`. Exactly one is meant to be enabled; with none, calling
-# `to_complete_within` is a compile error pointing at these flags
-# (Iteration 5.2).
+# `to_complete_within` is a compile error pointing at these flags.
 tokio = ["test-better-async/tokio"]
 async-std = ["test-better-async/async-std"]
 smol = ["test-better-async/smol"]
 
 [dev-dependencies]
 # Drives the compile-fail test that a forgotten `?` on `expect!(..)` is a
-# warning (Iteration 2.3).
+# warning.
 trybuild = "1.0"
 # A dependency-free `block_on`, so the async `expect!` tests and doc examples
-# can drive a future without pulling in a full runtime (Iteration 5.1).
+# can drive a future without pulling in a full runtime.
 pollster = "0.4"
 
 # Render docs.rs with every feature on, so feature-gated APIs are visible.

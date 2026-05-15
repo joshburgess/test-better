@@ -4,7 +4,7 @@
 //! read it:
 //!
 //! - the human renderer ([`Display`]/[`Debug`], see [`crate::render`]);
-//! - tooling and the Phase 9 runner, via [`TestError::to_structured`].
+//! - tooling and the runner, via [`TestError::to_structured`].
 
 use std::borrow::Cow;
 use std::fmt;
@@ -22,13 +22,13 @@ use crate::trace::TraceEntry;
 pub enum ErrorKind {
     /// An assertion did not hold (the common case).
     Assertion,
-    /// Test setup failed before the assertions could run (fixtures, Phase 8).
+    /// Test setup failed before the assertions could run (fixtures).
     Setup,
-    /// An operation did not complete within its deadline (Phase 5).
+    /// An operation did not complete within its deadline.
     Timeout,
-    /// A snapshot did not match its stored value (Phase 7).
+    /// A snapshot did not match its stored value.
     Snapshot,
-    /// A property failed for some generated input (Phase 6).
+    /// A property failed for some generated input.
     Property,
     /// A failure that does not fit the other kinds, including errors propagated
     /// from non-`test-better` code via `?`.
@@ -79,7 +79,7 @@ impl ContextFrame {
 #[non_exhaustive]
 pub enum Payload {
     /// A comparison failure carrying the expected and actual values, and an
-    /// optional structural diff (the diff is populated from Phase 2 onward).
+    /// optional structural diff.
     ExpectedActual {
         /// `Debug`-rendered expected value.
         expected: String,
@@ -88,7 +88,7 @@ pub enum Payload {
         /// Optional pre-rendered diff between the two.
         diff: Option<String>,
     },
-    /// Several failures collected together (soft assertions, Phase 4).
+    /// Several failures collected together (soft assertions).
     Multiple(Vec<TestError>),
     /// An error propagated from outside `test-better`, preserved so its source
     /// chain stays walkable.
@@ -191,7 +191,7 @@ impl TestError {
     /// Overrides the [`kind`](Self::kind), consuming and returning `self`.
     ///
     /// This is how a failure is re-categorized after the fact: the `#[fixture]`
-    /// macro (Phase 8) uses it to turn whatever a fixture body produced into an
+    /// macro uses it to turn whatever a fixture body produced into an
     /// [`ErrorKind::Setup`] failure, so a setup problem never masquerades as an
     /// assertion miss.
     #[must_use]
@@ -236,7 +236,7 @@ impl TestError {
 }
 
 impl fmt::Display for TestError {
-    /// Renders the failure as plain text, never colored (Iteration 2.4).
+    /// Renders the failure as plain text, never colored.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         crate::render::render(self, f, false)
     }

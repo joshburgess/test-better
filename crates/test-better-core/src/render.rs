@@ -3,7 +3,7 @@
 //! This is the *only* place a `TestError` is turned into text. Tooling never
 //! parses this output; it reads [`TestError::to_structured`] instead.
 //!
-//! Rendering takes a `colorize` flag (Iteration 2.4). `Display` always passes
+//! Rendering takes a `colorize` flag. `Display` always passes
 //! `false`; `Debug` passes [`crate::color::color_enabled`], so the stock
 //! `cargo test` harness gets color when the environment allows it.
 

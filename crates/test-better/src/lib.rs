@@ -43,9 +43,9 @@ pub use test_better_core::{
 pub use test_better_macros::{
     fixture, matches_struct, matches_tuple, matches_variant, test_case, test_with_fixtures,
 };
-// The property-testing bridge (Phase 6). `Config` is renamed `PropertyConfig`
-// here: at the facade root, where one crate's surface meets eight others, a
-// bare `Config` says too little.
+// The property-testing bridge. `Config` is renamed `PropertyConfig` here: at
+// the facade root, where one crate's surface meets eight others, a bare
+// `Config` says too little.
 #[cfg(feature = "diff")]
 pub use test_better_matchers::diff_lines;
 #[cfg(feature = "regex")]
@@ -68,7 +68,7 @@ pub use test_better_property::{
 // `Strategy<T>`. Off by default; `proptest` is the primary backend.
 #[cfg(feature = "quickcheck")]
 pub use test_better_property::{ArbitraryStrategy, QuickcheckTree, arbitrary};
-// The snapshot store (Phase 7). The everyday entry points are the
+// The snapshot store. The everyday entry points are the
 // `expect!(value).to_match_snapshot("name")` and `.to_match_inline_snapshot(..)`
 // methods (on the re-exported `Subject`); these are the lower-level pieces they
 // are built on, for callers that need an explicit directory or mode, or that

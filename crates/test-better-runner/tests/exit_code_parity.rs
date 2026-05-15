@@ -1,6 +1,5 @@
-//! Iteration 9.1 acceptance: `cargo test-better` exits with the same code as
-//! `cargo test` itself, on both an all-pass and a has-failures fixture
-//! workspace.
+//! Acceptance test: `cargo test-better` exits with the same code as `cargo
+//! test` itself, on both an all-pass and a has-failures fixture workspace.
 //!
 //! Each fixture under `tests/fixtures/` is its own `[workspace]` root with no
 //! dependencies, so this drives a real (but fast) nested `cargo` build. The

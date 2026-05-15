@@ -17,7 +17,7 @@
 //!
 //! `resolves_to` is runtime-agnostic: it just awaits the future, so it works
 //! under `#[tokio::test]`, `#[async_std::test]`, `pollster::block_on`, or any
-//! other executor. (Runtime-specific timing methods arrive in Phase 5.2.)
+//! other executor.
 
 use std::fmt::Display;
 use std::future::Future;
