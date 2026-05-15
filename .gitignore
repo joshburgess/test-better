@@ -1,4 +1,1 @@
 target/
-
-# mdBook render output; the book source lives in book/src/.
-book/book/

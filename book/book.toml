@@ -5,6 +5,11 @@ authors = ["Josh Burgess"]
 language = "en"
 src = "src"
 
+# Render the HTML alongside Cargo's other build artifacts so the repo's
+# `target/` ignore is enough; nothing leaks into `book/` itself.
+[build]
+build-dir = "../target/book"
+
 [output.html]
 default-theme = "rust"
 git-repository-url = "https://github.com/joshburgess/test-better"
