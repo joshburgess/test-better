@@ -9,6 +9,8 @@ repository.workspace = true
 authors.workspace = true
 categories.workspace = true
 keywords.workspace = true
+# Workspace README, packaged into every crate so the crates.io page shows it.
+readme = "../../README.md"
 
 # The runtime half of this crate is `std`-only: it is the storage-and-comparison
 # core, and turning a `SnapshotFailure` into a rendered `TestError` is
@@ -40,6 +42,11 @@ required-features = ["accept"]
 # versioned entry would also be valid).
 test-better-core = { path = "../test-better-core" }
 test-better-matchers = { path = "../test-better-matchers", default-features = false }
+
+# Render docs.rs with every feature on, so feature-gated APIs are visible.
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [lints]
 workspace = true

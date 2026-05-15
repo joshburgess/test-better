@@ -9,6 +9,8 @@ repository.workspace = true
 authors.workspace = true
 categories.workspace = true
 keywords.workspace = true
+# Workspace README, packaged into every crate so the crates.io page shows it.
+readme = "../../README.md"
 
 [dependencies]
 test-better-core = { workspace = true }
@@ -49,6 +51,11 @@ trybuild = "1.0"
 # A dependency-free `block_on`, so the async `expect!` tests and doc examples
 # can drive a future without pulling in a full runtime (Iteration 5.1).
 pollster = "0.4"
+
+# Render docs.rs with every feature on, so feature-gated APIs are visible.
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [lints]
 workspace = true

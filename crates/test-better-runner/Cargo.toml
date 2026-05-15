@@ -9,6 +9,8 @@ repository.workspace = true
 authors.workspace = true
 categories.workspace = true
 keywords.workspace = true
+# Workspace README, packaged into every crate so the crates.io page shows it.
+readme = "../../README.md"
 
 [[bin]]
 name = "cargo-test-better"
@@ -22,6 +24,11 @@ test-better = { workspace = true, features = ["serde"] }
 # The wire format of the structured-output channel: each marker-wrapped line is
 # one `serde_json`-encoded `StructuredError`.
 serde_json = "1.0"
+
+# Render docs.rs with every feature on, so feature-gated APIs are visible.
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [lints]
 workspace = true

@@ -9,6 +9,8 @@ repository.workspace = true
 authors.workspace = true
 categories.workspace = true
 keywords.workspace = true
+# Workspace README, packaged into every crate so the crates.io page shows it.
+readme = "../../README.md"
 
 [features]
 default = []
@@ -33,6 +35,11 @@ serde_json = { version = "1.0", optional = true }
 # dev-dependency from the published manifest, so the cycle does not block
 # `cargo publish` (the dependency is published after this crate).
 test-better-matchers = { path = "../test-better-matchers", default-features = false }
+
+# Render docs.rs with every feature on, so feature-gated APIs are visible.
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [lints]
 workspace = true

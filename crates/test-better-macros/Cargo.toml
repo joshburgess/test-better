@@ -9,6 +9,8 @@ repository.workspace = true
 authors.workspace = true
 categories.workspace = true
 keywords.workspace = true
+# Workspace README, packaged into every crate so the crates.io page shows it.
+readme = "../../README.md"
 
 [lib]
 proc-macro = true
@@ -19,6 +21,11 @@ proc-macro = true
 syn = { version = "2", features = ["full"] }
 quote = "1"
 proc-macro2 = "1"
+
+# Render docs.rs with every feature on, so feature-gated APIs are visible.
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [lints]
 workspace = true

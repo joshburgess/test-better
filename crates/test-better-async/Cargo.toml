@@ -9,6 +9,8 @@ repository.workspace = true
 authors.workspace = true
 categories.workspace = true
 keywords.workspace = true
+# Workspace README, packaged into every crate so the crates.io page shows it.
+readme = "../../README.md"
 
 [dependencies]
 test-better-core = { workspace = true }
@@ -38,6 +40,11 @@ pollster = "0.4"
 # path-only so Cargo drops it from the published manifest and the cycle does
 # not block `cargo publish`.
 test-better-matchers = { path = "../test-better-matchers", default-features = false }
+
+# Render docs.rs with every feature on, so feature-gated APIs are visible.
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [lints]
 workspace = true
