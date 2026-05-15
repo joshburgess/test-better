@@ -86,6 +86,46 @@ impl<S: Sequence + ?Sized> Sequence for &S {
     }
 }
 
+/// An eager [`Sequence`] wrapper around an iterator's collected items.
+///
+/// A lazy iterator cannot implement [`Sequence`] directly: the trait borrows
+/// its items through `&self`, and a blanket `impl<I: Iterator>` would collide
+/// with the concrete collection impls under coherence. [`Items`] sidesteps both
+/// problems by collecting the iterator into a `Vec<T>` up front, which means
+/// the assertion sees a full, indexable view of the produced values.
+///
+/// Construct one with [`items`]. The wrapper is just a `Vec<T>` underneath, so
+/// it carries no surprises around iteration order or repeated reads.
+pub struct Items<T>(Vec<T>);
+
+impl<T> Sequence for Items<T> {
+    type Item = T;
+
+    fn sequence_items(&self) -> Vec<&T> {
+        self.0.iter().collect()
+    }
+}
+
+/// Collects an iterator into an [`Items`] wrapper that implements [`Sequence`].
+///
+/// ```
+/// use test_better_core::TestResult;
+/// use test_better_matchers::{contains, eq, expect, items};
+///
+/// fn main() -> TestResult {
+///     let doubled = (1..=3).map(|n| n * 2);
+///     expect!(items(doubled)).to(contains(eq(4)))?;
+///     Ok(())
+/// }
+/// ```
+#[must_use]
+pub fn items<I>(iter: I) -> Items<I::Item>
+where
+    I: IntoIterator,
+{
+    Items(iter.into_iter().collect())
+}
+
 /// The matcher behind [`have_len`].
 struct LenMatcher {
     expected: usize,
@@ -535,6 +575,31 @@ mod tests {
             .or_fail_with("length 2 is not 3")?;
         expect!(failure.expected.to_string()).to(eq("a sequence of length 3".to_string()))?;
         expect!(failure.actual).to(eq("a sequence of length 2".to_string()))?;
+        Ok(())
+    }
+
+    #[test]
+    fn items_collects_an_iterator_into_a_sequence() -> TestResult {
+        // A lazy iterator wrapped by `items` behaves like a `Vec` under every
+        // collection matcher: it has a length, it indexes, and `contains` /
+        // `contains_in_order` produce the same failure shape they do on a
+        // hand-collected `Vec<T>`.
+        let lazy = (1..=3).map(|n| n * 10);
+        let collected = items(lazy);
+        expect!(have_len(3).check(&collected).matched).to(is_true())?;
+        expect!(contains(eq(20)).check(&collected).matched).to(is_true())?;
+        let failure = contains(eq(99))
+            .check(&collected)
+            .failure
+            .or_fail_with("99 is not in the iterator")?;
+        expect!(failure.actual).to(eq("[10, 20, 30]".to_string()))?;
+        Ok(())
+    }
+
+    #[test]
+    fn items_on_an_empty_iterator_is_empty() -> TestResult {
+        let empty: Items<i32> = items(std::iter::empty());
+        expect!(is_empty().check(&empty).matched).to(is_true())?;
         Ok(())
     }
 

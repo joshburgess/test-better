@@ -12,6 +12,7 @@ pub use test_better::Float
 pub use test_better::GenError
 pub use test_better::InlineLocation
 pub use test_better::InlineSnapshotFailure
+pub use test_better::Items
 pub use test_better::MatchResult
 pub use test_better::Matcher
 pub use test_better::MatcherTuple
@@ -82,6 +83,7 @@ pub use test_better::is_finite
 pub use test_better::is_nan
 pub use test_better::is_not_empty
 pub use test_better::is_true
+pub use test_better::items
 pub use test_better::le
 pub use test_better::lt
 pub use test_better::matches_regex
@@ -139,6 +141,7 @@ pub use test_better::prelude::is_finite
 pub use test_better::prelude::is_nan
 pub use test_better::prelude::is_not_empty
 pub use test_better::prelude::is_true
+pub use test_better::prelude::items
 pub use test_better::prelude::le
 pub use test_better::prelude::lt
 pub use test_better::prelude::matches_regex

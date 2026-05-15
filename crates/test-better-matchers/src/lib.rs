@@ -60,8 +60,8 @@ mod strings;
 mod subject;
 
 pub use collections::{
-    ContainsAll, Sequence, at_least_one, contains, contains_all, contains_in_order, every,
-    have_len, is_empty, is_not_empty,
+    ContainsAll, Items, Sequence, at_least_one, contains, contains_all, contains_in_order, every,
+    have_len, is_empty, is_not_empty, items,
 };
 pub use combinators::{MatcherTuple, all_of, any_of, not};
 pub use description::Description;

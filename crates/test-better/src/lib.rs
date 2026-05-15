@@ -51,13 +51,13 @@ pub use test_better_matchers::diff_lines;
 #[cfg(feature = "regex")]
 pub use test_better_matchers::matches_regex;
 pub use test_better_matchers::{
-    Backoff, ContainsAll, Description, Elapsed, Float, MatchResult, Matcher, MatcherTuple,
+    Backoff, ContainsAll, Description, Elapsed, Float, Items, MatchResult, Matcher, MatcherTuple,
     Mismatch, RuntimeAvailable, Sequence, SoftAsserter, SoftScope, Subject, all_of, always_matches,
     any_of, at_least_one, between, close_to, contains, contains_all, contains_in_order,
     contains_str, define_matcher, ends_with, eq, err, eventually, eventually_blocking,
     eventually_blocking_with, eventually_with, every, expect, ge, gt, have_len, is_empty, is_false,
-    is_finite, is_nan, is_not_empty, is_true, le, lt, ne, never_matches, none, not, ok, satisfies,
-    soft, some, starts_with,
+    is_finite, is_nan, is_not_empty, is_true, items, le, lt, ne, never_matches, none, not, ok,
+    satisfies, soft, some, starts_with,
 };
 pub use test_better_property::{
     Config as PropertyConfig, GenError, PropertyFailure, ProptestTree, Runner, Strategy, ValueTree,
@@ -117,8 +117,8 @@ pub mod prelude {
     pub use test_better_matchers::{
         all_of, always_matches, any_of, at_least_one, between, close_to, contains, contains_all,
         contains_in_order, contains_str, ends_with, eq, err, eventually, eventually_blocking,
-        every, ge, gt, have_len, is_empty, is_false, is_finite, is_nan, is_not_empty, is_true, le,
-        lt, ne, never_matches, none, not, ok, satisfies, soft, some, starts_with,
+        every, ge, gt, have_len, is_empty, is_false, is_finite, is_nan, is_not_empty, is_true,
+        items, le, lt, ne, never_matches, none, not, ok, satisfies, soft, some, starts_with,
     };
 
     // `test_case` is deliberately *not* re-exported here. `std`'s own prelude

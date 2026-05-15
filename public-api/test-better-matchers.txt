@@ -34,6 +34,17 @@ impl core::marker::Unpin for test_better_matchers::Description
 impl core::marker::UnsafeUnpin for test_better_matchers::Description
 impl core::panic::unwind_safe::RefUnwindSafe for test_better_matchers::Description
 impl core::panic::unwind_safe::UnwindSafe for test_better_matchers::Description
+pub struct test_better_matchers::Items<T>(_)
+impl<T> test_better_matchers::Sequence for test_better_matchers::Items<T>
+pub type test_better_matchers::Items<T>::Item = T
+pub fn test_better_matchers::Items<T>::sequence_items(&self) -> alloc::vec::Vec<&T>
+impl<T> core::marker::Freeze for test_better_matchers::Items<T>
+impl<T> core::marker::Send for test_better_matchers::Items<T> where T: core::marker::Send
+impl<T> core::marker::Sync for test_better_matchers::Items<T> where T: core::marker::Sync
+impl<T> core::marker::Unpin for test_better_matchers::Items<T> where T: core::marker::Unpin
+impl<T> core::marker::UnsafeUnpin for test_better_matchers::Items<T>
+impl<T> core::panic::unwind_safe::RefUnwindSafe for test_better_matchers::Items<T> where T: core::panic::unwind_safe::RefUnwindSafe
+impl<T> core::panic::unwind_safe::UnwindSafe for test_better_matchers::Items<T> where T: core::panic::unwind_safe::UnwindSafe
 pub struct test_better_matchers::MatchResult
 pub test_better_matchers::MatchResult::failure: core::option::Option<test_better_matchers::Mismatch>
 pub test_better_matchers::MatchResult::matched: bool
@@ -219,6 +230,9 @@ pub fn alloc::vec::Vec<T>::sequence_items(&self) -> alloc::vec::Vec<&T>
 impl<T> test_better_matchers::Sequence for std::collections::hash::set::HashSet<T>
 pub type std::collections::hash::set::HashSet<T>::Item = T
 pub fn std::collections::hash::set::HashSet<T>::sequence_items(&self) -> alloc::vec::Vec<&T>
+impl<T> test_better_matchers::Sequence for test_better_matchers::Items<T>
+pub type test_better_matchers::Items<T>::Item = T
+pub fn test_better_matchers::Items<T>::sequence_items(&self) -> alloc::vec::Vec<&T>
 pub fn test_better_matchers::all_of<T, Tup>(matchers: Tup) -> impl test_better_matchers::Matcher<T> where T: ?core::marker::Sized, Tup: test_better_matchers::MatcherTuple<T>
 pub fn test_better_matchers::always_matches<T: ?core::marker::Sized>() -> impl test_better_matchers::Matcher<T>
 pub fn test_better_matchers::any_of<T, Tup>(matchers: Tup) -> impl test_better_matchers::Matcher<T> where T: ?core::marker::Sized, Tup: test_better_matchers::MatcherTuple<T>
@@ -243,6 +257,7 @@ pub fn test_better_matchers::is_finite<F: test_better_matchers::Float>() -> impl
 pub fn test_better_matchers::is_nan<F: test_better_matchers::Float>() -> impl test_better_matchers::Matcher<F>
 pub fn test_better_matchers::is_not_empty<C>() -> impl test_better_matchers::Matcher<C> where C: test_better_matchers::Sequence + ?core::marker::Sized
 pub fn test_better_matchers::is_true() -> impl test_better_matchers::Matcher<bool>
+pub fn test_better_matchers::items<I>(iter: I) -> test_better_matchers::Items<<I as core::iter::traits::collect::IntoIterator>::Item> where I: core::iter::traits::collect::IntoIterator
 pub fn test_better_matchers::le<T>(expected: T) -> impl test_better_matchers::Matcher<T> where T: core::cmp::PartialOrd + core::fmt::Debug
 pub fn test_better_matchers::lt<T>(expected: T) -> impl test_better_matchers::Matcher<T> where T: core::cmp::PartialOrd + core::fmt::Debug
 pub fn test_better_matchers::matches_regex<T>(pattern: impl core::convert::Into<alloc::string::String>) -> impl test_better_matchers::Matcher<T> where T: core::convert::AsRef<str> + core::fmt::Debug + ?core::marker::Sized

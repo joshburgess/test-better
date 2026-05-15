@@ -10,6 +10,14 @@ introduces it is merged.** All crates are versioned in lockstep.
 
 ## [Unreleased]
 
+### Added
+
+- `test-better-matchers`: `items(iter)`, an eager `Sequence` wrapper that
+  collects an iterator into a `Vec` so any collection matcher (`have_len`,
+  `contains`, `contains_in_order`, `every`, ...) accepts a lazy iterator
+  without the caller writing `.collect()` first. The returned `Items<T>` is
+  re-exported from the facade and `items` is added to the prelude.
+
 ## [0.1.0] - 2026-05-15
 
 The initial public release. `test-better` makes a `Result`-returning test that
