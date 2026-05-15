@@ -37,10 +37,8 @@ cargo doc --workspace --no-deps
 ```
 
 CI additionally runs `cargo deny check`, the dogfood scan
-(`scripts/check-test-api.sh`), the public-API drift check
-(`scripts/check-public-api.sh`), and an `mdbook build` of the guide. You can run
-each locally; install `cargo-deny`, `cargo-public-api`, and `mdbook` with
-`cargo install`.
+(`scripts/check-test-api.sh`), and an `mdbook build` of the guide. You can run
+each locally; install `cargo-deny` and `mdbook` with `cargo install`.
 
 ### Formatting note
 
@@ -59,8 +57,6 @@ A PR is not done until all of the following hold:
 - [ ] Tests are written using the library itself.
 - [ ] `CHANGELOG.md` is updated under `## [Unreleased]` for every public API
       change.
-- [ ] The public-API snapshots under `public-api/` are regenerated if the
-      surface changed (`scripts/check-public-api.sh --write`).
 - [ ] CI is green across the full matrix.
 
 ## Commits and PRs

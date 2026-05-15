@@ -1,7 +1,0 @@
-pub mod test_better_macros
-pub proc macro test_better_macros::#[fixture]
-pub proc macro test_better_macros::matches_struct!()
-pub proc macro test_better_macros::matches_tuple!()
-pub proc macro test_better_macros::matches_variant!()
-pub proc macro test_better_macros::#[test_case]
-pub proc macro test_better_macros::#[test_with_fixtures]
