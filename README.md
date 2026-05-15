@@ -104,10 +104,11 @@ expect!(render_page(&ctx)).to_match_inline_snapshot(r#"<h1>Hello</h1>"#)?;
 
 ## Documentation
 
-- **The `test-better` book** under [`book/`](./book/) is the prose guide:
-  Getting Started, Migrating from `assert!`, Writing Matchers, Async Testing,
-  Property Testing, Snapshots, Fixtures, Performance, and Recipes. Build it
-  locally with `mdbook build book`.
+- **The [`test-better` book](https://joshburgess.github.io/test-better/)** is
+  the prose guide: Getting Started, Migrating from `assert!`, Writing Matchers,
+  Async Testing, Property Testing, Snapshots, Fixtures, Performance, and
+  Recipes. The sources live under [`book/`](./book/); build a local copy with
+  `mdbook build book`.
 - **The API reference** is the rustdoc: `cargo doc --open -p test-better`.
 - **Runnable examples** live in [`examples/`](./examples/), each a small crate
   with its own test suite: `cargo test -p web-handler-tests-example` and

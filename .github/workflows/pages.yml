@@ -1,0 +1,44 @@
+name: pages
+
+# Publishes the rendered mdBook guide to GitHub Pages on every push to `main`.
+# The book itself is built and shape-checked on every PR by the `book` job in
+# `ci.yml`; this workflow's job is to *deploy*, not to gate review.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "book/**"
+      - ".github/workflows/pages.yml"
+  # Manual re-deploys (e.g. after changing Pages settings) without an empty
+  # commit.
+  workflow_dispatch:
+
+# Permissions the deploy-pages action requires.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One in-flight deploy at a time; do not interrupt a deploy that's already
+# uploading, queue behind it instead.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: cargo install mdbook --locked
+      - run: mdbook build book
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: target/book
+      - id: deployment
+        uses: actions/deploy-pages@v4
