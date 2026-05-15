@@ -14,15 +14,15 @@ readme = "../../README.md"
 
 [dependencies]
 test-better-core = { workspace = true }
-# The property-testing backend (BACKLOG.md). `default-features = false`
-# drops `fork`/`timeout` (and their `rusty-fork`/`libc`/`wait-timeout`
-# dependencies): the `Strategy<T>` seam only needs `proptest`'s generation and
-# shrinking, which the `std` feature carries.
+# The property-testing backend. `default-features = false` drops `fork` and
+# `timeout` (and their `rusty-fork`/`libc`/`wait-timeout` dependencies): the
+# `Strategy<T>` seam only needs `proptest`'s generation and shrinking, which
+# the `std` feature carries.
 proptest = { version = "1", default-features = false, features = ["std"] }
-# The best-effort second backend (BACKLOG.md), behind the `quickcheck` feature
-# and off by default. `default-features = false` drops `quickcheck`'s
-# `env_logger`/`log` (`use_logging`) dependencies: the bridge only needs
-# `Arbitrary` for generation and shrinking.
+# The best-effort second backend, behind the `quickcheck` feature and off by
+# default. `default-features = false` drops `quickcheck`'s `env_logger`/`log`
+# (`use_logging`) dependencies: the bridge only needs `Arbitrary` for
+# generation and shrinking.
 quickcheck = { version = "1", default-features = false, optional = true }
 
 [dev-dependencies]

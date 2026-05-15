@@ -134,9 +134,7 @@ what you use.
 
 Bug reports, documentation fixes, new matchers, and feature work are all
 welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for the design principles,
-local check commands, and the definition of done. Ideas that are out of scope
-for now, along with the rationale behind several resolved design decisions,
-live in [BACKLOG.md](./BACKLOG.md).
+local check commands, and the definition of done.
 
 ## License
 

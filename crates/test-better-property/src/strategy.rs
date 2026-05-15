@@ -5,7 +5,7 @@
 //! [`ValueTree`] from a [`Runner`]'s randomness; a `ValueTree` holds a current
 //! value and can `simplify`/`complicate` it. That is exactly enough to drive
 //! `proptest`'s integrated shrinking, and it leaves room for a second backend
-//! later (BACKLOG.md) without promising one today.
+//! later without promising one today.
 //!
 //! `proptest` plugs in through a blanket impl: every
 //! `proptest::strategy::Strategy` *is* a [`Strategy`] here, so a property test

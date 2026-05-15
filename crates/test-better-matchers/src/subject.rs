@@ -10,10 +10,10 @@
 //!
 //! When the expression handed to `expect!` is a [`Future`], the resulting
 //! `Subject` grows an `await`-based method, [`Subject::resolves_to`]. The
-//! decision (recorded in `BACKLOG.md`) is to keep a single `Subject<T>` and add
-//! that method to *this* impl block with a method-level `where T: Future`
-//! bound and a distinct name: a blanket `impl<T> Subject<T>` and an overlapping
-//! `impl<F: Future> Subject<F>` cannot coexist as inherent impls.
+//! design is a single `Subject<T>` with that method added to *this* impl block
+//! under a method-level `where T: Future` bound and a distinct name: a blanket
+//! `impl<T> Subject<T>` and an overlapping `impl<F: Future> Subject<F>` cannot
+//! coexist as inherent impls.
 //!
 //! `resolves_to` is runtime-agnostic: it just awaits the future, so it works
 //! under `#[tokio::test]`, `#[async_std::test]`, `pollster::block_on`, or any

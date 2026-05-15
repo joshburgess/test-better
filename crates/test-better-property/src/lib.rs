@@ -9,8 +9,8 @@
 //!
 //! - the [`Strategy`] seam (with [`ValueTree`], [`Runner`], [`GenError`]): a
 //!   deliberately small trait the runner is written against. The shipped
-//!   backend is `proptest`, which satisfies it through a blanket impl, so a property test
-//!   names ordinary `proptest` strategies (BACKLOG.md);
+//!   backend is `proptest`, which satisfies it through a blanket impl, so a
+//!   property test names ordinary `proptest` strategies;
 //! - the runner: [`check`] (and [`check_with`]) generate cases, run a
 //!   `T -> TestResult` predicate, and on failure return a [`PropertyFailure`]
 //!   carrying the shrunk counterexample.

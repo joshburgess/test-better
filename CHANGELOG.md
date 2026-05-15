@@ -391,7 +391,10 @@ as a committed snapshot, and the prose guide is the `test-better` book.
   only the unwrap/expect equivalents).
 - The async-`Subject` design is resolved: a single `Subject<T>` type, with the
   `await`-based methods added to the same impl block under method-level
-  `where T: Future` bounds. Rationale in `BACKLOG.md`.
+  `where T: Future` bounds. A blanket `impl<T> Subject<T>` and an overlapping
+  `impl<F: Future> Subject<F>` cannot coexist as inherent impls, and a separate
+  `AsyncSubject<F>` would force `expect!` to dispatch on whether its argument
+  is a future, which a syntactic macro cannot do.
 - `TestError::payload` is `Option<Box<Payload>>` rather than `Option<Payload>`.
   `TestError` is returned by value through every `?`, so it is kept small; the
   large `Payload::ExpectedActual` variant lives behind the box. The public
@@ -400,10 +403,9 @@ as a committed snapshot, and the prose guide is the `test-better` book.
   A blanket `impl<I: Iterator> Sequence for I` overlaps, under coherence, with
   the concrete `impl Sequence for Vec<T>` (and the other collections), so the
   two cannot coexist. `Sequence` borrows its items through `&self`, which a
-  lazy iterator cannot offer anyway. Callers collect an iterator into a `Vec`
-  first (`expect!(it.collect::<Vec<_>>())`), which is the "eager collection"
-  the plan asked for, just at the call site. Recorded as an idea in
-  `BACKLOG.md` in case a dedicated adapter is wanted later.
+  lazy iterator cannot offer anyway. The dedicated adapter is `items(iter)`,
+  which collects into a `Vec<T>` up front and wraps it in `Items<T>`; callers
+  who already have a `Vec` can pass it directly.
 - Dogfood switchover: every test in the workspace now uses
   `expect!` and `TestResult` instead of `assert!`/`assert_eq!`/`.unwrap()`/
   `.expect()`, enforced by `scripts/check-test-api.sh` (a new `dogfood` CI job)
@@ -490,17 +492,16 @@ as a committed snapshot, and the prose guide is the `test-better` book.
   initial, doubling, 100ms ceiling). Only the two default-schedule functions are
   in the prelude; `Backoff` and the `_with` variants are imported by name, in
   keeping with the deliberately small prelude.
-- `proptest` is the property-testing backend for the initial release: it ships integrated shrinking, the feature the
-  `ValueTree` protocol is built on. It is depended on with
-  `default-features = false, features = ["std"]`, which drops the `fork` /
-  `timeout` machinery (and `rusty-fork` / `libc` / `wait-timeout`) the bridge
-  does not use; `cargo deny` stays clean. A `quickcheck` bridge remains open in
-  BACKLOG.md as a post-1.0 idea, not a 1.0 blocker.
+- `proptest` is the property-testing backend for the initial release: it ships
+  integrated shrinking, the feature the `ValueTree` protocol is built on. It
+  is depended on with `default-features = false, features = ["std"]`, which
+  drops the `fork` / `timeout` machinery (and `rusty-fork` / `libc` /
+  `wait-timeout`) the bridge does not use; `cargo deny` stays clean.
 - The `Strategy<T>` seam has one coherence limitation: a user type that is
   itself a `proptest::strategy::Strategy` is already covered by the blanket
   impl, so it cannot also carry a hand-written `Strategy<T>` impl. This is
-  accepted: the seam exists so the runner does not name `proptest` directly, not
-  so users reimplement strategies. Recorded in BACKLOG.md.
+  accepted: the seam exists so the runner does not name `proptest` directly,
+  not so users reimplement strategies.
 - `check` runs deterministically by default (`Runner::deterministic`) so a
   property test does not flake from run to run: the same strategy and predicate
   pass or fail identically every time. `check_with` exposes `Runner::randomized`
@@ -637,7 +638,10 @@ as a committed snapshot, and the prose guide is the `test-better` book.
   pinned by `trybuild` tests in `crates/test-better/tests/ui/`.
 - The runner's structured-output channel is marker-wrapped JSON
   in the test's own captured output, not a side-channel file under `target/`.
-  Rationale is recorded in `BACKLOG.md`. The exit-code-parity acceptance is
+  Captured stdout is the one byte stream every test harness already routes
+  through `cargo test`, so the runner reads it without coordinating on a file
+  path that the binary, the harness, and the runner would all have to agree
+  on. The exit-code-parity acceptance is
   pinned by two fixture crates under
   `crates/test-better-runner/tests/fixtures/`; each carries an empty
   `[workspace]` table so it is its own workspace root (out of the parent

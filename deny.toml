@@ -3,7 +3,7 @@
 [advisories]
 version = 2
 # Fail on any security advisory or unmaintained crate. Add IDs to `ignore` only
-# with a comment explaining why and a tracking entry in BACKLOG.md.
+# with a comment explaining why.
 ignore = []
 
 [licenses]

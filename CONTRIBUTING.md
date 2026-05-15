@@ -6,10 +6,7 @@ new matchers, and feature work are all welcome.
 ## Before you start
 
 For anything larger than a bug fix or a doc tweak, open an issue first so the
-design can be discussed before you write code. Ideas that are out of scope for
-the moment are collected in [`BACKLOG.md`](./BACKLOG.md); that file also records
-the rationale behind several resolved design decisions, which is useful context
-before proposing a change to the same area.
+design can be discussed before you write code.
 
 ## Design principles
 
