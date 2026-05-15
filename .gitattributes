@@ -1,0 +1,10 @@
+# Snapshot files are compared byte-for-byte against the in-memory rendered
+# value, so they must check out with the same line endings everywhere. Force
+# LF regardless of the contributor's git config (Windows' default
+# `core.autocrlf=true` would otherwise rewrite them to CRLF on checkout).
+*.snap text eol=lf
+
+# Pending inline-snapshot patches under `target/.test-better/` are produced
+# with LF by the runtime. Treat them the same on the off-chance one gets
+# committed by accident.
+*.patch text eol=lf

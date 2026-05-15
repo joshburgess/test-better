@@ -4,7 +4,15 @@
 version = 2
 # Fail on any security advisory or unmaintained crate. Add IDs to `ignore` only
 # with a comment explaining why.
-ignore = []
+ignore = [
+    # async-std was marked discontinued (no further maintenance) in 2025. It is
+    # not vulnerable, just unmaintained. We pull it in through the off-by-default
+    # `async-std` runtime feature of `test-better-async`'s timeout adapter (the
+    # other supported runtimes are `tokio` and `smol`). Dropping async-std
+    # support would be a breaking feature removal; users who enable the feature
+    # have already chosen that ecosystem.
+    "RUSTSEC-2025-0052",
+]
 
 [licenses]
 version = 2
