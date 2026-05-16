@@ -468,7 +468,7 @@ dependencies = [
 
 [[package]]
 name = "test-better"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "test-better-core",
  "test-better-macros",
@@ -479,7 +479,7 @@ dependencies = [
 
 [[package]]
 name = "test-better-async"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "smol",
  "test-better-core",
@@ -487,11 +487,11 @@ dependencies = [
 
 [[package]]
 name = "test-better-core"
-version = "0.2.0"
+version = "0.2.1"
 
 [[package]]
 name = "test-better-macros"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -500,7 +500,7 @@ dependencies = [
 
 [[package]]
 name = "test-better-matchers"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "similar",
  "test-better-async",
@@ -510,7 +510,7 @@ dependencies = [
 
 [[package]]
 name = "test-better-property"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "proptest",
  "test-better-core",
@@ -518,7 +518,7 @@ dependencies = [
 
 [[package]]
 name = "test-better-snapshot"
-version = "0.2.0"
+version = "0.2.1"
 
 [[package]]
 name = "timeout-smol"

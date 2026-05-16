@@ -26,7 +26,7 @@ proptest = { version = "1", default-features = false, features = ["std"] }
 quickcheck = { version = "1", default-features = false, optional = true }
 
 [dev-dependencies]
-# Dogfooding: the crate's own tests assert with `expect!`. A dev-dependency
+# Dogfooding: the crate's own tests assert with `check!`. A dev-dependency
 # cycle, which Cargo permits (same pattern as `test-better-core`). Declared
 # path-only so Cargo drops it from the published manifest and the cycle does
 # not block `cargo publish`.

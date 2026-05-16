@@ -1,6 +1,6 @@
 [package]
 name = "test-better-matchers"
-description = "Matcher trait, standard matchers, and the `expect!` macro for the test-better testing library."
+description = "Matcher trait, standard matchers, and the `check!` macro for the test-better testing library."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -43,10 +43,10 @@ async-std = ["test-better-async/async-std"]
 smol = ["test-better-async/smol"]
 
 [dev-dependencies]
-# Drives the compile-fail test that a forgotten `?` on `expect!(..)` is a
+# Drives the compile-fail test that a forgotten `?` on `check!(..)` is a
 # warning.
 trybuild = "1.0"
-# A dependency-free `block_on`, so the async `expect!` tests and doc examples
+# A dependency-free `block_on`, so the async `check!` tests and doc examples
 # can drive a future without pulling in a full runtime.
 pollster = "0.4"
 

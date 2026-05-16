@@ -33,7 +33,7 @@ name = "test-better-accept"
 required-features = ["accept"]
 
 [dev-dependencies]
-# Dogfooding: this crate's own tests assert with `expect!`. `test-better-matchers`
+# Dogfooding: this crate's own tests assert with `check!`. `test-better-matchers`
 # depends on `test-better-snapshot`, so this is a dev-dependency cycle, which
 # Cargo permits (the same arrangement as `test-better-async`). Both are declared
 # path-only so Cargo drops them from the published manifest and the cycle does

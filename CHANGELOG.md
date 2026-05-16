@@ -10,6 +10,32 @@ introduces it is merged.** All crates are versioned in lockstep.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-05-15
+
+A documentation-and-metadata follow-up to 0.2.0. No public API changes; the
+compiled output of every crate is identical to 0.2.0.
+
+### Changed
+
+- `test-better-matchers`: the crates.io package `description` is updated from
+  the old `expect!` name to `check!`, matching the 0.2.0 rename.
+- Internal `Cargo.toml` comments across `test-better-core`,
+  `test-better-async`, `test-better-snapshot`, `test-better-property`, and
+  `test-better-runner` are updated from `expect!` to `check!` for the same
+  reason.
+
+### Fixed
+
+- The 0.2.0 commit's `cargo fmt --all --check` failures are corrected (import
+  ordering after the rename, and a handful of lines that pushed past 100
+  columns once `expect!` became `check!`). The 0.2.0 release on crates.io is
+  unaffected; this is a source-tree-only cleanup.
+
+### CI
+
+- `actions/checkout@v4` is bumped to `@v5` to clear the Node.js 20
+  deprecation warnings.
+
 ## [0.2.0] - 2026-05-15
 
 A naming pass on the assertion surface. Every Subject method now reads as a

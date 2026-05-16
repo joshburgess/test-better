@@ -18,7 +18,7 @@ path = "src/main.rs"
 
 [dependencies]
 # The runner consumes the structured failure form (`StructuredError`), so it
-# needs the facade built with `serde`. It also dogfoods `expect!`/`TestResult`,
+# needs the facade built with `serde`. It also dogfoods `check!`/`TestResult`,
 # so this single dependency covers both the runtime and the test needs.
 test-better = { workspace = true, features = ["serde"] }
 # The wire format of the structured-output channel: each marker-wrapped line is

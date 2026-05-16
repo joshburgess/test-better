@@ -34,7 +34,7 @@ smol = ["dep:smol"]
 # A dependency-free `block_on`, so the runtime-agnostic `race` core can be
 # unit-tested with hand-built futures and no real runtime.
 pollster = "0.4"
-# Dogfooding: the crate's own tests assert with `expect!`. This is a
+# Dogfooding: the crate's own tests assert with `check!`. This is a
 # dev-dependency cycle (`test-better-matchers` depends on `test-better-async`),
 # which Cargo permits, mirroring the `test-better-core` arrangement. Declared
 # path-only so Cargo drops it from the published manifest and the cycle does
