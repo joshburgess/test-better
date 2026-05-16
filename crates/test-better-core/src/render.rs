@@ -120,7 +120,9 @@ mod tests {
     #[test]
     fn render_has_no_trailing_newline() -> TestResult {
         let rendered = TestError::new(ErrorKind::Assertion).to_string();
-        check!(rendered.ends_with('\n')).satisfies(is_false()).or_fail()?;
+        check!(rendered.ends_with('\n'))
+            .satisfies(is_false())
+            .or_fail()?;
         Ok(())
     }
 
@@ -199,8 +201,12 @@ mod tests {
         check!(colored.contains("\x1b[32m"))
             .satisfies(is_true())
             .or_fail()?;
-        check!(plain.contains('\x1b')).satisfies(is_false()).or_fail()?;
-        check!(display.contains('\x1b')).satisfies(is_false()).or_fail()?;
+        check!(plain.contains('\x1b'))
+            .satisfies(is_false())
+            .or_fail()?;
+        check!(display.contains('\x1b'))
+            .satisfies(is_false())
+            .or_fail()?;
         Ok(())
     }
 }

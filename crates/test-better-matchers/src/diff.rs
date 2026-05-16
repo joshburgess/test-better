@@ -56,7 +56,7 @@ mod tests {
     use test_better_core::TestResult;
 
     use super::*;
-    use crate::{eq, check, is_false};
+    use crate::{check, eq, is_false};
 
     #[test]
     fn equal_input_is_all_context_lines() -> TestResult {

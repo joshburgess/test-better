@@ -279,7 +279,7 @@ mod tests {
     use std::path::Path;
 
     use test_better_core::{OrFail, TestResult};
-    use test_better_matchers::{contains_str, eq, check, is_true};
+    use test_better_matchers::{check, contains_str, eq, is_true};
 
     use super::*;
 

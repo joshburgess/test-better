@@ -352,7 +352,7 @@ mod tests {
     use std::cell::Cell;
     use std::future::{pending, ready};
 
-    use test_better_matchers::{eq, check, ge, is_true};
+    use test_better_matchers::{check, eq, ge, is_true};
 
     #[test]
     fn race_returns_the_future_output_when_it_is_ready_first() -> TestResult {
@@ -382,7 +382,8 @@ mod tests {
             ceiling: Duration::from_millis(25),
             factor: 2,
         };
-        check!(backoff.next_nap(Duration::from_millis(10))).satisfies(eq(Duration::from_millis(20)))?;
+        check!(backoff.next_nap(Duration::from_millis(10)))
+            .satisfies(eq(Duration::from_millis(20)))?;
         // 20 * 2 = 40, clamped down to the 25ms ceiling.
         check!(backoff.next_nap(Duration::from_millis(20))).satisfies(eq(Duration::from_millis(25)))
     }

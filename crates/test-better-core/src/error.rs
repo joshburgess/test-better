@@ -272,7 +272,7 @@ impl std::error::Error for TestError {
 mod tests {
     use super::*;
     use crate::{OrFail, TestResult};
-    use test_better_matchers::{eq, check, is_true};
+    use test_better_matchers::{check, eq, is_true};
 
     #[track_caller]
     fn sample_assertion() -> TestError {
@@ -283,7 +283,9 @@ mod tests {
     fn new_captures_caller_location() -> TestResult {
         let line = line!() + 1;
         let error = TestError::new(ErrorKind::Assertion);
-        check!(error.location.line()).satisfies(eq(line)).or_fail()?;
+        check!(error.location.line())
+            .satisfies(eq(line))
+            .or_fail()?;
         check!(error.location.file().ends_with("error.rs"))
             .satisfies(is_true())
             .or_fail()?;
@@ -388,11 +390,15 @@ mod tests {
     fn assertion_constructor_sets_kind_message_and_caller_location() -> TestResult {
         let line = line!() + 1;
         let error = TestError::assertion("values differ");
-        check!(error.kind).satisfies(eq(ErrorKind::Assertion)).or_fail()?;
+        check!(error.kind)
+            .satisfies(eq(ErrorKind::Assertion))
+            .or_fail()?;
         check!(error.message.as_deref())
             .satisfies(eq(Some("values differ")))
             .or_fail()?;
-        check!(error.location.line()).satisfies(eq(line)).or_fail()?;
+        check!(error.location.line())
+            .satisfies(eq(line))
+            .or_fail()?;
         check!(error.location.file().ends_with("error.rs"))
             .satisfies(is_true())
             .or_fail()?;
@@ -403,11 +409,15 @@ mod tests {
     fn custom_constructor_sets_kind_message_and_caller_location() -> TestResult {
         let line = line!() + 1;
         let error = TestError::custom("something off");
-        check!(error.kind).satisfies(eq(ErrorKind::Custom)).or_fail()?;
+        check!(error.kind)
+            .satisfies(eq(ErrorKind::Custom))
+            .or_fail()?;
         check!(error.message.as_deref())
             .satisfies(eq(Some("something off")))
             .or_fail()?;
-        check!(error.location.line()).satisfies(eq(line)).or_fail()?;
+        check!(error.location.line())
+            .satisfies(eq(line))
+            .or_fail()?;
         check!(error.location.file().ends_with("error.rs"))
             .satisfies(is_true())
             .or_fail()?;
@@ -418,8 +428,12 @@ mod tests {
     fn from_expected_actual_captures_debug_values_and_caller_location() -> TestResult {
         let line = line!() + 1;
         let error = TestError::from_expected_actual(4, 5);
-        check!(error.kind).satisfies(eq(ErrorKind::Assertion)).or_fail()?;
-        check!(error.location.line()).satisfies(eq(line)).or_fail()?;
+        check!(error.kind)
+            .satisfies(eq(ErrorKind::Assertion))
+            .or_fail()?;
+        check!(error.location.line())
+            .satisfies(eq(line))
+            .or_fail()?;
         match error.payload.map(|payload| *payload) {
             Some(Payload::ExpectedActual {
                 expected,

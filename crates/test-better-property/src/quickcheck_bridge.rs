@@ -164,7 +164,7 @@ mod tests {
     use super::*;
 
     use test_better_core::{OrFail, TestResult};
-    use test_better_matchers::{eq, check, is_true, le};
+    use test_better_matchers::{check, eq, is_true, le};
 
     #[test]
     fn an_arbitrary_type_is_a_seam_strategy() -> TestResult {

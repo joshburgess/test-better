@@ -130,7 +130,7 @@ pub(crate) fn snapshot() -> Vec<TraceEntry> {
 mod tests {
     use super::*;
     use crate::{ErrorKind, OrFail, TestError, TestResult};
-    use test_better_matchers::{eq, check, is_true};
+    use test_better_matchers::{check, eq, is_true};
 
     #[test]
     fn steps_and_kv_are_recorded_in_order() -> TestResult {
@@ -170,7 +170,9 @@ mod tests {
     #[test]
     fn an_error_built_with_no_trace_in_scope_has_an_empty_trace() -> TestResult {
         let error = TestError::new(ErrorKind::Assertion);
-        check!(error.trace.is_empty()).satisfies(is_true()).or_fail()?;
+        check!(error.trace.is_empty())
+            .satisfies(is_true())
+            .or_fail()?;
         Ok(())
     }
 
@@ -182,7 +184,9 @@ mod tests {
         }
         // The trace is dropped; a later error captures nothing.
         let error = TestError::new(ErrorKind::Assertion);
-        check!(error.trace.is_empty()).satisfies(is_true()).or_fail()?;
+        check!(error.trace.is_empty())
+            .satisfies(is_true())
+            .or_fail()?;
         Ok(())
     }
 

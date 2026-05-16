@@ -301,11 +301,7 @@ impl<T> Subject<T> {
     /// # fn now_rfc3339() -> &'static str { "2026-05-14T12:34:56Z" }
     /// ```
     #[track_caller]
-    pub fn matches_inline_snapshot_with(
-        self,
-        expected: &str,
-        redactions: &Redactions,
-    ) -> TestResult
+    pub fn matches_inline_snapshot_with(self, expected: &str, redactions: &Redactions) -> TestResult
     where
         T: Display,
     {

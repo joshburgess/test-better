@@ -236,7 +236,7 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, check, gt, is_false, is_true, lt};
+    use crate::{check, eq, gt, is_false, is_true, lt};
 
     #[test]
     fn not_inverts_the_inner_matcher() -> TestResult {
@@ -276,7 +276,8 @@ mod tests {
     #[test]
     fn all_of_describes_itself_as_a_conjunction() -> TestResult {
         let description = all_of((gt(0), lt(100))).description();
-        check!(description.to_string()).satisfies(eq("greater than 0 and less than 100".to_string()))?;
+        check!(description.to_string())
+            .satisfies(eq("greater than 0 and less than 100".to_string()))?;
         Ok(())
     }
 

@@ -261,7 +261,7 @@ pub fn parse_pending_patch(body: &str) -> std::io::Result<(InlineLocation, Strin
 #[cfg(test)]
 mod tests {
     use test_better_core::{OrFail, TestResult};
-    use test_better_matchers::{eq, check, is_true};
+    use test_better_matchers::{check, eq, is_true};
 
     use super::*;
 

@@ -92,6 +92,7 @@ fn a_module_fixture_failure_is_a_setup_error() -> TestResult {
 
     let rendered = format!("{failure}");
     check!(rendered.contains("test setup failed")).satisfies(is_true())?;
-    check!(rendered.contains("module-scoped fixture `broken_shared` failed")).satisfies(is_true())?;
+    check!(rendered.contains("module-scoped fixture `broken_shared` failed"))
+        .satisfies(is_true())?;
     check!(rendered.contains("config file is missing")).satisfies(is_true())
 }

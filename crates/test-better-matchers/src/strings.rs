@@ -213,7 +213,7 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, check, is_false, is_true};
+    use crate::{check, eq, is_false, is_true};
 
     #[test]
     fn contains_str_matches_a_substring() -> TestResult {
@@ -239,7 +239,8 @@ mod tests {
             .check("hello")
             .failure
             .or_fail_with("hello does not contain xyz")?;
-        check!(failure.expected.to_string()).satisfies(eq("a string containing \"xyz\"".to_string()))?;
+        check!(failure.expected.to_string())
+            .satisfies(eq("a string containing \"xyz\"".to_string()))?;
         check!(failure.actual).satisfies(eq("\"hello\"".to_string()))?;
         Ok(())
     }

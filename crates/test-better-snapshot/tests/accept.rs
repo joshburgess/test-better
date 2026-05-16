@@ -11,7 +11,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use test_better_core::{OrFail, TestResult};
-use test_better_matchers::{eq, check, is_false, is_true};
+use test_better_matchers::{check, eq, is_false, is_true};
 use test_better_snapshot::apply_patches_from;
 
 /// A unique scratch directory under the system temp dir, named for the calling

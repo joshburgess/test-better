@@ -159,11 +159,12 @@ mod tests {
     use test_better_core::TestResult;
 
     use super::*;
-    use crate::{eq, check};
+    use crate::{check, eq};
 
     #[test]
     fn text_renders_verbatim() -> TestResult {
-        check!(Description::text("equal to 4").to_string()).satisfies(eq("equal to 4".to_string()))?;
+        check!(Description::text("equal to 4").to_string())
+            .satisfies(eq("equal to 4".to_string()))?;
         Ok(())
     }
 

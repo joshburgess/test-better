@@ -153,7 +153,7 @@ mod tests {
     use super::*;
     use crate::error::ContextFrame;
     use crate::{OrFail, TestResult, Trace};
-    use test_better_matchers::{eq, check, is_true};
+    use test_better_matchers::{check, eq, is_true};
 
     fn all_kinds() -> [ErrorKind; 6] {
         [
@@ -184,7 +184,9 @@ mod tests {
         let error =
             TestError::new(ErrorKind::Assertion).with_context_frame(ContextFrame::new("step one"));
         let structured = error.to_structured();
-        check!(structured.context.len()).satisfies(eq(1)).or_fail()?;
+        check!(structured.context.len())
+            .satisfies(eq(1))
+            .or_fail()?;
         check!(structured.context[0].message.as_str())
             .satisfies(eq("step one"))
             .or_fail()?;
@@ -249,7 +251,9 @@ mod tests {
                 check!(subs[0].message.as_deref())
                     .satisfies(eq(Some("a")))
                     .or_fail()?;
-                check!(subs[1].kind).satisfies(eq(ErrorKind::Setup)).or_fail()?;
+                check!(subs[1].kind)
+                    .satisfies(eq(ErrorKind::Setup))
+                    .or_fail()?;
             }
             other => panic!("expected Multiple, got {other:?}"),
         }
@@ -262,7 +266,9 @@ mod tests {
         let error = TestError::new(ErrorKind::Custom).with_payload(Payload::Other(Box::new(io)));
         match error.to_structured().payload {
             Some(StructuredPayload::Other { message, chain }) => {
-                check!(message).satisfies(eq("missing".to_string())).or_fail()?;
+                check!(message)
+                    .satisfies(eq("missing".to_string()))
+                    .or_fail()?;
                 check!(chain.is_empty()).satisfies(is_true()).or_fail()?;
             }
             other => panic!("expected Other, got {other:?}"),

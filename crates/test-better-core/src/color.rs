@@ -80,7 +80,7 @@ pub(crate) fn color_enabled() -> bool {
 mod tests {
     use super::*;
     use crate::{OrFail, TestResult};
-    use test_better_matchers::{eq, check, is_false, is_true};
+    use test_better_matchers::{check, eq, is_false, is_true};
 
     #[test]
     fn resolve_handles_every_choice_and_no_color() -> TestResult {
@@ -125,8 +125,12 @@ mod tests {
         check!(after_always)
             .satisfies(eq(ColorChoice::Always))
             .or_fail()?;
-        check!(after_never).satisfies(eq(ColorChoice::Never)).or_fail()?;
-        check!(after_auto).satisfies(eq(ColorChoice::Auto)).or_fail()?;
+        check!(after_never)
+            .satisfies(eq(ColorChoice::Never))
+            .or_fail()?;
+        check!(after_auto)
+            .satisfies(eq(ColorChoice::Auto))
+            .or_fail()?;
         Ok(())
     }
 }

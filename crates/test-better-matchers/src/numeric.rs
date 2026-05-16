@@ -219,7 +219,7 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, check, is_false, is_true};
+    use crate::{check, eq, is_false, is_true};
 
     #[test]
     fn close_to_respects_the_tolerance() -> TestResult {

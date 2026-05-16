@@ -218,7 +218,7 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, check, is_false, is_true};
+    use crate::{check, eq, is_false, is_true};
 
     #[test]
     fn some_matches_a_some_whose_value_satisfies_the_inner_matcher() -> TestResult {
@@ -270,7 +270,8 @@ mod tests {
             .check(&Ok(0))
             .failure
             .or_fail_with("Ok is not Err")?;
-        check!(failure.expected.to_string()).satisfies(eq("err:\n  equal to \"boom\"".to_string()))?;
+        check!(failure.expected.to_string())
+            .satisfies(eq("err:\n  equal to \"boom\"".to_string()))?;
         check!(failure.actual).satisfies(eq("Ok(0)".to_string()))?;
         Ok(())
     }

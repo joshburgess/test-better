@@ -95,7 +95,7 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, check, is_false, is_true};
+    use crate::{check, eq, is_false, is_true};
 
     #[test]
     fn pass_has_no_failure() -> TestResult {

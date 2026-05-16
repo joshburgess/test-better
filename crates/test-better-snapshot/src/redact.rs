@@ -275,7 +275,7 @@ fn take_byte(bytes: &[u8], pos: &mut usize, expected: u8) -> Option<()> {
 #[cfg(test)]
 mod tests {
     use test_better_core::TestResult;
-    use test_better_matchers::{eq, check, is_true};
+    use test_better_matchers::{check, eq, is_true};
 
     use super::*;
 
@@ -307,7 +307,8 @@ mod tests {
     fn redact_rfc3339_timestamps_handles_z_and_offset_and_fractions() -> TestResult {
         let redactions = Redactions::new().redact_rfc3339_timestamps();
         let input = "at 2026-05-14T12:34:56Z and 2026-01-02T03:04:05.678-05:00 done";
-        check!(redactions.apply(input)).satisfies(eq("at [timestamp] and [timestamp] done".to_string()))
+        check!(redactions.apply(input))
+            .satisfies(eq("at [timestamp] and [timestamp] done".to_string()))
     }
 
     #[test]

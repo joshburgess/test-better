@@ -187,11 +187,9 @@ mod tests {
         // "every u32 is below 100" is false; the smallest counterexample is
         // exactly 100, and `proptest` shrinks integers toward zero, so the
         // shrink search must land on it.
-        let failure = for_all(proptest::num::u32::ANY, |n| {
-            check!(n).satisfies(lt(100u32))
-        })
-        .err()
-        .or_fail_with("a property that is false for most u32 must fail")?;
+        let failure = for_all(proptest::num::u32::ANY, |n| check!(n).satisfies(lt(100u32)))
+            .err()
+            .or_fail_with("a property that is false for most u32 must fail")?;
         check!(failure.shrunk).satisfies(eq(100u32))?;
         // The original counterexample was some value at or above the bound...
         check!(failure.original).satisfies(ge(100u32))?;
@@ -201,11 +199,9 @@ mod tests {
 
     #[test]
     fn the_shrunk_failure_is_the_one_the_minimal_input_produces() -> TestResult {
-        let failure = for_all(proptest::num::i64::ANY, |n| {
-            check!(n).satisfies(lt(0i64))
-        })
-        .err()
-        .or_fail_with("non-negative i64 values exist")?;
+        let failure = for_all(proptest::num::i64::ANY, |n| check!(n).satisfies(lt(0i64)))
+            .err()
+            .or_fail_with("non-negative i64 values exist")?;
         // The minimal non-negative i64 is 0.
         check!(failure.shrunk).satisfies(eq(0i64))?;
         // The carried `TestError` is the failure 0 itself produces.

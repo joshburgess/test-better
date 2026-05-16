@@ -105,7 +105,7 @@ mod tests {
     use super::*;
     use crate::{OrFail, TestResult};
     use std::cell::Cell;
-    use test_better_matchers::{eq, check, is_true};
+    use test_better_matchers::{check, eq, is_true};
 
     fn io_error() -> std::io::Error {
         std::io::Error::new(std::io::ErrorKind::NotFound, "missing file")
@@ -131,8 +131,12 @@ mod tests {
         let line = line!() + 1;
         let result = failing.context("reading the fixture");
         let error = result.expect_err("err path");
-        check!(error.kind).satisfies(eq(ErrorKind::Custom)).or_fail()?;
-        check!(error.location.line()).satisfies(eq(line)).or_fail()?;
+        check!(error.kind)
+            .satisfies(eq(ErrorKind::Custom))
+            .or_fail()?;
+        check!(error.location.line())
+            .satisfies(eq(line))
+            .or_fail()?;
         check!(matches!(error.payload.as_deref(), Some(Payload::Other(_))))
             .satisfies(is_true())
             .or_fail()?;
@@ -151,11 +155,15 @@ mod tests {
             .context("comparing the results")
             .expect_err("err path");
         // Kind, location, and the (absent) payload of the original are kept.
-        check!(error.kind).satisfies(eq(ErrorKind::Assertion)).or_fail()?;
+        check!(error.kind)
+            .satisfies(eq(ErrorKind::Assertion))
+            .or_fail()?;
         check!(error.location.line())
             .satisfies(eq(original_line))
             .or_fail()?;
-        check!(error.payload.is_none()).satisfies(is_true()).or_fail()?;
+        check!(error.payload.is_none())
+            .satisfies(is_true())
+            .or_fail()?;
         check!(error.message.as_deref())
             .satisfies(eq(Some("values differ")))
             .or_fail()?;
@@ -185,8 +193,12 @@ mod tests {
         let line = line!() + 1;
         let result = missing.context("looking up the user");
         let error = result.expect_err("err path");
-        check!(error.kind).satisfies(eq(ErrorKind::Custom)).or_fail()?;
-        check!(error.location.line()).satisfies(eq(line)).or_fail()?;
+        check!(error.kind)
+            .satisfies(eq(ErrorKind::Custom))
+            .or_fail()?;
+        check!(error.location.line())
+            .satisfies(eq(line))
+            .or_fail()?;
         check!(error.context[0].message.as_ref())
             .satisfies(eq("looking up the user"))
             .or_fail()?;

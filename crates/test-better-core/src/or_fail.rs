@@ -77,7 +77,7 @@ mod tests {
     use super::*;
     use crate::error::Payload;
     use crate::{OrFail, TestResult};
-    use test_better_matchers::{eq, check, is_true};
+    use test_better_matchers::{check, eq, is_true};
 
     fn io_error() -> std::io::Error {
         std::io::Error::new(std::io::ErrorKind::NotFound, "missing file")
@@ -103,8 +103,12 @@ mod tests {
         let line = line!() + 1;
         let result = missing.or_fail();
         let error = result.expect_err("err path");
-        check!(error.kind).satisfies(eq(ErrorKind::Assertion)).or_fail()?;
-        check!(error.location.line()).satisfies(eq(line)).or_fail()?;
+        check!(error.kind)
+            .satisfies(eq(ErrorKind::Assertion))
+            .or_fail()?;
+        check!(error.location.line())
+            .satisfies(eq(line))
+            .or_fail()?;
         let message = error.message.as_deref().or_fail_with("message present")?;
         check!(message.starts_with("expected Some("))
             .satisfies(is_true())
@@ -131,7 +135,9 @@ mod tests {
     fn or_fail_on_err_preserves_the_underlying_error() -> TestResult {
         let failing: Result<(), std::io::Error> = Err(io_error());
         let error = failing.or_fail().expect_err("err path");
-        check!(error.kind).satisfies(eq(ErrorKind::Custom)).or_fail()?;
+        check!(error.kind)
+            .satisfies(eq(ErrorKind::Custom))
+            .or_fail()?;
         match error.payload.as_deref() {
             Some(Payload::Other(inner)) => {
                 check!(inner.to_string())
@@ -149,14 +155,18 @@ mod tests {
         let original_line = original.location.line();
         let failing: Result<(), TestError> = Err(original);
         let error = failing.or_fail().expect_err("err path");
-        check!(error.kind).satisfies(eq(ErrorKind::Assertion)).or_fail()?;
+        check!(error.kind)
+            .satisfies(eq(ErrorKind::Assertion))
+            .or_fail()?;
         check!(error.location.line())
             .satisfies(eq(original_line))
             .or_fail()?;
         check!(error.message.as_deref())
             .satisfies(eq(Some("values differ")))
             .or_fail()?;
-        check!(error.payload.is_none()).satisfies(is_true()).or_fail()?;
+        check!(error.payload.is_none())
+            .satisfies(is_true())
+            .or_fail()?;
         Ok(())
     }
 

@@ -130,7 +130,7 @@ macro_rules! property {
 #[cfg(test)]
 mod tests {
     use test_better_core::{OrFail, TestResult};
-    use test_better_matchers::{eq, check, ge, is_true, lt};
+    use test_better_matchers::{check, eq, ge, is_true, lt};
 
     #[test]
     fn an_inferred_strategy_property_that_holds_passes() -> TestResult {

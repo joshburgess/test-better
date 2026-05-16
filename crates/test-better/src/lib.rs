@@ -53,9 +53,9 @@ pub use test_better_matchers::matches_regex;
 pub use test_better_matchers::{
     Backoff, ContainsAll, Description, Elapsed, Float, Items, MatchResult, Matcher, MatcherTuple,
     Mismatch, RuntimeAvailable, Sequence, SoftAsserter, SoftScope, Subject, all_of, always_matches,
-    any_of, at_least_one, between, close_to, contains, contains_all, contains_in_order,
+    any_of, at_least_one, between, check, close_to, contains, contains_all, contains_in_order,
     contains_str, define_matcher, ends_with, eq, err, eventually, eventually_blocking,
-    eventually_blocking_with, eventually_with, every, check, ge, gt, have_len, is_empty, is_false,
+    eventually_blocking_with, eventually_with, every, ge, gt, have_len, is_empty, is_false,
     is_finite, is_nan, is_not_empty, is_true, items, le, lt, ne, never_matches, none, not, ok,
     predicate, soft, some, starts_with,
 };
@@ -130,5 +130,5 @@ pub mod prelude {
         fixture, matches_struct, matches_tuple, matches_variant, test_with_fixtures,
     };
 
-    pub use crate::{define_matcher, check, property};
+    pub use crate::{check, define_matcher, property};
 }

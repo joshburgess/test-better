@@ -564,7 +564,7 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, check, gt, is_false, is_true, lt};
+    use crate::{check, eq, gt, is_false, is_true, lt};
 
     #[test]
     fn have_len_matches_the_exact_length() -> TestResult {

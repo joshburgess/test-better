@@ -12,7 +12,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use test_better_core::{OrFail, TestError, TestResult};
-use test_better_matchers::{eq, check, is_true};
+use test_better_matchers::{check, eq, is_true};
 use test_better_snapshot::{SnapshotFailure, SnapshotMode, assert_snapshot_in, snapshot_path};
 
 #[test]

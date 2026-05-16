@@ -274,7 +274,7 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, check, is_true};
+    use crate::{check, eq, is_true};
 
     #[test]
     fn eq_passes_and_fails_with_rendered_mismatch() -> TestResult {
@@ -329,7 +329,8 @@ mod tests {
     fn le_passes_and_fails_with_rendered_mismatch() -> TestResult {
         check!(le(10).check(&10).matched).satisfies(is_true())?;
         let failure = le(10).check(&11).failure.or_fail_with("11 is not <= 10")?;
-        check!(failure.expected.to_string()).satisfies(eq("less than or equal to 10".to_string()))?;
+        check!(failure.expected.to_string())
+            .satisfies(eq("less than or equal to 10".to_string()))?;
         check!(failure.actual).satisfies(eq("11".to_string()))?;
         Ok(())
     }
@@ -347,7 +348,8 @@ mod tests {
     fn ge_passes_and_fails_with_rendered_mismatch() -> TestResult {
         check!(ge(0).check(&0).matched).satisfies(is_true())?;
         let failure = ge(0).check(&-1).failure.or_fail_with("-1 is not >= 0")?;
-        check!(failure.expected.to_string()).satisfies(eq("greater than or equal to 0".to_string()))?;
+        check!(failure.expected.to_string())
+            .satisfies(eq("greater than or equal to 0".to_string()))?;
         check!(failure.actual).satisfies(eq("-1".to_string()))?;
         Ok(())
     }

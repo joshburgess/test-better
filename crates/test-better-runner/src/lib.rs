@@ -673,9 +673,12 @@ mod tests {
 
     #[test]
     fn classifies_progress_events() -> TestResult {
-        check!(progress_event("running 5 tests")).satisfies(eq(Some(ProgressEvent::Discovered(5))))?;
-        check!(progress_event("running 1 test")).satisfies(eq(Some(ProgressEvent::Discovered(1))))?;
-        check!(progress_event("test math::adds ... ok")).satisfies(eq(Some(ProgressEvent::Completed)))?;
+        check!(progress_event("running 5 tests"))
+            .satisfies(eq(Some(ProgressEvent::Discovered(5))))?;
+        check!(progress_event("running 1 test"))
+            .satisfies(eq(Some(ProgressEvent::Discovered(1))))?;
+        check!(progress_event("test math::adds ... ok"))
+            .satisfies(eq(Some(ProgressEvent::Completed)))?;
         check!(progress_event("test math::divides ... FAILED"))
             .satisfies(eq(Some(ProgressEvent::Completed)))?;
         check!(progress_event("test math::slow ... ignored"))

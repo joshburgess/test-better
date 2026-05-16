@@ -94,7 +94,8 @@ fn matches_variant_checks_struct_like_variants() -> TestResult {
 
 #[test]
 fn matches_variant_checks_tuple_like_variants() -> TestResult {
-    check!(Shape::Rectangle(3.0, 4.0)).satisfies(matches_variant!(Shape::Rectangle(gt(0.0), gt(0.0))))?;
+    check!(Shape::Rectangle(3.0, 4.0))
+        .satisfies(matches_variant!(Shape::Rectangle(gt(0.0), gt(0.0))))?;
     Ok(())
 }
 

@@ -14,7 +14,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use test_better_core::{ErrorKind, OrFail, Payload, TestError, TestResult};
-use test_better_matchers::{eq, check};
+use test_better_matchers::{check, eq};
 use test_better_property::{PropertyFailure, render_failure};
 
 #[test]
