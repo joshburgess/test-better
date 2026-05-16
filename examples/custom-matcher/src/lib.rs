@@ -112,63 +112,63 @@ mod tests {
 
     #[test]
     fn define_matcher_predicate_matches() -> TestResult {
-        expect!(-4.0_f64).to(is_freezing())?;
-        expect!(20.0_f64).to_not(is_freezing())?;
+        check!(-4.0_f64).satisfies(is_freezing())?;
+        check!(20.0_f64).violates(is_freezing())?;
         Ok(())
     }
 
     #[test]
     fn define_matcher_with_a_parameter_matches() -> TestResult {
-        expect!(25.0_f64).to(warmer_than(18.0))?;
-        expect!(10.0_f64).to_not(warmer_than(18.0))?;
+        check!(25.0_f64).satisfies(warmer_than(18.0))?;
+        check!(10.0_f64).violates(warmer_than(18.0))?;
         Ok(())
     }
 
     #[test]
     fn define_matcher_failure_reports_the_description() -> TestResult {
-        let error = expect!(30.0_f64)
-            .to(is_freezing())
+        let error = check!(30.0_f64)
+            .satisfies(is_freezing())
             .expect_err("30\u{b0}C is not freezing");
-        expect!(error.to_string().contains("at or below 0\u{b0}C")).to(is_true())?;
+        check!(error.to_string().contains("at or below 0\u{b0}C")).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
     fn hand_written_matcher_matches() -> TestResult {
-        expect!(Temperature(-1.0)).to(is_freezing_reading())?;
-        expect!(Temperature(5.0)).to_not(is_freezing_reading())?;
+        check!(Temperature(-1.0)).satisfies(is_freezing_reading())?;
+        check!(Temperature(5.0)).violates(is_freezing_reading())?;
         Ok(())
     }
 
     #[test]
     fn hand_written_matcher_failure_explains_why() -> TestResult {
-        let error = expect!(Temperature(5.0))
-            .to(is_freezing_reading())
+        let error = check!(Temperature(5.0))
+            .satisfies(is_freezing_reading())
             .expect_err("5\u{b0}C is above freezing");
-        expect!(error.to_string().contains("above freezing")).to(is_true())?;
+        check!(error.to_string().contains("above freezing")).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
     fn inner_matcher_adapter_matches() -> TestResult {
-        expect!(Temperature(21.5)).to(as_celsius(gt(0.0)))?;
-        expect!(Temperature(21.5)).to(as_celsius(between(20.0, 25.0)))?;
+        check!(Temperature(21.5)).satisfies(as_celsius(gt(0.0)))?;
+        check!(Temperature(21.5)).satisfies(as_celsius(between(20.0, 25.0)))?;
         Ok(())
     }
 
     #[test]
     fn inner_matcher_adapter_failure_keeps_the_layer() -> TestResult {
-        let error = expect!(Temperature(-3.0))
-            .to(as_celsius(gt(0.0)))
+        let error = check!(Temperature(-3.0))
+            .satisfies(as_celsius(gt(0.0)))
             .expect_err("-3\u{b0}C is not greater than 0");
-        expect!(error.to_string().contains("degrees Celsius")).to(is_true())?;
+        check!(error.to_string().contains("degrees Celsius")).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
     fn custom_matchers_compose_with_the_built_in_combinators() -> TestResult {
         // A custom matcher is an ordinary `Matcher`, so `not` and the rest work.
-        expect!(15.0_f64).to(not(is_freezing()))?;
+        check!(15.0_f64).satisfies(not(is_freezing()))?;
         Ok(())
     }
 }

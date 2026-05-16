@@ -515,7 +515,7 @@ mod tests {
     fn forwards_args_after_dropping_the_subcommand() -> TestResult {
         let command = cargo_test_command(["test-better", "--release", "-p", "mycrate"]);
         let args: Vec<OsString> = command.get_args().map(OsStr::to_os_string).collect();
-        expect!(args).to(eq(vec![
+        check!(args).satisfies(eq(vec![
             OsString::from("test"),
             OsString::from("--release"),
             OsString::from("-p"),
@@ -527,7 +527,7 @@ mod tests {
     fn keeps_args_when_there_is_no_subcommand_prefix() -> TestResult {
         let command = cargo_test_command(["--lib"]);
         let args: Vec<OsString> = command.get_args().map(OsStr::to_os_string).collect();
-        expect!(args).to(eq(vec![OsString::from("test"), OsString::from("--lib")]))
+        check!(args).satisfies(eq(vec![OsString::from("test"), OsString::from("--lib")]))
     }
 
     #[test]
@@ -536,7 +536,7 @@ mod tests {
         let opened = command
             .get_envs()
             .any(|(key, value)| key == OsStr::new(RUNNER_ENV) && value == Some(OsStr::new("1")));
-        expect!(opened).to(is_true())
+        check!(opened).satisfies(is_true())
     }
 
     #[test]
@@ -559,13 +559,13 @@ mod tests {
 
         let report = scan_output(lines, |_| {});
 
-        expect!(report.groups.len()).to(eq(2))?;
-        expect!(report.groups[0].context.as_str()).to(eq("the user store"))?;
-        expect!(report.groups[0].failures.len()).to(eq(2))?;
-        expect!(report.groups[0].failures[0].test.as_str()).to(eq("store::counts_match"))?;
-        expect!(report.groups[1].context.as_str()).to(eq("the http layer"))?;
-        expect!(report.groups[1].failures.len()).to(eq(1))?;
-        expect!(report.unstructured.is_empty()).to(is_true())
+        check!(report.groups.len()).satisfies(eq(2))?;
+        check!(report.groups[0].context.as_str()).satisfies(eq("the user store"))?;
+        check!(report.groups[0].failures.len()).satisfies(eq(2))?;
+        check!(report.groups[0].failures[0].test.as_str()).satisfies(eq("store::counts_match"))?;
+        check!(report.groups[1].context.as_str()).satisfies(eq("the http layer"))?;
+        check!(report.groups[1].failures.len()).satisfies(eq(1))?;
+        check!(report.unstructured.is_empty()).satisfies(is_true())
     }
 
     #[test]
@@ -578,8 +578,8 @@ mod tests {
 
         let report = scan_output(lines, |_| {});
 
-        expect!(report.groups.is_empty()).to(is_true())?;
-        expect!(report.unstructured).to(eq(vec!["math::adds".to_string()]))
+        check!(report.groups.is_empty()).satisfies(is_true())?;
+        check!(report.unstructured).satisfies(eq(vec!["math::adds".to_string()]))
     }
 
     #[test]
@@ -596,7 +596,7 @@ mod tests {
         let _ = scan_output(lines, |line| echoed.push(line.to_string()));
 
         // The marker line is swallowed; everything else passes through.
-        expect!(echoed).to(eq(vec![
+        check!(echoed).satisfies(eq(vec![
             "running 1 test".to_string(),
             header("suite::case"),
             "test result: FAILED. 0 passed; 1 failed".to_string(),
@@ -612,8 +612,8 @@ mod tests {
 
         let report = scan_output(lines, |_| {});
 
-        expect!(report.groups.is_empty()).to(is_true())?;
-        expect!(report.unstructured).to(eq(vec!["suite::case".to_string()]))
+        check!(report.groups.is_empty()).satisfies(is_true())?;
+        check!(report.unstructured).satisfies(eq(vec!["suite::case".to_string()]))
     }
 
     #[test]
@@ -623,8 +623,8 @@ mod tests {
 
         let report = scan_output(lines, |_| {});
 
-        expect!(report.groups.len()).to(eq(1))?;
-        expect!(report.groups[0].context.as_str()).to(eq(NO_CONTEXT))
+        check!(report.groups.len()).satisfies(eq(1))?;
+        check!(report.groups[0].context.as_str()).satisfies(eq(NO_CONTEXT))
     }
 
     #[test]
@@ -634,7 +634,7 @@ mod tests {
              finished in 0.42s",
         )
         .or_fail_with("the line is a test result line")?;
-        expect!(summary).to(eq(RunSummary {
+        check!(summary).satisfies(eq(RunSummary {
             passed: 5,
             failed: 2,
             ignored: 1,
@@ -645,8 +645,8 @@ mod tests {
 
     #[test]
     fn a_non_result_line_is_not_a_summary() -> TestResult {
-        expect!(parse_result_line("running 3 tests").is_none()).to(is_true())?;
-        expect!(parse_result_line("test math::adds ... ok").is_none()).to(is_true())
+        check!(parse_result_line("running 3 tests").is_none()).satisfies(is_true())?;
+        check!(parse_result_line("test math::adds ... ok").is_none()).satisfies(is_true())
     }
 
     #[test]
@@ -662,7 +662,7 @@ mod tests {
 
         let report = scan_output(lines, |_| {});
 
-        expect!(report.summary).to(eq(RunSummary {
+        check!(report.summary).satisfies(eq(RunSummary {
             passed: 4,
             failed: 2,
             ignored: 1,
@@ -673,15 +673,15 @@ mod tests {
 
     #[test]
     fn classifies_progress_events() -> TestResult {
-        expect!(progress_event("running 5 tests")).to(eq(Some(ProgressEvent::Discovered(5))))?;
-        expect!(progress_event("running 1 test")).to(eq(Some(ProgressEvent::Discovered(1))))?;
-        expect!(progress_event("test math::adds ... ok")).to(eq(Some(ProgressEvent::Completed)))?;
-        expect!(progress_event("test math::divides ... FAILED"))
-            .to(eq(Some(ProgressEvent::Completed)))?;
-        expect!(progress_event("test math::slow ... ignored"))
-            .to(eq(Some(ProgressEvent::Completed)))?;
+        check!(progress_event("running 5 tests")).satisfies(eq(Some(ProgressEvent::Discovered(5))))?;
+        check!(progress_event("running 1 test")).satisfies(eq(Some(ProgressEvent::Discovered(1))))?;
+        check!(progress_event("test math::adds ... ok")).satisfies(eq(Some(ProgressEvent::Completed)))?;
+        check!(progress_event("test math::divides ... FAILED"))
+            .satisfies(eq(Some(ProgressEvent::Completed)))?;
+        check!(progress_event("test math::slow ... ignored"))
+            .satisfies(eq(Some(ProgressEvent::Completed)))?;
         // The `test result:` summary line is not a per-test outcome.
-        expect!(progress_event("test result: ok. 1 passed; 0 failed")).to(eq(None))?;
-        expect!(progress_event("some other line")).to(eq(None))
+        check!(progress_event("test result: ok. 1 passed; 0 failed")).satisfies(eq(None))?;
+        check!(progress_event("some other line")).satisfies(eq(None))
     }
 }

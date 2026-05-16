@@ -10,6 +10,55 @@ introduces it is merged.** All crates are versioned in lockstep.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-15
+
+A naming pass on the assertion surface. Every Subject method now reads as a
+third-person-singular factual claim about the value (`satisfies`, `violates`,
+`matches_snapshot`, `completes_within`), and the entry-point macro mirrors that
+shift (`check!`, not `expect!`). The legacy names are gone; this release is
+breaking. A few helpers were renamed for the same reason: the property runner
+adopts the standard logic vocabulary (`for_all` / `for_all_with`), the matcher
+constructor `satisfies(name, pred)` becomes `predicate(name, pred)` (freeing
+`satisfies` for the Subject method), and the soft-block helpers move to
+`s.check(&v, m)` and `s.record(result)`.
+
+### Changed (breaking)
+
+- `test-better-matchers`: the entry-point macro `expect!` is renamed to
+  `check!`. Every assertion site changes from `expect!(value)` to
+  `check!(value)`.
+- `test-better-matchers`: `Subject` method names are reshaped to read as a
+  factual claim about the value:
+  - `.to(matcher)` is now `.satisfies(matcher)`.
+  - `.to_not(matcher)` is now `.violates(matcher)`. `satisfies(not(matcher))`
+    remains valid for callers who prefer it.
+  - `.to_match_snapshot(name)` is now `.matches_snapshot(name)`;
+    `.to_match_snapshot_with(name, redactions)` is now
+    `.matches_snapshot_with(name, redactions)`.
+  - `.to_match_inline_snapshot(literal)` is now
+    `.matches_inline_snapshot(literal)`;
+    `.to_match_inline_snapshot_with(literal, redactions)` is now
+    `.matches_inline_snapshot_with(literal, redactions)`.
+  - `.to_complete_within(duration)` is now `.completes_within(duration)`.
+  - `.resolves_to(matcher)` is unchanged (it already read this way).
+- `test-better-matchers`: the matcher constructor `satisfies(name, pred)` is
+  renamed to `predicate(name, pred)`, so the constructor and the Subject
+  method `.satisfies` do not collide at the call site. The behavior is
+  unchanged; only the import and the call name change.
+- `test-better-matchers`: the soft-block helpers are renamed for consistency
+  with `check!`. `s.expect(&value, matcher)` is now `s.check(&value, matcher)`
+  (a matcher assertion against a value), and `s.check(result)` is now
+  `s.record(result)` (records an already-built `TestResult`).
+- `test-better-property`: the runner functions `check` and `check_with` are
+  renamed to `for_all` and `for_all_with`, matching the standard
+  property-testing vocabulary (Haskell QuickCheck's `forAll`, ScalaCheck's
+  `forAll`, the `∀x. P(x)` reading from logic). This also resolves the name
+  collision with the new `check!` macro at the facade root. `property!` is
+  unchanged.
+- The facade `test-better` re-exports are updated to match: `check!`,
+  `predicate`, `for_all`, and `for_all_with` replace the legacy names in both
+  the crate root and the `prelude`.
+
 ### Added
 
 - `test-better-matchers`: `items(iter)`, an eager `Sequence` wrapper that

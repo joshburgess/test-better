@@ -1,6 +1,6 @@
-//! Compile-fail tests for the `expect!` macro.
+//! Compile-fail tests for the `check!` macro.
 //!
-//! `Subject::to` / `to_not` return a `#[must_use]` `Result`; the safety net is
+//! `Subject::to` / `violates` return a `#[must_use]` `Result`; the safety net is
 //! that a forgotten `?` is at least a warning. These tests pin that down.
 
 #[test]

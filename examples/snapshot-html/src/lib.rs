@@ -2,12 +2,12 @@
 //!
 //! A renderer that produces a chunk of text is a natural fit for snapshot
 //! testing: instead of hand-asserting each tag, the test pins the *whole
-//! output* against a known-good copy. `expect!` supports two forms:
+//! output* against a known-good copy. `check!` supports two forms:
 //!
-//! - `to_match_inline_snapshot(r#"..."#)` keeps the expected value in the test
+//! - `matches_inline_snapshot(r#"..."#)` keeps the expected value in the test
 //!   source, which is what this example uses (it stays self-contained, with no
 //!   committed `.snap` files);
-//! - `to_match_snapshot("name")` keeps it in a file under `tests/snapshots/`,
+//! - `matches_snapshot("name")` keeps it in a file under `tests/snapshots/`,
 //!   the better choice for larger outputs.
 //!
 //! Either way, `UPDATE_SNAPSHOTS=1 cargo test` regenerates the expected value
@@ -52,7 +52,7 @@ mod tests {
     #[test]
     fn a_page_with_items_renders_a_list() -> TestResult {
         let page = render_page("Tasks", &["buy milk", "walk dog"]);
-        expect!(page).to_match_inline_snapshot(
+        check!(page).matches_inline_snapshot(
             r#"
             <!doctype html>
             <title>Tasks</title>
@@ -68,7 +68,7 @@ mod tests {
     #[test]
     fn an_empty_page_renders_the_placeholder() -> TestResult {
         let page = render_page("Tasks", &[]);
-        expect!(page).to_match_inline_snapshot(
+        check!(page).matches_inline_snapshot(
             r#"
             <!doctype html>
             <title>Tasks</title>
@@ -81,7 +81,7 @@ mod tests {
     #[test]
     fn html_special_characters_are_escaped() -> TestResult {
         let page = render_page("A & B", &["1 < 2", "3 > 2"]);
-        expect!(page).to_match_inline_snapshot(
+        check!(page).matches_inline_snapshot(
             r#"
             <!doctype html>
             <title>A &amp; B</title>
@@ -99,8 +99,8 @@ mod tests {
         // A snapshot is not the only tool: a targeted matcher is clearer when
         // the test cares about one fact, not the whole output.
         let page = render_page("Home", &["welcome"]);
-        expect!(&page).to(starts_with("<!doctype html>"))?;
-        expect!(&page).to(contains_str("<li>welcome</li>"))?;
+        check!(&page).satisfies(starts_with("<!doctype html>"))?;
+        check!(&page).satisfies(contains_str("<li>welcome</li>"))?;
         Ok(())
     }
 }

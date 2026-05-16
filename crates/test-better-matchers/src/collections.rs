@@ -110,11 +110,11 @@ impl<T> Sequence for Items<T> {
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{contains, eq, expect, items};
+/// use test_better_matchers::{contains, eq, check, items};
 ///
 /// fn main() -> TestResult {
 ///     let doubled = (1..=3).map(|n| n * 2);
-///     expect!(items(doubled)).to(contains(eq(4)))?;
+///     check!(items(doubled)).satisfies(contains(eq(4)))?;
 ///     Ok(())
 /// }
 /// ```
@@ -156,10 +156,10 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{expect, have_len};
+/// use test_better_matchers::{check, have_len};
 ///
 /// fn main() -> TestResult {
-///     expect!(vec![1, 2, 3]).to(have_len(3))?;
+///     check!(vec![1, 2, 3]).satisfies(have_len(3))?;
 ///     Ok(())
 /// }
 /// ```
@@ -213,10 +213,10 @@ impl EmptyMatcher {
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{expect, is_empty};
+/// use test_better_matchers::{check, is_empty};
 ///
 /// fn main() -> TestResult {
-///     expect!(Vec::<i32>::new()).to(is_empty())?;
+///     check!(Vec::<i32>::new()).satisfies(is_empty())?;
 ///     Ok(())
 /// }
 /// ```
@@ -232,10 +232,10 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{expect, is_not_empty};
+/// use test_better_matchers::{check, is_not_empty};
 ///
 /// fn main() -> TestResult {
-///     expect!(vec![1]).to(is_not_empty())?;
+///     check!(vec![1]).satisfies(is_not_empty())?;
 ///     Ok(())
 /// }
 /// ```
@@ -283,10 +283,10 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{contains, eq, expect};
+/// use test_better_matchers::{contains, eq, check};
 ///
 /// fn main() -> TestResult {
-///     expect!(vec![1, 2, 3]).to(contains(eq(2)))?;
+///     check!(vec![1, 2, 3]).satisfies(contains(eq(2)))?;
 ///     Ok(())
 /// }
 /// ```
@@ -310,10 +310,10 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{at_least_one, expect, gt};
+/// use test_better_matchers::{at_least_one, check, gt};
 ///
 /// fn main() -> TestResult {
-///     expect!(vec![1, 2, 3]).to(at_least_one(gt(2)))?;
+///     check!(vec![1, 2, 3]).satisfies(at_least_one(gt(2)))?;
 ///     Ok(())
 /// }
 /// ```
@@ -367,10 +367,10 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{every, expect, gt};
+/// use test_better_matchers::{every, check, gt};
 ///
 /// fn main() -> TestResult {
-///     expect!(vec![1, 2, 3]).to(every(gt(0)))?;
+///     check!(vec![1, 2, 3]).satisfies(every(gt(0)))?;
 ///     Ok(())
 /// }
 /// ```
@@ -435,10 +435,10 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{contains_in_order, eq, expect};
+/// use test_better_matchers::{contains_in_order, eq, check};
 ///
 /// fn main() -> TestResult {
-///     expect!(vec![1, 2, 3, 4]).to(contains_in_order([eq(2), eq(4)]))?;
+///     check!(vec![1, 2, 3, 4]).satisfies(contains_in_order([eq(2), eq(4)]))?;
 ///     Ok(())
 /// }
 /// ```
@@ -540,10 +540,10 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{contains_all, eq, expect, gt};
+/// use test_better_matchers::{contains_all, eq, check, gt};
 ///
 /// fn main() -> TestResult {
-///     expect!(vec![1, 2, 3]).to(contains_all((eq(1), gt(2))))?;
+///     check!(vec![1, 2, 3]).satisfies(contains_all((eq(1), gt(2))))?;
 ///     Ok(())
 /// }
 /// ```
@@ -564,17 +564,17 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, expect, gt, is_false, is_true, lt};
+    use crate::{eq, check, gt, is_false, is_true, lt};
 
     #[test]
     fn have_len_matches_the_exact_length() -> TestResult {
-        expect!(have_len(3).check(&vec![1, 2, 3]).matched).to(is_true())?;
+        check!(have_len(3).check(&vec![1, 2, 3]).matched).satisfies(is_true())?;
         let failure = have_len(3)
             .check(&vec![1, 2])
             .failure
             .or_fail_with("length 2 is not 3")?;
-        expect!(failure.expected.to_string()).to(eq("a sequence of length 3".to_string()))?;
-        expect!(failure.actual).to(eq("a sequence of length 2".to_string()))?;
+        check!(failure.expected.to_string()).satisfies(eq("a sequence of length 3".to_string()))?;
+        check!(failure.actual).satisfies(eq("a sequence of length 2".to_string()))?;
         Ok(())
     }
 
@@ -586,104 +586,104 @@ mod tests {
         // hand-collected `Vec<T>`.
         let lazy = (1..=3).map(|n| n * 10);
         let collected = items(lazy);
-        expect!(have_len(3).check(&collected).matched).to(is_true())?;
-        expect!(contains(eq(20)).check(&collected).matched).to(is_true())?;
+        check!(have_len(3).check(&collected).matched).satisfies(is_true())?;
+        check!(contains(eq(20)).check(&collected).matched).satisfies(is_true())?;
         let failure = contains(eq(99))
             .check(&collected)
             .failure
             .or_fail_with("99 is not in the iterator")?;
-        expect!(failure.actual).to(eq("[10, 20, 30]".to_string()))?;
+        check!(failure.actual).satisfies(eq("[10, 20, 30]".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn items_on_an_empty_iterator_is_empty() -> TestResult {
         let empty: Items<i32> = items(std::iter::empty());
-        expect!(is_empty().check(&empty).matched).to(is_true())?;
+        check!(is_empty().check(&empty).matched).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
     fn is_empty_and_is_not_empty_are_opposites() -> TestResult {
-        expect!(is_empty().check(&Vec::<i32>::new()).matched).to(is_true())?;
-        expect!(is_empty().check(&vec![1]).matched).to(is_false())?;
-        expect!(is_not_empty().check(&vec![1]).matched).to(is_true())?;
-        expect!(is_not_empty().check(&Vec::<i32>::new()).matched).to(is_false())?;
+        check!(is_empty().check(&Vec::<i32>::new()).matched).satisfies(is_true())?;
+        check!(is_empty().check(&vec![1]).matched).satisfies(is_false())?;
+        check!(is_not_empty().check(&vec![1]).matched).satisfies(is_true())?;
+        check!(is_not_empty().check(&Vec::<i32>::new()).matched).satisfies(is_false())?;
         Ok(())
     }
 
     #[test]
     fn contains_finds_a_matching_item() -> TestResult {
-        expect!(contains(eq(2)).check(&vec![1, 2, 3]).matched).to(is_true())?;
+        check!(contains(eq(2)).check(&vec![1, 2, 3]).matched).satisfies(is_true())?;
         let failure = contains(eq(9))
             .check(&vec![1, 2, 3])
             .failure
             .or_fail_with("9 is not in the sequence")?;
-        expect!(failure.actual).to(eq("[1, 2, 3]".to_string()))?;
+        check!(failure.actual).satisfies(eq("[1, 2, 3]".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn every_names_the_index_of_the_first_failure() -> TestResult {
-        expect!(every(gt(0)).check(&vec![1, 2, 3]).matched).to(is_true())?;
+        check!(every(gt(0)).check(&vec![1, 2, 3]).matched).satisfies(is_true())?;
         let failure = every(gt(0))
             .check(&vec![1, 2, -1, 4])
             .failure
             .or_fail_with("-1 is not greater than 0")?;
-        expect!(failure.actual.contains("index 2")).to(is_true())?;
+        check!(failure.actual.contains("index 2")).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
     fn at_least_one_matches_when_some_item_does() -> TestResult {
-        expect!(at_least_one(gt(2)).check(&vec![1, 2, 3]).matched).to(is_true())?;
-        expect!(at_least_one(gt(9)).check(&vec![1, 2, 3]).matched).to(is_false())?;
+        check!(at_least_one(gt(2)).check(&vec![1, 2, 3]).matched).satisfies(is_true())?;
+        check!(at_least_one(gt(9)).check(&vec![1, 2, 3]).matched).satisfies(is_false())?;
         Ok(())
     }
 
     #[test]
     fn contains_in_order_respects_order_but_not_adjacency() -> TestResult {
-        expect!(
+        check!(
             contains_in_order([eq(2), eq(4)])
                 .check(&vec![1, 2, 3, 4])
                 .matched
         )
-        .to(is_true())?;
+        .satisfies(is_true())?;
         let failure = contains_in_order([eq(4), eq(2)])
             .check(&vec![1, 2, 3, 4])
             .failure
             .or_fail_with("2 does not come after 4")?;
-        expect!(failure.actual.contains("matcher at index 1")).to(is_true())?;
+        check!(failure.actual.contains("matcher at index 1")).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
     fn contains_all_requires_every_matcher_to_be_satisfied() -> TestResult {
-        expect!(contains_all((eq(1), gt(2))).check(&vec![1, 2, 3]).matched).to(is_true())?;
+        check!(contains_all((eq(1), gt(2))).check(&vec![1, 2, 3]).matched).satisfies(is_true())?;
         let failure = contains_all((eq(1), gt(9)))
             .check(&vec![1, 2, 3])
             .failure
             .or_fail_with("nothing is greater than 9")?;
-        expect!(failure.expected.to_string().contains("greater than 9")).to(is_true())?;
+        check!(failure.expected.to_string().contains("greater than 9")).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
     fn collection_matchers_work_across_collection_types() -> TestResult {
         let deque: VecDeque<i32> = VecDeque::from(vec![1, 2, 3]);
-        expect!(have_len(3).check(&deque).matched).to(is_true())?;
+        check!(have_len(3).check(&deque).matched).satisfies(is_true())?;
 
         let btree: BTreeSet<i32> = BTreeSet::from([1, 2, 3]);
-        expect!(contains(eq(2)).check(&btree).matched).to(is_true())?;
+        check!(contains(eq(2)).check(&btree).matched).satisfies(is_true())?;
 
         let set: HashSet<i32> = HashSet::from([1, 2, 3]);
-        expect!(every(gt(0)).check(&set).matched).to(is_true())?;
+        check!(every(gt(0)).check(&set).matched).satisfies(is_true())?;
 
         let slice: &[i32] = &[10, 20, 30];
-        expect!(contains_in_order([eq(10), eq(30)]).check(&slice).matched).to(is_true())?;
+        check!(contains_in_order([eq(10), eq(30)]).check(&slice).matched).satisfies(is_true())?;
 
         let array = [1, 2, 3];
-        expect!(every(lt(4)).check(&array).matched).to(is_true())?;
+        check!(every(lt(4)).check(&array).matched).satisfies(is_true())?;
         Ok(())
     }
 }

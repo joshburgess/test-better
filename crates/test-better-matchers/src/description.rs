@@ -159,19 +159,19 @@ mod tests {
     use test_better_core::TestResult;
 
     use super::*;
-    use crate::{eq, expect};
+    use crate::{eq, check};
 
     #[test]
     fn text_renders_verbatim() -> TestResult {
-        expect!(Description::text("equal to 4").to_string()).to(eq("equal to 4".to_string()))?;
+        check!(Description::text("equal to 4").to_string()).satisfies(eq("equal to 4".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn not_negates_and_double_negation_cancels() -> TestResult {
         let base = Description::text("equal to 4");
-        expect!((!base.clone()).to_string()).to(eq("not equal to 4".to_string()))?;
-        expect!((!!base).to_string()).to(eq("equal to 4".to_string()))?;
+        check!((!base.clone()).to_string()).satisfies(eq("not equal to 4".to_string()))?;
+        check!((!!base).to_string()).satisfies(eq("equal to 4".to_string()))?;
         Ok(())
     }
 
@@ -180,8 +180,8 @@ mod tests {
         let combined = Description::text("greater than 0")
             .and(Description::text("less than 100"))
             .and(Description::text("even"));
-        expect!(combined.to_string())
-            .to(eq("greater than 0 and less than 100 and even".to_string()))?;
+        check!(combined.to_string())
+            .satisfies(eq("greater than 0 and less than 100 and even".to_string()))?;
         Ok(())
     }
 
@@ -190,7 +190,7 @@ mod tests {
         let combined = Description::text("zero")
             .or(Description::text("one"))
             .or(Description::text("two"));
-        expect!(combined.to_string()).to(eq("zero or one or two".to_string()))?;
+        check!(combined.to_string()).satisfies(eq("zero or one or two".to_string()))?;
         Ok(())
     }
 
@@ -198,21 +198,21 @@ mod tests {
     fn or_inside_and_is_parenthesized() -> TestResult {
         let combined = Description::text("positive")
             .and(Description::text("small").or(Description::text("huge")));
-        expect!(combined.to_string()).to(eq("positive and (small or huge)".to_string()))?;
+        check!(combined.to_string()).satisfies(eq("positive and (small or huge)".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn not_of_compound_is_parenthesized() -> TestResult {
         let combined = !Description::text("a").and(Description::text("b"));
-        expect!(combined.to_string()).to(eq("not (a and b)".to_string()))?;
+        check!(combined.to_string()).satisfies(eq("not (a and b)".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn labeled_indents_the_child() -> TestResult {
         let described = Description::labeled("some", Description::text("equal to 42"));
-        expect!(described.to_string()).to(eq("some:\n  equal to 42".to_string()))?;
+        check!(described.to_string()).satisfies(eq("some:\n  equal to 42".to_string()))?;
         Ok(())
     }
 
@@ -222,7 +222,7 @@ mod tests {
             "some",
             Description::labeled("ok", Description::text("equal to 42")),
         );
-        expect!(described.to_string()).to(eq("some:\n  ok:\n    equal to 42".to_string()))?;
+        check!(described.to_string()).satisfies(eq("some:\n  ok:\n    equal to 42".to_string()))?;
         Ok(())
     }
 }

@@ -14,11 +14,11 @@ members = [
     "examples/state-machine",
     "examples/property-roundtrip",
     "examples/snapshot-html",
-    # Confirms `to_complete_within` is a compile error with no runtime feature.
+    # Confirms `completes_within` is a compile error with no runtime feature.
     # Safe as a member: it enables no runtime feature.
     "tests/timeout-no-runtime",
 ]
-# The per-runtime `to_complete_within` integration crates are deliberately
+# The per-runtime `completes_within` integration crates are deliberately
 # *outside* the workspace. Each enables exactly one of `tokio`/`async-std`/
 # `smol` on `test-better`; if they were members, a workspace-wide
 # `--all-features` build would unify all three runtime features into one
@@ -32,28 +32,28 @@ exclude = [
 
 # Shared package metadata. Every crate is versioned in lockstep.
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.95.0"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/joshburgess/test-better"
 authors = ["Josh Burgess"]
 categories = ["development-tools::testing"]
-keywords = ["testing", "assertions", "matchers", "expect"]
+keywords = ["testing", "assertions", "matchers", "check"]
 
 # Internal crates are referenced through the workspace so versions stay in lockstep.
 [workspace.dependencies]
 # The facade crate, depended on by the workspace's own examples.
-test-better = { version = "0.1.0", path = "crates/test-better" }
-test-better-core = { version = "0.1.0", path = "crates/test-better-core" }
+test-better = { version = "0.2.0", path = "crates/test-better" }
+test-better-core = { version = "0.2.0", path = "crates/test-better-core" }
 # `default-features = false` here so a dependent crate's own feature set is the
 # single switch for the matcher `diff` feature (the facade re-exposes it).
-test-better-matchers = { version = "0.1.0", path = "crates/test-better-matchers", default-features = false }
-test-better-macros = { version = "0.1.0", path = "crates/test-better-macros" }
-test-better-async = { version = "0.1.0", path = "crates/test-better-async" }
-test-better-property = { version = "0.1.0", path = "crates/test-better-property" }
-test-better-snapshot = { version = "0.1.0", path = "crates/test-better-snapshot" }
-test-better-runner = { version = "0.1.0", path = "crates/test-better-runner" }
+test-better-matchers = { version = "0.2.0", path = "crates/test-better-matchers", default-features = false }
+test-better-macros = { version = "0.2.0", path = "crates/test-better-macros" }
+test-better-async = { version = "0.2.0", path = "crates/test-better-async" }
+test-better-property = { version = "0.2.0", path = "crates/test-better-property" }
+test-better-snapshot = { version = "0.2.0", path = "crates/test-better-snapshot" }
+test-better-runner = { version = "0.2.0", path = "crates/test-better-runner" }
 
 # Workspace-wide lints. `src/` must be free of `.unwrap()`, `.expect()`, and
 # `panic!`. clippy.toml allows unwrap/expect in tests. The `[workspace.lints]`

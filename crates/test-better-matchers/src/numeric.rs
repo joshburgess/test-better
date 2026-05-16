@@ -89,10 +89,10 @@ impl<F: Float> Matcher<F> for CloseToMatcher<F> {
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{close_to, expect};
+/// use test_better_matchers::{close_to, check};
 ///
 /// fn main() -> TestResult {
-///     expect!(0.1_f64 + 0.2).to(close_to(0.3, 1e-9))?;
+///     check!(0.1_f64 + 0.2).satisfies(close_to(0.3, 1e-9))?;
 ///     Ok(())
 /// }
 /// ```
@@ -128,10 +128,10 @@ impl<F: Float> Matcher<F> for BetweenMatcher<F> {
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{between, expect};
+/// use test_better_matchers::{between, check};
 ///
 /// fn main() -> TestResult {
-///     expect!(2.5_f64).to(between(0.0, 5.0))?;
+///     check!(2.5_f64).satisfies(between(0.0, 5.0))?;
 ///     Ok(())
 /// }
 /// ```
@@ -164,11 +164,11 @@ impl<F: Float> Matcher<F> for IsNanMatcher {
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{expect, is_nan};
+/// use test_better_matchers::{check, is_nan};
 ///
 /// fn main() -> TestResult {
-///     expect!(f64::NAN).to(is_nan())?;
-///     expect!(1.0_f64).to_not(is_nan())?;
+///     check!(f64::NAN).satisfies(is_nan())?;
+///     check!(1.0_f64).violates(is_nan())?;
 ///     Ok(())
 /// }
 /// ```
@@ -201,11 +201,11 @@ impl<F: Float> Matcher<F> for IsFiniteMatcher {
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{expect, is_finite};
+/// use test_better_matchers::{check, is_finite};
 ///
 /// fn main() -> TestResult {
-///     expect!(1.5_f64).to(is_finite())?;
-///     expect!(f64::INFINITY).to_not(is_finite())?;
+///     check!(1.5_f64).satisfies(is_finite())?;
+///     check!(f64::INFINITY).violates(is_finite())?;
 ///     Ok(())
 /// }
 /// ```
@@ -219,15 +219,15 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, expect, is_false, is_true};
+    use crate::{eq, check, is_false, is_true};
 
     #[test]
     fn close_to_respects_the_tolerance() -> TestResult {
-        expect!(close_to(0.3, 1e-9).check(&(0.1_f64 + 0.2)).matched).to(is_true())?;
-        expect!(close_to(0.3_f64, 1e-9).check(&0.4).matched).to(is_false())?;
+        check!(close_to(0.3, 1e-9).check(&(0.1_f64 + 0.2)).matched).satisfies(is_true())?;
+        check!(close_to(0.3_f64, 1e-9).check(&0.4).matched).satisfies(is_false())?;
         // The tolerance is the boundary, inclusive.
-        expect!(close_to(1.0_f64, 0.5).check(&1.5).matched).to(is_true())?;
-        expect!(close_to(1.0_f64, 0.5).check(&1.6).matched).to(is_false())?;
+        check!(close_to(1.0_f64, 0.5).check(&1.5).matched).satisfies(is_true())?;
+        check!(close_to(1.0_f64, 0.5).check(&1.6).matched).satisfies(is_false())?;
         Ok(())
     }
 
@@ -237,43 +237,43 @@ mod tests {
             .check(&2.0)
             .failure
             .or_fail_with("2.0 is not within 0.1 of 1.0")?;
-        expect!(failure.expected.to_string()).to(eq("within 0.1 of 1.0".to_string()))?;
-        expect!(failure.actual.contains("off by")).to(is_true())?;
+        check!(failure.expected.to_string()).satisfies(eq("within 0.1 of 1.0".to_string()))?;
+        check!(failure.actual.contains("off by")).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
     fn between_is_an_inclusive_range() -> TestResult {
-        expect!(between(0.0_f64, 5.0).check(&0.0).matched).to(is_true())?;
-        expect!(between(0.0_f64, 5.0).check(&5.0).matched).to(is_true())?;
-        expect!(between(0.0_f64, 5.0).check(&5.1).matched).to(is_false())?;
-        expect!(between(0.0_f64, 5.0).check(&-0.1).matched).to(is_false())?;
+        check!(between(0.0_f64, 5.0).check(&0.0).matched).satisfies(is_true())?;
+        check!(between(0.0_f64, 5.0).check(&5.0).matched).satisfies(is_true())?;
+        check!(between(0.0_f64, 5.0).check(&5.1).matched).satisfies(is_false())?;
+        check!(between(0.0_f64, 5.0).check(&-0.1).matched).satisfies(is_false())?;
         Ok(())
     }
 
     #[test]
     fn is_nan_matches_only_nan() -> TestResult {
-        expect!(is_nan().check(&f64::NAN).matched).to(is_true())?;
-        expect!(is_nan().check(&1.0_f64).matched).to(is_false())?;
+        check!(is_nan().check(&f64::NAN).matched).satisfies(is_true())?;
+        check!(is_nan().check(&1.0_f64).matched).satisfies(is_false())?;
         // A `NaN` is never close to anything, including itself.
-        expect!(close_to(f64::NAN, 1.0).check(&f64::NAN).matched).to(is_false())?;
+        check!(close_to(f64::NAN, 1.0).check(&f64::NAN).matched).satisfies(is_false())?;
         Ok(())
     }
 
     #[test]
     fn is_finite_rejects_infinities_and_nan() -> TestResult {
-        expect!(is_finite().check(&1.5_f64).matched).to(is_true())?;
-        expect!(is_finite().check(&f64::INFINITY).matched).to(is_false())?;
-        expect!(is_finite().check(&f64::NEG_INFINITY).matched).to(is_false())?;
-        expect!(is_finite().check(&f64::NAN).matched).to(is_false())?;
+        check!(is_finite().check(&1.5_f64).matched).satisfies(is_true())?;
+        check!(is_finite().check(&f64::INFINITY).matched).satisfies(is_false())?;
+        check!(is_finite().check(&f64::NEG_INFINITY).matched).satisfies(is_false())?;
+        check!(is_finite().check(&f64::NAN).matched).satisfies(is_false())?;
         Ok(())
     }
 
     #[test]
     fn numeric_matchers_work_for_f32_too() -> TestResult {
-        expect!(close_to(1.0_f32, 0.01).check(&1.005).matched).to(is_true())?;
-        expect!(between(0.0_f32, 1.0).check(&0.5).matched).to(is_true())?;
-        expect!(is_nan().check(&f32::NAN).matched).to(is_true())?;
+        check!(close_to(1.0_f32, 0.01).check(&1.005).matched).satisfies(is_true())?;
+        check!(between(0.0_f32, 1.0).check(&0.5).matched).satisfies(is_true())?;
+        check!(is_nan().check(&f32::NAN).matched).satisfies(is_true())?;
         Ok(())
     }
 }

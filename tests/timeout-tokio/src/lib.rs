@@ -1,5 +1,5 @@
 //! Integration coverage for the runtime-gated async assertions on the Tokio
-//! runtime: `expect!(fut).to_complete_within(..)` and `eventually`.
+//! runtime: `check!(fut).completes_within(..)` and `eventually`.
 //!
 //! This crate is excluded from the workspace so its `tokio` runtime feature is
 //! never unified with the `async-std`/`smol` crates. It is run on its own:
@@ -14,35 +14,35 @@ mod tests {
 
     #[tokio::test]
     async fn a_fast_future_completes_within_the_limit() -> TestResult {
-        expect!(async { 1 + 1 })
-            .to_complete_within(Duration::from_secs(5))
+        check!(async { 1 + 1 })
+            .completes_within(Duration::from_secs(5))
             .await?;
         Ok(())
     }
 
     #[tokio::test]
     async fn a_slow_future_trips_the_limit() -> TestResult {
-        let error = expect!(tokio::time::sleep(Duration::from_secs(30)))
-            .to_complete_within(Duration::from_millis(10))
+        let error = check!(tokio::time::sleep(Duration::from_secs(30)))
+            .completes_within(Duration::from_millis(10))
             .await
             .expect_err("a 30s sleep cannot finish in 10ms");
         let rendered = error.to_string();
-        expect!(rendered.contains("did not complete within")).to(is_true())?;
+        check!(rendered.contains("did not complete within")).satisfies(is_true())?;
         Ok(())
     }
 
     #[tokio::test]
     async fn the_failure_names_the_expression_and_keeps_the_call_site() -> TestResult {
         let slow = tokio::time::sleep(Duration::from_secs(30));
-        // The `to_complete_within` call site, captured here, must survive the
+        // The `completes_within` call site, captured here, must survive the
         // later `.await` on a different line.
         let line = line!() + 1;
-        let pending = expect!(slow).to_complete_within(Duration::from_millis(10));
+        let pending = check!(slow).completes_within(Duration::from_millis(10));
         let error = pending.await.expect_err("the sleep outlives the limit");
-        // The `expect!`ed expression is echoed back in the message...
-        expect!(error.to_string().contains("slow")).to(is_true())?;
+        // The `check!`ed expression is echoed back in the message...
+        check!(error.to_string().contains("slow")).satisfies(is_true())?;
         // ...and the failure points at the call site, not at the `.await`.
-        expect!(error.location.line()).to(eq(line))?;
+        check!(error.location.line()).satisfies(eq(line))?;
         Ok(())
     }
 
@@ -56,7 +56,7 @@ mod tests {
         })
         .await?;
         // The probe passed on its third call; `eventually` must return at once.
-        expect!(polls.get()).to(eq(3u32))?;
+        check!(polls.get()).satisfies(eq(3u32))?;
         Ok(())
     }
 
@@ -66,8 +66,8 @@ mod tests {
             .await
             .expect_err("a probe that is never true must time out");
         let rendered = error.to_string();
-        expect!(rendered.contains("was not met within")).to(is_true())?;
-        expect!(rendered.contains("probe")).to(is_true())?;
+        check!(rendered.contains("was not met within")).satisfies(is_true())?;
+        check!(rendered.contains("probe")).satisfies(is_true())?;
         Ok(())
     }
 }

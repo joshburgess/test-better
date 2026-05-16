@@ -49,8 +49,8 @@ fn matches_cargo_test_on_an_all_pass_workspace() -> TestResult {
     let dir = fixture_dir("all-pass");
     let baseline = cargo_test(&dir)?;
     let runner = cargo_test_better(&dir)?;
-    expect!(baseline).to(eq(0))?;
-    expect!(runner).to(eq(baseline))
+    check!(baseline).satisfies(eq(0))?;
+    check!(runner).satisfies(eq(baseline))
 }
 
 #[test]
@@ -58,6 +58,6 @@ fn matches_cargo_test_on_a_has_failures_workspace() -> TestResult {
     let dir = fixture_dir("has-failures");
     let baseline = cargo_test(&dir)?;
     let runner = cargo_test_better(&dir)?;
-    expect!(baseline).to(ne(0))?;
-    expect!(runner).to(eq(baseline))
+    check!(baseline).satisfies(ne(0))?;
+    check!(runner).satisfies(eq(baseline))
 }

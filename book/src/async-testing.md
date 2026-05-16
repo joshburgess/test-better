@@ -7,7 +7,7 @@ have a runtime-free form and a runtime-gated form.
 
 ## Asserting on a future's output: `resolves_to`
 
-When the expression handed to `expect!` is a `Future`, the `Subject` grows an
+When the expression handed to `check!` is a `Future`, the `Subject` grows an
 `await`-based method, `resolves_to`. It awaits the future and applies the
 matcher to its output:
 
@@ -20,7 +20,7 @@ async fn doubled(n: i32) -> i32 {
 
 #[tokio::test]
 async fn doubling_resolves_to_the_sum() -> TestResult {
-    expect!(doubled(21)).resolves_to(eq(42)).await?;
+    check!(doubled(21)).resolves_to(eq(42)).await?;
     Ok(())
 }
 ```
@@ -28,7 +28,8 @@ async fn doubling_resolves_to_the_sum() -> TestResult {
 `resolves_to` only awaits the future, so it is runtime-agnostic: the same
 assertion works under `#[tokio::test]`, `#[async_std::test]`,
 `pollster::block_on`, or any other executor. A mismatch is reported the same
-way `to` reports one: the expression (`doubled(21)`) and the actual output.
+way `satisfies` reports one: the expression (`doubled(21)`) and the actual
+output.
 
 ## Polling until a condition holds: `eventually`
 
@@ -73,9 +74,9 @@ the budget, and both report the elapsed time and probe count on a timeout. The
 `eventually_with` / `eventually_blocking_with` variants take a `Backoff` to
 control the inter-probe delay.
 
-## Bounding how long an operation may take: `to_complete_within`
+## Bounding how long an operation may take: `completes_within`
 
-`to_complete_within` asserts that a future finishes inside a time limit. It
+`completes_within` asserts that a future finishes inside a time limit. It
 needs a real runtime to drive the timeout, so it is gated on one of
 `test-better`'s runtime features and is only callable inside that runtime's
 test:
@@ -86,8 +87,8 @@ use test_better::prelude::*;
 
 #[tokio::test]
 async fn the_cache_lookup_is_fast() -> TestResult {
-    expect!(cache_lookup("key"))
-        .to_complete_within(Duration::from_millis(50))
+    check!(cache_lookup("key"))
+        .completes_within(Duration::from_millis(50))
         .await?;
     Ok(())
 }
@@ -99,7 +100,7 @@ a single build, pick the one matching your test runtime in `Cargo.toml`:
 
 ```toml
 [dev-dependencies]
-test-better = { version = "0.1", features = ["tokio"] }
+test-better = { version = "0.2", features = ["tokio"] }
 ```
 
 ## Choosing the right tool
@@ -107,4 +108,4 @@ test-better = { version = "0.1", features = ["tokio"] }
 - The value is a future and you want to assert on its output: `resolves_to`.
 - A condition becomes true asynchronously and you want to wait for it:
   `eventually` (or `eventually_blocking` with no runtime).
-- An operation must finish within a deadline: `to_complete_within`.
+- An operation must finish within a deadline: `completes_within`.

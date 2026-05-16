@@ -1,4 +1,4 @@
-property failed: expect!(n)
+property failed: check!(n)
   while checking a property; it failed after 47 generated cases
   while the original failing input was 3000000000
   while the shrunk (minimal) input is 100

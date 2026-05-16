@@ -1,6 +1,6 @@
 //! The property runner: generate cases, run the predicate, shrink on failure.
 //!
-//! [`check`] is the user-facing surface. It draws values from a [`Strategy`],
+//! [`for_all`] is the user-facing surface. It draws values from a [`Strategy`],
 //! runs a `T -> TestResult` predicate against each, and, on the first failure,
 //! drives the [`ValueTree`] shrink protocol to a minimal counterexample. The
 //! `property!` macro is a thin syntactic wrapper over this; the shrunk-failure
@@ -44,37 +44,40 @@ pub struct PropertyFailure<T> {
     pub cases: u32,
 }
 
-/// Checks `property` against values from `strategy`, using [`Config::default`]
-/// and a reproducible [`Runner`].
+/// Asserts that `property` holds for every value drawn from `strategy`, using
+/// [`Config::default`] and a reproducible [`Runner`].
+///
+/// The name follows the `∀x. P(x)` reading from logic and standard
+/// property-testing vocabulary (Haskell's `forAll`, ScalaCheck's `forAll`).
 ///
 /// Returns `Ok(())` if every generated case satisfies `property`, or a
 /// [`PropertyFailure`] carrying the shrunk counterexample otherwise. The run is
 /// deterministic: the same strategy and property pass or fail the same way
 /// every time (see [`Runner::deterministic`]). For an explicit case count or a
-/// randomized runner, use [`check_with`].
+/// randomized runner, use [`for_all_with`].
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{expect, lt};
-/// use test_better_property::check;
+/// use test_better_matchers::{check, lt};
+/// use test_better_property::for_all;
 ///
 /// # fn main() -> TestResult {
 /// // Holds for every `u8`: doubling in `u16` never overflows.
-/// check(0u8..=255, |n| {
+/// for_all(0u8..=255, |n| {
 ///     let doubled = u16::from(n) * 2;
-///     expect!(doubled).to(lt(512u16))
+///     check!(doubled).satisfies(lt(512u16))
 /// })
 /// .map_err(|f| f.failure)?;
 /// # Ok(())
 /// # }
 /// ```
-pub fn check<T, S, F>(strategy: S, property: F) -> Result<(), PropertyFailure<T>>
+pub fn for_all<T, S, F>(strategy: S, property: F) -> Result<(), PropertyFailure<T>>
 where
     S: Strategy<T>,
     T: Clone,
     F: FnMut(T) -> TestResult,
 {
-    check_with(
+    for_all_with(
         Config::default(),
         &mut Runner::deterministic(),
         strategy,
@@ -82,13 +85,13 @@ where
     )
 }
 
-/// Checks `property` against values from `strategy` with an explicit [`Config`]
-/// and [`Runner`].
+/// Asserts that `property` holds for every value drawn from `strategy`, with an
+/// explicit [`Config`] and [`Runner`].
 ///
-/// This is [`check`] with its two defaults exposed: pass a [`Config`] to change
-/// the case count, and a [`Runner`] (for example [`Runner::randomized`]) to
-/// change the seeding.
-pub fn check_with<T, S, F>(
+/// This is [`for_all`] with its two defaults exposed: pass a [`Config`] to
+/// change the case count, and a [`Runner`] (for example [`Runner::randomized`])
+/// to change the seeding.
+pub fn for_all_with<T, S, F>(
     config: Config,
     runner: &mut Runner,
     strategy: S,
@@ -171,12 +174,12 @@ mod tests {
     use super::*;
 
     use test_better_core::{OrFail, TestResult};
-    use test_better_matchers::{eq, expect, ge, is_true, lt};
+    use test_better_matchers::{check, eq, ge, is_true, lt};
 
     #[test]
     fn a_property_that_always_holds_passes() -> TestResult {
-        let outcome = check(0u32..1_000, |n| expect!(n).to(lt(1_000u32)));
-        expect!(outcome.is_ok()).to(is_true())
+        let outcome = for_all(0u32..1_000, |n| check!(n).satisfies(lt(1_000u32)));
+        check!(outcome.is_ok()).satisfies(is_true())
     }
 
     #[test]
@@ -184,36 +187,40 @@ mod tests {
         // "every u32 is below 100" is false; the smallest counterexample is
         // exactly 100, and `proptest` shrinks integers toward zero, so the
         // shrink search must land on it.
-        let failure = check(proptest::num::u32::ANY, |n| expect!(n).to(lt(100u32)))
-            .err()
-            .or_fail_with("a property that is false for most u32 must fail")?;
-        expect!(failure.shrunk).to(eq(100u32))?;
+        let failure = for_all(proptest::num::u32::ANY, |n| {
+            check!(n).satisfies(lt(100u32))
+        })
+        .err()
+        .or_fail_with("a property that is false for most u32 must fail")?;
+        check!(failure.shrunk).satisfies(eq(100u32))?;
         // The original counterexample was some value at or above the bound...
-        expect!(failure.original).to(ge(100u32))?;
+        check!(failure.original).satisfies(ge(100u32))?;
         // ...and at least one case ran to find it.
-        expect!(failure.cases).to(ge(1u32))
+        check!(failure.cases).satisfies(ge(1u32))
     }
 
     #[test]
     fn the_shrunk_failure_is_the_one_the_minimal_input_produces() -> TestResult {
-        let failure = check(proptest::num::i64::ANY, |n| expect!(n).to(lt(0i64)))
-            .err()
-            .or_fail_with("non-negative i64 values exist")?;
+        let failure = for_all(proptest::num::i64::ANY, |n| {
+            check!(n).satisfies(lt(0i64))
+        })
+        .err()
+        .or_fail_with("non-negative i64 values exist")?;
         // The minimal non-negative i64 is 0.
-        expect!(failure.shrunk).to(eq(0i64))?;
+        check!(failure.shrunk).satisfies(eq(0i64))?;
         // The carried `TestError` is the failure 0 itself produces.
         let rendered = failure.failure.to_string();
-        expect!(rendered.contains("less than 0")).to(is_true())
+        check!(rendered.contains("less than 0")).satisfies(is_true())
     }
 
     #[test]
-    fn check_with_honors_a_smaller_case_count() -> TestResult {
+    fn for_all_with_honors_a_smaller_case_count() -> TestResult {
         // With a single case and an always-true property, exactly one draw is
         // taken and the run still passes.
         let mut runner = Runner::deterministic();
-        let outcome = check_with(Config { cases: 1 }, &mut runner, 0u32..10, |_| {
+        let outcome = for_all_with(Config { cases: 1 }, &mut runner, 0u32..10, |_| {
             TestResult::Ok(())
         });
-        expect!(outcome.is_ok()).to(is_true())
+        check!(outcome.is_ok()).satisfies(is_true())
     }
 }

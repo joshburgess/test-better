@@ -80,27 +80,27 @@ pub(crate) fn color_enabled() -> bool {
 mod tests {
     use super::*;
     use crate::{OrFail, TestResult};
-    use test_better_matchers::{eq, expect, is_false, is_true};
+    use test_better_matchers::{eq, check, is_false, is_true};
 
     #[test]
     fn resolve_handles_every_choice_and_no_color() -> TestResult {
         // Always wins over both `NO_COLOR` and terminal detection.
-        expect!(resolve(ColorChoice::Always, true, false))
-            .to(is_true())
+        check!(resolve(ColorChoice::Always, true, false))
+            .satisfies(is_true())
             .or_fail()?;
         // Never loses to both.
-        expect!(resolve(ColorChoice::Never, false, true))
-            .to(is_false())
+        check!(resolve(ColorChoice::Never, false, true))
+            .satisfies(is_false())
             .or_fail()?;
         // Auto needs a terminal and an unset `NO_COLOR`.
-        expect!(resolve(ColorChoice::Auto, false, true))
-            .to(is_true())
+        check!(resolve(ColorChoice::Auto, false, true))
+            .satisfies(is_true())
             .or_fail()?;
-        expect!(resolve(ColorChoice::Auto, true, true))
-            .to(is_false())
+        check!(resolve(ColorChoice::Auto, true, true))
+            .satisfies(is_false())
             .or_fail()?;
-        expect!(resolve(ColorChoice::Auto, false, false))
-            .to(is_false())
+        check!(resolve(ColorChoice::Auto, false, false))
+            .satisfies(is_false())
             .or_fail()?;
         Ok(())
     }
@@ -122,11 +122,11 @@ mod tests {
         // Restore before any `?` to avoid skipping the restore on early return.
         set_color_choice(original);
 
-        expect!(after_always)
-            .to(eq(ColorChoice::Always))
+        check!(after_always)
+            .satisfies(eq(ColorChoice::Always))
             .or_fail()?;
-        expect!(after_never).to(eq(ColorChoice::Never)).or_fail()?;
-        expect!(after_auto).to(eq(ColorChoice::Auto)).or_fail()?;
+        check!(after_never).satisfies(eq(ColorChoice::Never)).or_fail()?;
+        check!(after_auto).satisfies(eq(ColorChoice::Auto)).or_fail()?;
         Ok(())
     }
 }

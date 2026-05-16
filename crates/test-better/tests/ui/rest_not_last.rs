@@ -10,5 +10,5 @@ struct Point {
 
 fn main() {
     let point = Point { x: 1, y: 2 };
-    let _ = expect!(point).to(matches_struct!(Point { .., x: eq(1) }));
+    let _ = check!(point).satisfies(matches_struct!(Point { .., x: eq(1) }));
 }

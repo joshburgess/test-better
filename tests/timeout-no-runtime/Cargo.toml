@@ -11,7 +11,7 @@ publish = false
 
 [dependencies]
 # No runtime feature on purpose: this crate's whole job is to prove that a
-# `to_complete_within` call without one fails to compile, with a clear message.
+# `completes_within` call without one fails to compile, with a clear message.
 test-better = { workspace = true }
 
 [dev-dependencies]

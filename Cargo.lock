@@ -248,7 +248,7 @@ checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 
 [[package]]
 name = "custom-matcher-example"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "test-better",
 ]
@@ -603,7 +603,7 @@ dependencies = [
 
 [[package]]
 name = "property-roundtrip-example"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "test-better",
 ]
@@ -854,14 +854,14 @@ dependencies = [
 
 [[package]]
 name = "snapshot-html-example"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "test-better",
 ]
 
 [[package]]
 name = "state-machine-example"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "test-better",
 ]
@@ -894,7 +894,7 @@ dependencies = [
 
 [[package]]
 name = "test-better"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "pollster",
  "test-better-core",
@@ -908,7 +908,7 @@ dependencies = [
 
 [[package]]
 name = "test-better-async"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "async-std",
  "pollster",
@@ -920,7 +920,7 @@ dependencies = [
 
 [[package]]
 name = "test-better-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -929,7 +929,7 @@ dependencies = [
 
 [[package]]
 name = "test-better-macros"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -938,7 +938,7 @@ dependencies = [
 
 [[package]]
 name = "test-better-matchers"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "pollster",
  "regex",
@@ -951,7 +951,7 @@ dependencies = [
 
 [[package]]
 name = "test-better-property"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "proptest",
  "quickcheck",
@@ -961,7 +961,7 @@ dependencies = [
 
 [[package]]
 name = "test-better-runner"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "serde_json",
  "test-better",
@@ -969,7 +969,7 @@ dependencies = [
 
 [[package]]
 name = "test-better-snapshot"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "proc-macro2",
  "syn",
@@ -979,7 +979,7 @@ dependencies = [
 
 [[package]]
 name = "timeout-no-runtime"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "test-better",
  "trybuild",
@@ -1193,7 +1193,7 @@ dependencies = [
 
 [[package]]
 name = "web-handler-tests-example"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "test-better",
 ]

@@ -1,14 +1,18 @@
-//! The [`expect!`](crate::expect) macro and its [`Subject`] type: the entry point for writing
+//! The [`check!`](crate::check) macro and its [`Subject`] type: the entry point for writing
 //! an assertion.
 //!
-//! `expect!(value)` captures the value *and the source text of the expression
+//! `check!(value)` captures the value *and the source text of the expression
 //! it came from*, so a failure can name `2 + 2`, not just `4`. The resulting
-//! [`Subject`] is consumed by [`Subject::to`] / [`Subject::to_not`], each of
-//! which returns a [`TestResult`] so the assertion chains with `?`.
+//! [`Subject`] is consumed by [`Subject::satisfies`] / [`Subject::violates`],
+//! each of which returns a [`TestResult`] so the assertion chains with `?`.
+//!
+//! Every method on `Subject` reads as a present-tense factual claim about the
+//! value: "x satisfies the matcher", "x matches the snapshot", "the future
+//! completes within 50ms". That shape is the convention for the whole crate.
 //!
 //! # Async
 //!
-//! When the expression handed to `expect!` is a [`Future`], the resulting
+//! When the expression handed to `check!` is a [`Future`], the resulting
 //! `Subject` grows an `await`-based method, [`Subject::resolves_to`]. The
 //! design is a single `Subject<T>` with that method added to *this* impl block
 //! under a method-level `where T: Future` bound and a distinct name: a blanket
@@ -36,7 +40,7 @@ use crate::matcher::{Matcher, Mismatch};
 /// A value under test, paired with the source text of the expression that
 /// produced it.
 ///
-/// `Subject` owns its value (the [`expect!`](crate::expect) macro hands it over by value) and
+/// `Subject` owns its value (the [`check!`](crate::check) macro hands it over by value) and
 /// borrows nothing, so it carries no lifetime parameter.
 pub struct Subject<T> {
     actual: T,
@@ -46,10 +50,10 @@ pub struct Subject<T> {
 
 impl<T> Subject<T> {
     /// Pairs `actual` with the source text it came from and the `module_path!()`
-    /// of the call site. Called by [`expect!`](crate::expect); rarely
+    /// of the call site. Called by [`check!`](crate::check); rarely
     /// constructed directly.
     ///
-    /// `module_path` is only consulted by [`to_match_snapshot`](Self::to_match_snapshot),
+    /// `module_path` is only consulted by [`matches_snapshot`](Self::matches_snapshot),
     /// which uses it to name the snapshot file; every other method ignores it.
     #[must_use]
     pub fn new(actual: T, expr: &'static str, module_path: &'static str) -> Self {
@@ -66,7 +70,7 @@ impl<T> Subject<T> {
     /// `#[must_use]` (it is a `Result`), so a forgotten `?` is a compiler
     /// warning rather than a silently-passing assertion.
     #[track_caller]
-    pub fn to<M>(self, matcher: M) -> TestResult
+    pub fn satisfies<M>(self, matcher: M) -> TestResult
     where
         M: Matcher<T>,
     {
@@ -79,9 +83,11 @@ impl<T> Subject<T> {
     /// Asserts that the value does *not* satisfy `matcher`.
     ///
     /// Returns `Ok(())` when the matcher does not match, and a [`TestError`]
-    /// when it unexpectedly does.
+    /// when it unexpectedly does. Equivalent to
+    /// [`satisfies`](Self::satisfies)`(`[`not`](crate::not)`(matcher))`; pick
+    /// whichever reads better at the call site.
     #[track_caller]
-    pub fn to_not<M>(self, matcher: M) -> TestResult
+    pub fn violates<M>(self, matcher: M) -> TestResult
     where
         M: Matcher<T>,
     {
@@ -94,11 +100,11 @@ impl<T> Subject<T> {
 
     /// Awaits the future and asserts that its output satisfies `matcher`.
     ///
-    /// This is the async counterpart of [`to`](Self::to): reach for it when
-    /// the expression handed to [`expect!`](crate::expect) is a [`Future`].
-    /// The matcher runs against the future's *output*, so
-    /// `expect!(fut).resolves_to(eq(4))` is exactly `expect!(fut.await).to(eq(4))`
-    /// without the intermediate binding.
+    /// This is the async counterpart of [`satisfies`](Self::satisfies): reach
+    /// for it when the expression handed to [`check!`](crate::check) is a
+    /// [`Future`]. The matcher runs against the future's *output*, so
+    /// `check!(fut).resolves_to(eq(4))` is exactly
+    /// `check!(fut.await).satisfies(eq(4))` without the intermediate binding.
     ///
     /// The method itself is *not* `async`: it is `#[track_caller]` and returns
     /// a future. The call-site location is captured synchronously when
@@ -107,11 +113,11 @@ impl<T> Subject<T> {
     ///
     /// ```
     /// use test_better_core::TestResult;
-    /// use test_better_matchers::{eq, expect};
+    /// use test_better_matchers::{check, eq};
     ///
     /// # fn main() -> TestResult {
     /// pollster::block_on(async {
-    ///     expect!(async { 2 + 2 }).resolves_to(eq(4)).await?;
+    ///     check!(async { 2 + 2 }).resolves_to(eq(4)).await?;
     ///     TestResult::Ok(())
     /// })
     /// # }
@@ -123,7 +129,7 @@ impl<T> Subject<T> {
         M: Matcher<T::Output>,
     {
         // Captured here, synchronously, before the returned future is ever
-        // polled: this is the user's `expect!(..).resolves_to(..)` call site.
+        // polled: this is the user's `check!(..).resolves_to(..)` call site.
         let location = Location::caller();
         async move {
             let output = self.actual.await;
@@ -151,14 +157,14 @@ impl<T> Subject<T> {
     /// use test_better::prelude::*;
     ///
     /// # async fn run() -> TestResult {
-    /// expect!(some_future())
-    ///     .to_complete_within(Duration::from_millis(50))
+    /// check!(some_future())
+    ///     .completes_within(Duration::from_millis(50))
     ///     .await?;
     /// # Ok(())
     /// # }
     /// ```
     #[track_caller]
-    pub fn to_complete_within(self, limit: Duration) -> impl Future<Output = TestResult>
+    pub fn completes_within(self, limit: Duration) -> impl Future<Output = TestResult>
     where
         T: Future + RuntimeAvailable,
     {
@@ -186,25 +192,25 @@ impl<T> Subject<T> {
     ///
     /// ```no_run
     /// use test_better_core::TestResult;
-    /// use test_better_matchers::expect;
+    /// use test_better_matchers::check;
     ///
     /// # fn main() -> TestResult {
     /// // Run once with `UPDATE_SNAPSHOTS=1` to record the snapshot; later runs
     /// // compare against `tests/snapshots/<module>__homepage.snap`.
-    /// expect!("<h1>Hello</h1>").to_match_snapshot("homepage")?;
+    /// check!("<h1>Hello</h1>").matches_snapshot("homepage")?;
     /// # Ok(())
     /// # }
     /// ```
     #[track_caller]
-    pub fn to_match_snapshot(self, name: &str) -> TestResult
+    pub fn matches_snapshot(self, name: &str) -> TestResult
     where
         T: Display,
     {
-        self.to_match_snapshot_with(name, &Redactions::new())
+        self.matches_snapshot_with(name, &Redactions::new())
     }
 
-    /// Like [`to_match_snapshot`](Self::to_match_snapshot), but runs
-    /// `redactions` over the value first.
+    /// Like [`matches_snapshot`](Self::matches_snapshot), but runs `redactions`
+    /// over the value first.
     ///
     /// Use this when the rendered value carries content that is not stable run
     /// to run (a generated UUID, a timestamp): the redactions rewrite those
@@ -214,19 +220,19 @@ impl<T> Subject<T> {
     ///
     /// ```no_run
     /// use test_better_core::TestResult;
-    /// use test_better_matchers::expect;
+    /// use test_better_matchers::check;
     /// use test_better_snapshot::Redactions;
     ///
     /// # fn main() -> TestResult {
     /// let rendered = format!("created {}", uuid_of_new_record());
-    /// expect!(rendered)
-    ///     .to_match_snapshot_with("record", &Redactions::new().redact_uuids())?;
+    /// check!(rendered)
+    ///     .matches_snapshot_with("record", &Redactions::new().redact_uuids())?;
     /// # Ok(())
     /// # }
     /// # fn uuid_of_new_record() -> &'static str { "00000000-0000-0000-0000-000000000000" }
     /// ```
     #[track_caller]
-    pub fn to_match_snapshot_with(self, name: &str, redactions: &Redactions) -> TestResult
+    pub fn matches_snapshot_with(self, name: &str, redactions: &Redactions) -> TestResult
     where
         T: Display,
     {
@@ -239,7 +245,7 @@ impl<T> Subject<T> {
 
     /// Asserts that the value matches the inline snapshot literal `expected`.
     ///
-    /// Unlike [`to_match_snapshot`](Self::to_match_snapshot), the snapshot lives
+    /// Unlike [`matches_snapshot`](Self::matches_snapshot), the snapshot lives
     /// in the test source: `expected` *is* the snapshot. The literal is
     /// normalized before comparison (a leading newline and the common
     /// indentation are cosmetic), so it can be indented to match the
@@ -255,38 +261,38 @@ impl<T> Subject<T> {
     ///
     /// ```no_run
     /// use test_better_core::TestResult;
-    /// use test_better_matchers::expect;
+    /// use test_better_matchers::check;
     ///
     /// # fn main() -> TestResult {
-    /// expect!(2 + 2).to_match_inline_snapshot("4")?;
+    /// check!(2 + 2).matches_inline_snapshot("4")?;
     /// # Ok(())
     /// # }
     /// ```
     #[track_caller]
-    pub fn to_match_inline_snapshot(self, expected: &str) -> TestResult
+    pub fn matches_inline_snapshot(self, expected: &str) -> TestResult
     where
         T: Display,
     {
-        self.to_match_inline_snapshot_with(expected, &Redactions::new())
+        self.matches_inline_snapshot_with(expected, &Redactions::new())
     }
 
-    /// Like [`to_match_inline_snapshot`](Self::to_match_inline_snapshot), but
+    /// Like [`matches_inline_snapshot`](Self::matches_inline_snapshot), but
     /// runs `redactions` over the value first.
     ///
     /// The inline-snapshot counterpart of
-    /// [`to_match_snapshot_with`](Self::to_match_snapshot_with): redaction
+    /// [`matches_snapshot_with`](Self::matches_snapshot_with): redaction
     /// rewrites non-deterministic spans to fixed placeholders before the
     /// comparison, so `UPDATE_SNAPSHOTS=1` records the *redacted* value as the
     /// literal and later runs stay green.
     ///
     /// ```no_run
     /// use test_better_core::TestResult;
-    /// use test_better_matchers::expect;
+    /// use test_better_matchers::check;
     /// use test_better_snapshot::Redactions;
     ///
     /// # fn main() -> TestResult {
     /// let rendered = format!("at {}", now_rfc3339());
-    /// expect!(rendered).to_match_inline_snapshot_with(
+    /// check!(rendered).matches_inline_snapshot_with(
     ///     "at [timestamp]",
     ///     &Redactions::new().redact_rfc3339_timestamps(),
     /// )?;
@@ -295,7 +301,7 @@ impl<T> Subject<T> {
     /// # fn now_rfc3339() -> &'static str { "2026-05-14T12:34:56Z" }
     /// ```
     #[track_caller]
-    pub fn to_match_inline_snapshot_with(
+    pub fn matches_inline_snapshot_with(
         self,
         expected: &str,
         redactions: &Redactions,
@@ -327,7 +333,7 @@ impl<T> Subject<T> {
 #[track_caller]
 fn mismatch_error(expr: &str, mismatch: Mismatch) -> TestError {
     TestError::new(ErrorKind::Assertion)
-        .with_message(format!("expect!({expr})"))
+        .with_message(format!("check!({expr})"))
         .with_payload(Payload::ExpectedActual {
             expected: mismatch.expected.to_string(),
             actual: mismatch.actual,
@@ -335,22 +341,23 @@ fn mismatch_error(expr: &str, mismatch: Mismatch) -> TestError {
         })
 }
 
-/// Builds the error for `to_not` when the matcher matched but should not have.
-/// There is no `Mismatch` in this case, so the message carries the whole story.
+/// Builds the error for `violates` when the matcher matched but should not
+/// have. There is no `Mismatch` in this case, so the message carries the whole
+/// story.
 #[track_caller]
 fn unexpected_match_error(expr: &str, description: Description) -> TestError {
     TestError::new(ErrorKind::Assertion).with_message(format!(
-        "expect!({expr}): expected it not to be {description}, but it was"
+        "check!({expr}): expected it not to be {description}, but it was"
     ))
 }
 
-/// Builds the error for `to_complete_within` when the future ran past its
+/// Builds the error for `completes_within` when the future ran past its
 /// limit. This is a timing failure, not a value mismatch, so it carries only
 /// a message, no payload.
 #[track_caller]
 fn timeout_error(expr: &str, elapsed: Elapsed) -> TestError {
     TestError::new(ErrorKind::Assertion).with_message(format!(
-        "expect!({expr}): did not complete within {:?}",
+        "check!({expr}): did not complete within {:?}",
         elapsed.limit
     ))
 }
@@ -372,7 +379,7 @@ fn snapshot_error(expr: &str, name: &str, failure: SnapshotFailure) -> TestError
             let diff = snapshot_diff(&expected, &actual);
             TestError::new(ErrorKind::Snapshot)
                 .with_message(format!(
-                    "expect!({expr}): snapshot {name:?} at {} does not match",
+                    "check!({expr}): snapshot {name:?} at {} does not match",
                     path.display()
                 ))
                 .with_payload(Payload::ExpectedActual {
@@ -383,7 +390,7 @@ fn snapshot_error(expr: &str, name: &str, failure: SnapshotFailure) -> TestError
         }
         SnapshotFailure::Missing { path } => {
             TestError::new(ErrorKind::Snapshot).with_message(format!(
-                "expect!({expr}): snapshot {name:?} does not exist at {}; \
+                "check!({expr}): snapshot {name:?} does not exist at {}; \
                  rerun with UPDATE_SNAPSHOTS=1 to create it",
                 path.display()
             ))
@@ -393,7 +400,7 @@ fn snapshot_error(expr: &str, name: &str, failure: SnapshotFailure) -> TestError
             action,
             source,
         } => TestError::new(ErrorKind::Snapshot).with_message(format!(
-            "expect!({expr}): snapshot {name:?} I/O error {action} ({}): {source}",
+            "check!({expr}): snapshot {name:?} I/O error {action} ({}): {source}",
             path.display()
         )),
     }
@@ -408,7 +415,7 @@ fn inline_snapshot_error(expr: &str, failure: InlineSnapshotFailure) -> TestErro
     let diff = snapshot_diff(&expected, &actual);
     TestError::new(ErrorKind::Snapshot)
         .with_message(format!(
-            "expect!({expr}): inline snapshot does not match; \
+            "check!({expr}): inline snapshot does not match; \
              rerun with UPDATE_SNAPSHOTS=1 to update it"
         ))
         .with_payload(Payload::ExpectedActual {
@@ -436,15 +443,15 @@ fn snapshot_diff(_expected: &str, _actual: &str) -> Option<String> {
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{eq, expect};
+/// use test_better_matchers::{check, eq};
 ///
 /// fn main() -> TestResult {
-///     expect!(2 + 2).to(eq(4))?;
+///     check!(2 + 2).satisfies(eq(4))?;
 ///     Ok(())
 /// }
 /// ```
 #[macro_export]
-macro_rules! expect {
+macro_rules! check {
     ($actual:expr) => {
         $crate::Subject::new($actual, ::core::stringify!($actual), ::core::module_path!())
     };
@@ -457,74 +464,74 @@ mod tests {
     use crate::{eq, is_true};
 
     #[test]
-    fn to_returns_ok_on_a_match() -> TestResult {
-        let result = expect!(2 + 2).to(eq(4));
-        expect!(result.is_ok()).to(is_true())?;
+    fn satisfies_returns_ok_on_a_match() -> TestResult {
+        let result = check!(2 + 2).satisfies(eq(4));
+        check!(result.is_ok()).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
-    fn to_failure_mentions_the_expression_and_the_expected_value() -> TestResult {
-        let error = expect!(2 + 2).to(eq(5)).expect_err("2 + 2 is not 5");
+    fn satisfies_failure_mentions_the_expression_and_the_expected_value() -> TestResult {
+        let error = check!(2 + 2).satisfies(eq(5)).expect_err("2 + 2 is not 5");
         let rendered = error.to_string();
-        expect!(rendered.contains("2 + 2")).to(is_true())?;
-        expect!(rendered.contains("equal to 5")).to(is_true())?;
-        expect!(rendered.contains("actual: 4")).to(is_true())?;
+        check!(rendered.contains("2 + 2")).satisfies(is_true())?;
+        check!(rendered.contains("equal to 5")).satisfies(is_true())?;
+        check!(rendered.contains("actual: 4")).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
-    fn to_failure_captures_the_caller_location() -> TestResult {
+    fn satisfies_failure_captures_the_caller_location() -> TestResult {
         let line = line!() + 1;
-        let error = expect!(2 + 2).to(eq(5)).expect_err("2 + 2 is not 5");
-        expect!(error.location.line()).to(eq(line))?;
-        expect!(error.location.file().ends_with("subject.rs")).to(is_true())?;
+        let error = check!(2 + 2).satisfies(eq(5)).expect_err("2 + 2 is not 5");
+        check!(error.location.line()).satisfies(eq(line))?;
+        check!(error.location.file().ends_with("subject.rs")).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
-    fn to_not_returns_ok_when_the_matcher_does_not_match() -> TestResult {
-        let result = expect!(2 + 2).to_not(eq(5));
-        expect!(result.is_ok()).to(is_true())?;
+    fn violates_returns_ok_when_the_matcher_does_not_match() -> TestResult {
+        let result = check!(2 + 2).violates(eq(5));
+        check!(result.is_ok()).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
-    fn to_not_failure_mentions_the_expression_and_the_matcher() -> TestResult {
-        let error = expect!(true).to_not(is_true()).expect_err("true is true");
+    fn violates_failure_mentions_the_expression_and_the_matcher() -> TestResult {
+        let error = check!(true).violates(is_true()).expect_err("true is true");
         let rendered = error.to_string();
-        expect!(rendered.contains("expect!(true)")).to(is_true())?;
-        expect!(rendered.contains("not to be true")).to(is_true())?;
+        check!(rendered.contains("check!(true)")).satisfies(is_true())?;
+        check!(rendered.contains("not to be true")).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
-    fn to_not_captures_the_caller_location() -> TestResult {
+    fn violates_captures_the_caller_location() -> TestResult {
         let line = line!() + 1;
-        let error = expect!(true).to_not(is_true()).expect_err("true is true");
-        expect!(error.location.line()).to(eq(line))?;
+        let error = check!(true).violates(is_true()).expect_err("true is true");
+        check!(error.location.line()).satisfies(eq(line))?;
         Ok(())
     }
 
     #[test]
     fn resolves_to_returns_ok_when_the_output_matches() -> TestResult {
         pollster::block_on(async {
-            let result = expect!(async { 2 + 2 }).resolves_to(eq(4)).await;
-            expect!(result.is_ok()).to(is_true())
+            let result = check!(async { 2 + 2 }).resolves_to(eq(4)).await;
+            check!(result.is_ok()).satisfies(is_true())
         })
     }
 
     #[test]
     fn resolves_to_failure_mentions_the_expression_and_the_output() -> TestResult {
         pollster::block_on(async {
-            let error = expect!(async { 2 + 2 })
+            let error = check!(async { 2 + 2 })
                 .resolves_to(eq(5))
                 .await
                 .expect_err("2 + 2 does not resolve to 5");
             let rendered = error.to_string();
-            expect!(rendered.contains("async { 2 + 2 }")).to(is_true())?;
-            expect!(rendered.contains("equal to 5")).to(is_true())?;
-            expect!(rendered.contains("actual: 4")).to(is_true())
+            check!(rendered.contains("async { 2 + 2 }")).satisfies(is_true())?;
+            check!(rendered.contains("equal to 5")).satisfies(is_true())?;
+            check!(rendered.contains("actual: 4")).satisfies(is_true())
         })
     }
 
@@ -534,10 +541,10 @@ mod tests {
         // though the future is awaited on a later line.
         pollster::block_on(async {
             let line = line!() + 1;
-            let pending = expect!(async { 2 + 2 }).resolves_to(eq(5));
+            let pending = check!(async { 2 + 2 }).resolves_to(eq(5));
             let error = pending.await.expect_err("2 + 2 does not resolve to 5");
-            expect!(error.location.line()).to(eq(line))?;
-            expect!(error.location.file().ends_with("subject.rs")).to(is_true())
+            check!(error.location.line()).satisfies(eq(line))?;
+            check!(error.location.file().ends_with("subject.rs")).satisfies(is_true())
         })
     }
 
@@ -554,13 +561,13 @@ mod tests {
             actual: "line one\nline TWO".to_string(),
         };
         let error = super::snapshot_error("page", "page", failure);
-        expect!(error.kind == ErrorKind::Snapshot).to(is_true())?;
+        check!(error.kind == ErrorKind::Snapshot).satisfies(is_true())?;
         let rendered = error.to_string();
-        expect!(rendered.contains("snapshot \"page\"")).to(is_true())?;
+        check!(rendered.contains("snapshot \"page\"")).satisfies(is_true())?;
         // The expected/actual payload renders, and `diff` is on by default.
-        expect!(rendered.contains("line one")).to(is_true())?;
+        check!(rendered.contains("line one")).satisfies(is_true())?;
         #[cfg(feature = "diff")]
-        expect!(rendered.contains("-line two")).to(is_true())?;
+        check!(rendered.contains("-line two")).satisfies(is_true())?;
         Ok(())
     }
 
@@ -575,8 +582,8 @@ mod tests {
             path: PathBuf::from("tests/snapshots/m__page.snap"),
         };
         let error = super::snapshot_error("page", "page", failure);
-        expect!(error.kind == ErrorKind::Snapshot).to(is_true())?;
-        expect!(error.to_string().contains("UPDATE_SNAPSHOTS=1")).to(is_true())?;
+        check!(error.kind == ErrorKind::Snapshot).satisfies(is_true())?;
+        check!(error.to_string().contains("UPDATE_SNAPSHOTS=1")).satisfies(is_true())?;
         Ok(())
     }
 
@@ -590,12 +597,12 @@ mod tests {
             actual: "one\nTWO".to_string(),
         };
         let error = super::inline_snapshot_error("value", failure);
-        expect!(error.kind == ErrorKind::Snapshot).to(is_true())?;
+        check!(error.kind == ErrorKind::Snapshot).satisfies(is_true())?;
         let rendered = error.to_string();
-        expect!(rendered.contains("inline snapshot does not match")).to(is_true())?;
-        expect!(rendered.contains("UPDATE_SNAPSHOTS=1")).to(is_true())?;
+        check!(rendered.contains("inline snapshot does not match")).satisfies(is_true())?;
+        check!(rendered.contains("UPDATE_SNAPSHOTS=1")).satisfies(is_true())?;
         #[cfg(feature = "diff")]
-        expect!(rendered.contains("-two")).to(is_true())?;
+        check!(rendered.contains("-two")).satisfies(is_true())?;
         Ok(())
     }
 }

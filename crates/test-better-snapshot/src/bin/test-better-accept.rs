@@ -3,7 +3,7 @@
 //! After a test run with `UPDATE_SNAPSHOTS=1`, every inline-snapshot mismatch
 //! has been recorded as a pending patch under `target/test-better-pending/`
 //! (the test run itself cannot rewrite the file it is expanding from). Running
-//! this binary reads those patches and rewrites the `to_match_inline_snapshot`
+//! this binary reads those patches and rewrites the `matches_inline_snapshot`
 //! literals in place, then deletes the spent patch files.
 //!
 //! It is a thin shell around [`test_better_snapshot::apply_pending_patches`];

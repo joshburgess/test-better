@@ -18,11 +18,11 @@ use similar::{ChangeTag, TextDiff};
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{diff_lines, eq, expect};
+/// use test_better_matchers::{diff_lines, eq, check};
 ///
 /// fn main() -> TestResult {
 ///     let diff = diff_lines("a\nb\nc", "a\nB\nc");
-///     expect!(diff).to(eq(" a\n-b\n+B\n c".to_string()))?;
+///     check!(diff).satisfies(eq(" a\n-b\n+B\n c".to_string()))?;
 ///     Ok(())
 /// }
 /// ```
@@ -56,25 +56,25 @@ mod tests {
     use test_better_core::TestResult;
 
     use super::*;
-    use crate::{eq, expect, is_false};
+    use crate::{eq, check, is_false};
 
     #[test]
     fn equal_input_is_all_context_lines() -> TestResult {
-        expect!(diff_lines("one\ntwo", "one\ntwo")).to(eq(" one\n two".to_string()))?;
+        check!(diff_lines("one\ntwo", "one\ntwo")).satisfies(eq(" one\n two".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn a_changed_line_becomes_a_delete_then_an_insert() -> TestResult {
         let diff = diff_lines("keep\nold\nkeep", "keep\nnew\nkeep");
-        expect!(diff).to(eq(" keep\n-old\n+new\n keep".to_string()))?;
+        check!(diff).satisfies(eq(" keep\n-old\n+new\n keep".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn has_no_trailing_newline() -> TestResult {
         let diff = diff_lines("a\n", "b\n");
-        expect!(diff.ends_with('\n')).to(is_false())?;
+        check!(diff.ends_with('\n')).satisfies(is_false())?;
         Ok(())
     }
 }

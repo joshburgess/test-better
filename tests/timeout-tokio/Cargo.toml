@@ -5,7 +5,7 @@
 # unavailable here, so the manifest is spelled out in full.
 [package]
 name = "timeout-tokio"
-description = "Integration coverage for `to_complete_within` on the Tokio runtime."
+description = "Integration coverage for `completes_within` on the Tokio runtime."
 version = "0.0.0"
 edition = "2024"
 rust-version = "1.95.0"

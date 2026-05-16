@@ -39,7 +39,7 @@
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{define_matcher, expect};
+/// use test_better_matchers::{define_matcher, check};
 ///
 /// define_matcher! {
 ///     /// Matches a string that ends with `suffix`.
@@ -50,7 +50,7 @@
 /// }
 ///
 /// fn main() -> TestResult {
-///     expect!(String::from("report.csv")).to(has_suffix(".csv"))?;
+///     check!(String::from("report.csv")).satisfies(has_suffix(".csv"))?;
 ///     Ok(())
 /// }
 /// ```

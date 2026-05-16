@@ -3,7 +3,7 @@
 //!
 //! A matcher is a reusable expectation: it inspects a borrowed value and
 //! reports, in structured form, whether the value met the expectation and — if
-//! not — what was expected, what was found, and an optional diff. The `expect!`
+//! not — what was expected, what was found, and an optional diff. The `check!`
 //! macro turns that structured result into a [`TestError`].
 //!
 //! [`TestError`]: test_better_core::TestError
@@ -95,13 +95,13 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, expect, is_false, is_true};
+    use crate::{eq, check, is_false, is_true};
 
     #[test]
     fn pass_has_no_failure() -> TestResult {
         let result = MatchResult::pass();
-        expect!(result.matched).to(is_true())?;
-        expect!(result.failure.is_none()).to(is_true())?;
+        check!(result.matched).satisfies(is_true())?;
+        check!(result.failure.is_none()).satisfies(is_true())?;
         Ok(())
     }
 
@@ -109,18 +109,18 @@ mod tests {
     fn fail_carries_the_mismatch() -> TestResult {
         let mismatch = Mismatch::new(Description::text("equal to 4"), "5");
         let result = MatchResult::fail(mismatch);
-        expect!(result.matched).to(is_false())?;
+        check!(result.matched).satisfies(is_false())?;
         let failure = result.failure.or_fail_with("fail() stores the mismatch")?;
-        expect!(failure.expected.to_string()).to(eq("equal to 4".to_string()))?;
-        expect!(failure.actual).to(eq("5".to_string()))?;
-        expect!(failure.diff.is_none()).to(is_true())?;
+        check!(failure.expected.to_string()).satisfies(eq("equal to 4".to_string()))?;
+        check!(failure.actual).satisfies(eq("5".to_string()))?;
+        check!(failure.diff.is_none()).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
     fn mismatch_with_diff_stores_the_diff() -> TestResult {
         let mismatch = Mismatch::new(Description::text("the file"), "other").with_diff("- a\n+ b");
-        expect!(mismatch.diff.as_deref()).to(eq(Some("- a\n+ b")))?;
+        check!(mismatch.diff.as_deref()).satisfies(eq(Some("- a\n+ b")))?;
         Ok(())
     }
 }

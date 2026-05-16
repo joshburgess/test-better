@@ -1,4 +1,4 @@
-//! Acceptance tests for the async `expect!` method `resolves_to`,
+//! Acceptance tests for the async `check!` method `resolves_to`,
 //! exercised through the `test-better` facade.
 //!
 //! `resolves_to` is runtime-agnostic: it only awaits the future. These tests
@@ -18,7 +18,7 @@ async fn doubled(n: i32) -> i32 {
 #[test]
 fn resolves_to_matches_the_output_under_pollster() -> TestResult {
     pollster::block_on(async {
-        expect!(doubled(21)).resolves_to(eq(42)).await?;
+        check!(doubled(21)).resolves_to(eq(42)).await?;
         Ok(())
     })
 }
@@ -26,20 +26,20 @@ fn resolves_to_matches_the_output_under_pollster() -> TestResult {
 #[test]
 fn resolves_to_reports_the_output_on_a_mismatch() -> TestResult {
     pollster::block_on(async {
-        let error = expect!(doubled(21))
+        let error = check!(doubled(21))
             .resolves_to(eq(0))
             .await
             .expect_err("doubled(21) resolves to 42, not 0");
         let rendered = error.to_string();
-        expect!(rendered.contains("doubled(21)")).to(is_true())?;
-        expect!(rendered.contains("actual: 42")).to(is_true())?;
+        check!(rendered.contains("doubled(21)")).satisfies(is_true())?;
+        check!(rendered.contains("actual: 42")).satisfies(is_true())?;
         Ok(())
     })
 }
 
 #[tokio::test]
 async fn resolves_to_works_under_tokio_test() -> TestResult {
-    expect!(doubled(50)).resolves_to(eq(100)).await?;
+    check!(doubled(50)).resolves_to(eq(100)).await?;
     Ok(())
 }
 
@@ -47,10 +47,10 @@ async fn resolves_to_works_under_tokio_test() -> TestResult {
 async fn resolves_to_composes_with_other_matchers() -> TestResult {
     // Nothing about `resolves_to` is special to `eq`: any matcher over the
     // output type works, including ones that arrive from an `async` block.
-    expect!(async { vec![1, 2, 3] })
+    check!(async { vec![1, 2, 3] })
         .resolves_to(have_len(3usize))
         .await?;
-    expect!(tokio::time::sleep(Duration::from_millis(1)))
+    check!(tokio::time::sleep(Duration::from_millis(1)))
         .resolves_to(eq(()))
         .await?;
     Ok(())

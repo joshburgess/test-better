@@ -9,7 +9,7 @@
 //! how to find a snapshot file, read it, write it, and report *what* differed,
 //! as the structured [`SnapshotFailure`]. Turning that into a `TestError` with
 //! a rendered diff is `test-better-matchers`' job, in
-//! `expect!(value).to_match_snapshot("name")`.
+//! `check!(value).matches_snapshot("name")`.
 //!
 //! Snapshot files live at `tests/snapshots/<module-path>__<name>.snap`, with
 //! `<module-path>` taken from the calling test's `module_path!()` (so two tests
@@ -154,12 +154,12 @@ impl Error for SnapshotFailure {
 /// use std::path::{Path, PathBuf};
 ///
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{eq, expect};
+/// use test_better_matchers::{eq, check};
 /// use test_better_snapshot::snapshot_path;
 ///
 /// # fn main() -> TestResult {
 /// let path = snapshot_path(Path::new("tests/snapshots"), "my_crate::ui", "homepage");
-/// expect!(path).to(eq(PathBuf::from("tests/snapshots/my_crate__ui__homepage.snap")))?;
+/// check!(path).satisfies(eq(PathBuf::from("tests/snapshots/my_crate__ui__homepage.snap")))?;
 /// # Ok(())
 /// # }
 /// ```
@@ -251,7 +251,7 @@ pub fn assert_snapshot_in(
 ///
 /// `cargo test` runs a test binary with its working directory set to the
 /// package root, so `tests/snapshots` lands in the package being tested. This
-/// is the entry point `expect!(value).to_match_snapshot("name")` calls; reach
+/// is the entry point `check!(value).matches_snapshot("name")` calls; reach
 /// for [`assert_snapshot_in`] when the directory or mode must be explicit.
 ///
 /// # Errors
@@ -279,20 +279,20 @@ mod tests {
     use std::path::Path;
 
     use test_better_core::{OrFail, TestResult};
-    use test_better_matchers::{contains_str, eq, expect, is_true};
+    use test_better_matchers::{contains_str, eq, check, is_true};
 
     use super::*;
 
     #[test]
     fn snapshot_path_joins_module_and_name_with_a_snap_extension() -> TestResult {
         let path = snapshot_path(Path::new("tests/snapshots"), "snapshot", "homepage");
-        expect!(path).to(eq(PathBuf::from("tests/snapshots/snapshot__homepage.snap")))
+        check!(path).satisfies(eq(PathBuf::from("tests/snapshots/snapshot__homepage.snap")))
     }
 
     #[test]
     fn snapshot_path_collapses_module_separators_and_sanitizes() -> TestResult {
         let path = snapshot_path(Path::new("snaps"), "my_crate::ui::pages", "home page/v2");
-        expect!(path).to(eq(PathBuf::from(
+        check!(path).satisfies(eq(PathBuf::from(
             "snaps/my_crate__ui__pages__home_page_v2.snap",
         )))
     }
@@ -304,9 +304,9 @@ mod tests {
         let failure = outcome
             .err()
             .or_fail_with("a missing snapshot should fail")?;
-        expect!(matches!(failure, SnapshotFailure::Missing { .. })).to(is_true())?;
+        check!(matches!(failure, SnapshotFailure::Missing { .. })).satisfies(is_true())?;
         // The message points the reader at how to create it.
-        expect!(failure.to_string().as_str()).to(contains_str("UPDATE_SNAPSHOTS=1"))?;
+        check!(failure.to_string().as_str()).satisfies(contains_str("UPDATE_SNAPSHOTS=1"))?;
         let _ = fs::remove_dir_all(&dir);
         Ok(())
     }

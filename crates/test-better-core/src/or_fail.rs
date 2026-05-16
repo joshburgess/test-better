@@ -77,7 +77,7 @@ mod tests {
     use super::*;
     use crate::error::Payload;
     use crate::{OrFail, TestResult};
-    use test_better_matchers::{eq, expect, is_true};
+    use test_better_matchers::{eq, check, is_true};
 
     fn io_error() -> std::io::Error {
         std::io::Error::new(std::io::ErrorKind::NotFound, "missing file")
@@ -86,14 +86,14 @@ mod tests {
     #[test]
     fn or_fail_passes_through_some_like_unwrap() -> TestResult {
         let some: Option<i32> = Some(7);
-        expect!(some.or_fail()?).to(eq(7)).or_fail()?;
+        check!(some.or_fail()?).satisfies(eq(7)).or_fail()?;
         Ok(())
     }
 
     #[test]
     fn or_fail_passes_through_ok_like_unwrap() -> TestResult {
         let ok: Result<i32, std::io::Error> = Ok(7);
-        expect!(ok.or_fail()?).to(eq(7)).or_fail()?;
+        check!(ok.or_fail()?).satisfies(eq(7)).or_fail()?;
         Ok(())
     }
 
@@ -103,14 +103,14 @@ mod tests {
         let line = line!() + 1;
         let result = missing.or_fail();
         let error = result.expect_err("err path");
-        expect!(error.kind).to(eq(ErrorKind::Assertion)).or_fail()?;
-        expect!(error.location.line()).to(eq(line)).or_fail()?;
+        check!(error.kind).satisfies(eq(ErrorKind::Assertion)).or_fail()?;
+        check!(error.location.line()).satisfies(eq(line)).or_fail()?;
         let message = error.message.as_deref().or_fail_with("message present")?;
-        expect!(message.starts_with("expected Some("))
-            .to(is_true())
+        check!(message.starts_with("expected Some("))
+            .satisfies(is_true())
             .or_fail()?;
-        expect!(message.ends_with("i32), got None"))
-            .to(is_true())
+        check!(message.ends_with("i32), got None"))
+            .satisfies(is_true())
             .or_fail()?;
         Ok(())
     }
@@ -121,8 +121,8 @@ mod tests {
         let error = missing
             .or_fail_with("the user should have been seeded")
             .expect_err("err path");
-        expect!(error.message.as_deref())
-            .to(eq(Some("the user should have been seeded")))
+        check!(error.message.as_deref())
+            .satisfies(eq(Some("the user should have been seeded")))
             .or_fail()?;
         Ok(())
     }
@@ -131,11 +131,11 @@ mod tests {
     fn or_fail_on_err_preserves_the_underlying_error() -> TestResult {
         let failing: Result<(), std::io::Error> = Err(io_error());
         let error = failing.or_fail().expect_err("err path");
-        expect!(error.kind).to(eq(ErrorKind::Custom)).or_fail()?;
+        check!(error.kind).satisfies(eq(ErrorKind::Custom)).or_fail()?;
         match error.payload.as_deref() {
             Some(Payload::Other(inner)) => {
-                expect!(inner.to_string())
-                    .to(eq("missing file".to_string()))
+                check!(inner.to_string())
+                    .satisfies(eq("missing file".to_string()))
                     .or_fail()?;
             }
             other => panic!("expected Other payload, got {other:?}"),
@@ -149,14 +149,14 @@ mod tests {
         let original_line = original.location.line();
         let failing: Result<(), TestError> = Err(original);
         let error = failing.or_fail().expect_err("err path");
-        expect!(error.kind).to(eq(ErrorKind::Assertion)).or_fail()?;
-        expect!(error.location.line())
-            .to(eq(original_line))
+        check!(error.kind).satisfies(eq(ErrorKind::Assertion)).or_fail()?;
+        check!(error.location.line())
+            .satisfies(eq(original_line))
             .or_fail()?;
-        expect!(error.message.as_deref())
-            .to(eq(Some("values differ")))
+        check!(error.message.as_deref())
+            .satisfies(eq(Some("values differ")))
             .or_fail()?;
-        expect!(error.payload.is_none()).to(is_true()).or_fail()?;
+        check!(error.payload.is_none()).satisfies(is_true()).or_fail()?;
         Ok(())
     }
 
@@ -166,12 +166,12 @@ mod tests {
         let error = failing
             .or_fail_with("loading the config file")
             .expect_err("err path");
-        expect!(matches!(error.payload.as_deref(), Some(Payload::Other(_))))
-            .to(is_true())
+        check!(matches!(error.payload.as_deref(), Some(Payload::Other(_))))
+            .satisfies(is_true())
             .or_fail()?;
-        expect!(error.context.len()).to(eq(1)).or_fail()?;
-        expect!(error.context[0].message.as_ref())
-            .to(eq("loading the config file"))
+        check!(error.context.len()).satisfies(eq(1)).or_fail()?;
+        check!(error.context[0].message.as_ref())
+            .satisfies(eq("loading the config file"))
             .or_fail()?;
         Ok(())
     }

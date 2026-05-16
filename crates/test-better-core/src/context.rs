@@ -105,7 +105,7 @@ mod tests {
     use super::*;
     use crate::{OrFail, TestResult};
     use std::cell::Cell;
-    use test_better_matchers::{eq, expect, is_true};
+    use test_better_matchers::{eq, check, is_true};
 
     fn io_error() -> std::io::Error {
         std::io::Error::new(std::io::ErrorKind::NotFound, "missing file")
@@ -114,14 +114,14 @@ mod tests {
     #[test]
     fn context_passes_through_ok() -> TestResult {
         let value: TestResult<i32> = Ok::<i32, std::io::Error>(7).context("unused");
-        expect!(value?).to(eq(7)).or_fail()?;
+        check!(value?).satisfies(eq(7)).or_fail()?;
         Ok(())
     }
 
     #[test]
     fn context_passes_through_some() -> TestResult {
         let value: TestResult<i32> = Some(7).context("unused");
-        expect!(value?).to(eq(7)).or_fail()?;
+        check!(value?).satisfies(eq(7)).or_fail()?;
         Ok(())
     }
 
@@ -131,14 +131,14 @@ mod tests {
         let line = line!() + 1;
         let result = failing.context("reading the fixture");
         let error = result.expect_err("err path");
-        expect!(error.kind).to(eq(ErrorKind::Custom)).or_fail()?;
-        expect!(error.location.line()).to(eq(line)).or_fail()?;
-        expect!(matches!(error.payload.as_deref(), Some(Payload::Other(_))))
-            .to(is_true())
+        check!(error.kind).satisfies(eq(ErrorKind::Custom)).or_fail()?;
+        check!(error.location.line()).satisfies(eq(line)).or_fail()?;
+        check!(matches!(error.payload.as_deref(), Some(Payload::Other(_))))
+            .satisfies(is_true())
             .or_fail()?;
-        expect!(error.context.len()).to(eq(1)).or_fail()?;
-        expect!(error.context[0].message.as_ref())
-            .to(eq("reading the fixture"))
+        check!(error.context.len()).satisfies(eq(1)).or_fail()?;
+        check!(error.context[0].message.as_ref())
+            .satisfies(eq("reading the fixture"))
             .or_fail()?;
         Ok(())
     }
@@ -151,17 +151,17 @@ mod tests {
             .context("comparing the results")
             .expect_err("err path");
         // Kind, location, and the (absent) payload of the original are kept.
-        expect!(error.kind).to(eq(ErrorKind::Assertion)).or_fail()?;
-        expect!(error.location.line())
-            .to(eq(original_line))
+        check!(error.kind).satisfies(eq(ErrorKind::Assertion)).or_fail()?;
+        check!(error.location.line())
+            .satisfies(eq(original_line))
             .or_fail()?;
-        expect!(error.payload.is_none()).to(is_true()).or_fail()?;
-        expect!(error.message.as_deref())
-            .to(eq(Some("values differ")))
+        check!(error.payload.is_none()).satisfies(is_true()).or_fail()?;
+        check!(error.message.as_deref())
+            .satisfies(eq(Some("values differ")))
             .or_fail()?;
-        expect!(error.context.len()).to(eq(1)).or_fail()?;
-        expect!(error.context[0].message.as_ref())
-            .to(eq("comparing the results"))
+        check!(error.context.len()).satisfies(eq(1)).or_fail()?;
+        check!(error.context[0].message.as_ref())
+            .satisfies(eq("comparing the results"))
             .or_fail()?;
         Ok(())
     }
@@ -173,8 +173,8 @@ mod tests {
             .context("outer step")
             .expect_err("err path");
         let messages: Vec<_> = error.context.iter().map(|f| f.message.as_ref()).collect();
-        expect!(messages)
-            .to(eq(vec!["inner step", "outer step"]))
+        check!(messages)
+            .satisfies(eq(vec!["inner step", "outer step"]))
             .or_fail()?;
         Ok(())
     }
@@ -185,10 +185,10 @@ mod tests {
         let line = line!() + 1;
         let result = missing.context("looking up the user");
         let error = result.expect_err("err path");
-        expect!(error.kind).to(eq(ErrorKind::Custom)).or_fail()?;
-        expect!(error.location.line()).to(eq(line)).or_fail()?;
-        expect!(error.context[0].message.as_ref())
-            .to(eq("looking up the user"))
+        check!(error.kind).satisfies(eq(ErrorKind::Custom)).or_fail()?;
+        check!(error.location.line()).satisfies(eq(line)).or_fail()?;
+        check!(error.context[0].message.as_ref())
+            .satisfies(eq("looking up the user"))
             .or_fail()?;
         Ok(())
     }
@@ -200,8 +200,8 @@ mod tests {
             calls.set(calls.get() + 1);
             "unused"
         });
-        expect!(ok?).to(eq(1)).or_fail()?;
-        expect!(calls.get()).to(eq(0)).or_fail()?;
+        check!(ok?).satisfies(eq(1)).or_fail()?;
+        check!(calls.get()).satisfies(eq(0)).or_fail()?;
 
         let err = Err::<(), _>(io_error())
             .with_context(|| {
@@ -209,9 +209,9 @@ mod tests {
                 "computed context"
             })
             .expect_err("err path");
-        expect!(calls.get()).to(eq(1)).or_fail()?;
-        expect!(err.context[0].message.as_ref())
-            .to(eq("computed context"))
+        check!(calls.get()).satisfies(eq(1)).or_fail()?;
+        check!(err.context[0].message.as_ref())
+            .satisfies(eq("computed context"))
             .or_fail()?;
         Ok(())
     }

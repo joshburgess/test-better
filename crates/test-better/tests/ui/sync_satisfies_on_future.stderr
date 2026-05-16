@@ -1,0 +1,17 @@
+error[E0277]: the trait bound `impl Matcher<{integer}>: Matcher<{async block@$DIR/tests/ui/sync_satisfies_on_future.rs:10:20: 10:25}>` is not satisfied
+  --> tests/ui/sync_satisfies_on_future.rs:10:43
+   |
+10 |     let _ = check!(async { 4 }).satisfies(eq(4));
+   |                                 --------- ^^^^^ unsatisfied trait bound
+   |                                 |
+   |                                 required by a bound introduced by this call
+   |
+   = help: the trait `Matcher<{async block@$DIR/tests/ui/sync_satisfies_on_future.rs:10:20: 10:25}>` is not implemented for `impl Matcher<{integer}>`
+note: required by a bound in `Subject::<T>::satisfies`
+  --> $WORKSPACE/crates/test-better-matchers/src/subject.rs
+   |
+   |     pub fn satisfies<M>(self, matcher: M) -> TestResult
+   |            --------- required by a bound in this associated function
+   |     where
+   |         M: Matcher<T>,
+   |            ^^^^^^^^^^ required by this bound in `Subject::<T>::satisfies`

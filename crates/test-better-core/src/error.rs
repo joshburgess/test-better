@@ -206,7 +206,7 @@ impl TestError {
     /// The `#[track_caller]` constructors capture the caller's location for
     /// themselves, so this is rarely needed. It exists for the case where the
     /// location must be captured separately from where the error is built: an
-    /// `async fn` cannot be `#[track_caller]`, so the async `expect!` methods
+    /// `async fn` cannot be `#[track_caller]`, so the async `check!` methods
     /// capture [`Location::caller`] synchronously at the call site and thread
     /// it through here once the awaited assertion has a result.
     #[must_use]
@@ -272,7 +272,7 @@ impl std::error::Error for TestError {
 mod tests {
     use super::*;
     use crate::{OrFail, TestResult};
-    use test_better_matchers::{eq, expect, is_true};
+    use test_better_matchers::{eq, check, is_true};
 
     #[track_caller]
     fn sample_assertion() -> TestError {
@@ -283,9 +283,9 @@ mod tests {
     fn new_captures_caller_location() -> TestResult {
         let line = line!() + 1;
         let error = TestError::new(ErrorKind::Assertion);
-        expect!(error.location.line()).to(eq(line)).or_fail()?;
-        expect!(error.location.file().ends_with("error.rs"))
-            .to(is_true())
+        check!(error.location.line()).satisfies(eq(line)).or_fail()?;
+        check!(error.location.file().ends_with("error.rs"))
+            .satisfies(is_true())
             .or_fail()?;
         Ok(())
     }
@@ -293,11 +293,11 @@ mod tests {
     #[test]
     fn display_includes_headline_message_and_location() -> TestResult {
         let rendered = sample_assertion().to_string();
-        expect!(rendered.contains("assertion failed: values differ"))
-            .to(is_true())
+        check!(rendered.contains("assertion failed: values differ"))
+            .satisfies(is_true())
             .or_fail()?;
-        expect!(rendered.contains("  at "))
-            .to(is_true())
+        check!(rendered.contains("  at "))
+            .satisfies(is_true())
             .or_fail()?;
         Ok(())
     }
@@ -317,8 +317,8 @@ mod tests {
         let human = debug
             .split_once(crate::STRUCTURED_MARKER)
             .map_or(debug.as_str(), |(before, _)| before.trim_end());
-        expect!(human)
-            .to(eq(format!("{error}").as_str()))
+        check!(human)
+            .satisfies(eq(format!("{error}").as_str()))
             .or_fail()?;
         Ok(())
     }
@@ -335,7 +335,7 @@ mod tests {
         let second = rendered
             .find("loading profile")
             .or_fail_with("second frame present")?;
-        expect!(first < second).to(is_true()).or_fail()?;
+        check!(first < second).satisfies(is_true()).or_fail()?;
         Ok(())
     }
 
@@ -345,8 +345,8 @@ mod tests {
         let error = TestError::new(ErrorKind::Custom).with_payload(Payload::Other(Box::new(io)));
         let source =
             std::error::Error::source(&error).or_fail_with("source is the wrapped io error")?;
-        expect!(source.to_string())
-            .to(eq("missing file".to_string()))
+        check!(source.to_string())
+            .satisfies(eq("missing file".to_string()))
             .or_fail()?;
         Ok(())
     }
@@ -359,11 +359,11 @@ mod tests {
             diff: None,
         });
         let rendered = error.to_string();
-        expect!(rendered.contains("expected: 4"))
-            .to(is_true())
+        check!(rendered.contains("expected: 4"))
+            .satisfies(is_true())
             .or_fail()?;
-        expect!(rendered.contains("actual: 5"))
-            .to(is_true())
+        check!(rendered.contains("actual: 5"))
+            .satisfies(is_true())
             .or_fail()?;
         Ok(())
     }
@@ -375,11 +375,11 @@ mod tests {
             TestError::new(ErrorKind::Assertion).with_message("second"),
         ]));
         let rendered = error.to_string();
-        expect!(rendered.contains("first"))
-            .to(is_true())
+        check!(rendered.contains("first"))
+            .satisfies(is_true())
             .or_fail()?;
-        expect!(rendered.contains("second"))
-            .to(is_true())
+        check!(rendered.contains("second"))
+            .satisfies(is_true())
             .or_fail()?;
         Ok(())
     }
@@ -388,13 +388,13 @@ mod tests {
     fn assertion_constructor_sets_kind_message_and_caller_location() -> TestResult {
         let line = line!() + 1;
         let error = TestError::assertion("values differ");
-        expect!(error.kind).to(eq(ErrorKind::Assertion)).or_fail()?;
-        expect!(error.message.as_deref())
-            .to(eq(Some("values differ")))
+        check!(error.kind).satisfies(eq(ErrorKind::Assertion)).or_fail()?;
+        check!(error.message.as_deref())
+            .satisfies(eq(Some("values differ")))
             .or_fail()?;
-        expect!(error.location.line()).to(eq(line)).or_fail()?;
-        expect!(error.location.file().ends_with("error.rs"))
-            .to(is_true())
+        check!(error.location.line()).satisfies(eq(line)).or_fail()?;
+        check!(error.location.file().ends_with("error.rs"))
+            .satisfies(is_true())
             .or_fail()?;
         Ok(())
     }
@@ -403,13 +403,13 @@ mod tests {
     fn custom_constructor_sets_kind_message_and_caller_location() -> TestResult {
         let line = line!() + 1;
         let error = TestError::custom("something off");
-        expect!(error.kind).to(eq(ErrorKind::Custom)).or_fail()?;
-        expect!(error.message.as_deref())
-            .to(eq(Some("something off")))
+        check!(error.kind).satisfies(eq(ErrorKind::Custom)).or_fail()?;
+        check!(error.message.as_deref())
+            .satisfies(eq(Some("something off")))
             .or_fail()?;
-        expect!(error.location.line()).to(eq(line)).or_fail()?;
-        expect!(error.location.file().ends_with("error.rs"))
-            .to(is_true())
+        check!(error.location.line()).satisfies(eq(line)).or_fail()?;
+        check!(error.location.file().ends_with("error.rs"))
+            .satisfies(is_true())
             .or_fail()?;
         Ok(())
     }
@@ -418,17 +418,17 @@ mod tests {
     fn from_expected_actual_captures_debug_values_and_caller_location() -> TestResult {
         let line = line!() + 1;
         let error = TestError::from_expected_actual(4, 5);
-        expect!(error.kind).to(eq(ErrorKind::Assertion)).or_fail()?;
-        expect!(error.location.line()).to(eq(line)).or_fail()?;
+        check!(error.kind).satisfies(eq(ErrorKind::Assertion)).or_fail()?;
+        check!(error.location.line()).satisfies(eq(line)).or_fail()?;
         match error.payload.map(|payload| *payload) {
             Some(Payload::ExpectedActual {
                 expected,
                 actual,
                 diff,
             }) => {
-                expect!(expected).to(eq("4".to_string())).or_fail()?;
-                expect!(actual).to(eq("5".to_string())).or_fail()?;
-                expect!(diff.is_none()).to(is_true()).or_fail()?;
+                check!(expected).satisfies(eq("4".to_string())).or_fail()?;
+                check!(actual).satisfies(eq("5".to_string())).or_fail()?;
+                check!(diff.is_none()).satisfies(is_true()).or_fail()?;
             }
             other => panic!("expected ExpectedActual, got {other:?}"),
         }

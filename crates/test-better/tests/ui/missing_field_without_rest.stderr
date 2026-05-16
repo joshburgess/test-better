@@ -1,11 +1,11 @@
 error: pattern requires `..` due to inaccessible fields
-  --> tests/ui/missing_field_without_rest.rs:13:31
+  --> tests/ui/missing_field_without_rest.rs:13:37
    |
-13 |     let _ = expect!(point).to(matches_struct!(Point { x: eq(1) }));
-   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+13 |     let _ = check!(point).satisfies(matches_struct!(Point { x: eq(1) }));
+   |                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
    = note: this error originates in the macro `matches_struct` (in Nightly builds, run with -Z macro-backtrace for more info)
 help: ignore the inaccessible and unused fields
    |
-13 |     let _ = expect!(point).to(matches_struct!(Point { x: eq(1) }), ..);
-   |                                                                  ++++
+13 |     let _ = check!(point).satisfies(matches_struct!(Point { x: eq(1) }), ..);
+   |                                                                        ++++

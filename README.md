@@ -23,7 +23,7 @@ Add the facade crate to your dev-dependencies:
 
 ```toml
 [dev-dependencies]
-test-better = "0.1"
+test-better = "0.2"
 ```
 
 Write a test that returns `TestResult` and reach for `?`:
@@ -34,17 +34,17 @@ use test_better::prelude::*;
 #[test]
 fn parses_a_valid_port() -> TestResult {
     let port = parse_port("8080").or_fail_with("8080 is a valid port")?;
-    expect!(port).to(eq(8080))?;
-    expect!(port).to_not(lt(1024))?;
+    check!(port).satisfies(eq(8080))?;
+    check!(port).violates(lt(1024))?;
     Ok(())
 }
 ```
 
-When `expect!` fails, the message names the expression, both sides of the
+When `check!` fails, the message names the expression, both sides of the
 comparison, and where it happened, with no backtrace through the harness:
 
 ```text
-expectation failed: expect!(port).to(eq(8080))
+check failed: check!(port).satisfies(eq(8080))
   expected: 8080
   actual:   8000
   at tests/config.rs:12
@@ -71,35 +71,35 @@ A panicking assertion throws away everything except a message. A
 use test_better::prelude::*;
 
 // Composable matchers over any type
-expect!(name).to(eq("Ada"))?;
-expect!(items).to(contains(eq(3)))?;
-expect!(result).to(ok(eq(8080)))?;
+check!(name).satisfies(eq("Ada"))?;
+check!(items).satisfies(contains(eq(3)))?;
+check!(result).satisfies(ok(eq(8080)))?;
 
 // Structural matching on structs and enums
-expect!(user).to(matches_struct!(User { active: true, .. }))?;
-expect!(event).to(matches_variant!(Event::Click { .. }))?;
+check!(user).satisfies(matches_struct!(User { active: true, .. }))?;
+check!(event).satisfies(matches_variant!(Event::Click { .. }))?;
 
 // Soft assertions: collect several failures, report them together
 soft(|s| {
-    s.expect(&a, eq(1));
-    s.expect(&b, eq(2));
+    s.check(&a, eq(1));
+    s.check(&b, eq(2));
 })?;
 ```
 
-Async, property, and snapshot testing are layered on the same `expect!`/`?`
+Async, property, and snapshot testing are layered on the same `check!`/`?`
 shape:
 
 ```rust
 // Async timing assertions, runtime-agnostic
-expect!(fetch_user(id)).to_complete_within(Duration::from_millis(50)).await?;
+check!(fetch_user(id)).completes_within(Duration::from_millis(50)).await?;
 
 // Property testing over generated inputs
 property!(|xs: Vec<i64>| {
-    expect!(decode(&encode(&xs))).to(eq(Ok(xs)))
+    check!(decode(&encode(&xs))).satisfies(eq(Ok(xs)))
 })?;
 
 // Inline and file snapshots, with redactions
-expect!(render_page(&ctx)).to_match_inline_snapshot(r#"<h1>Hello</h1>"#)?;
+check!(render_page(&ctx)).matches_inline_snapshot(r#"<h1>Hello</h1>"#)?;
 ```
 
 ## Documentation
@@ -124,7 +124,7 @@ what you use.
 |-------|---------|
 | `test-better` | Facade crate: re-exports and `prelude`. |
 | `test-better-core` | `TestError`, `TestResult`, `ContextExt`, `OrFail`. |
-| `test-better-matchers` | `Matcher` trait, standard matchers, `expect!`. |
+| `test-better-matchers` | `Matcher` trait, standard matchers, `check!`. |
 | `test-better-macros` | Procedural macros (`matches_struct!`, `#[test_case]`, fixtures). |
 | `test-better-async` | Async and timing helpers (runtime-gated). |
 | `test-better-property` | Property-testing bridge (`proptest`-backed). |

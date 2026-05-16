@@ -3,7 +3,7 @@
 //! A proc macro cannot rewrite the file it expands, so the mechanism is split
 //! in two, mirroring `insta`:
 //!
-//! - at **runtime**, `expect!(value).to_match_inline_snapshot(r#"..."#)` compares
+//! - at **runtime**, `check!(value).matches_inline_snapshot(r#"..."#)` compares
 //!   the value against the literal. On a match it passes. On a mismatch with
 //!   `UPDATE_SNAPSHOTS` unset it fails like any assertion; with
 //!   `UPDATE_SNAPSHOTS=1` it records a *pending patch* (the source file, the
@@ -34,9 +34,9 @@ use crate::SnapshotMode;
 pub struct InlineLocation {
     /// The source file, as `Location::caller().file()` reports it.
     pub file: String,
-    /// The 1-based line of the `to_match_inline_snapshot` call.
+    /// The 1-based line of the `matches_inline_snapshot` call.
     pub line: u32,
-    /// The 1-based column of the `to_match_inline_snapshot` call.
+    /// The 1-based column of the `matches_inline_snapshot` call.
     pub column: u32,
 }
 
@@ -72,12 +72,12 @@ impl std::error::Error for InlineSnapshotFailure {}
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{eq, expect};
+/// use test_better_matchers::{eq, check};
 /// use test_better_snapshot::normalize_inline_literal;
 ///
 /// # fn main() -> TestResult {
 /// let raw = "\n    User { name: \"alice\" }\n";
-/// expect!(normalize_inline_literal(raw)).to(eq("User { name: \"alice\" }".to_string()))?;
+/// check!(normalize_inline_literal(raw)).satisfies(eq("User { name: \"alice\" }".to_string()))?;
 /// # Ok(())
 /// # }
 /// ```
@@ -261,25 +261,25 @@ pub fn parse_pending_patch(body: &str) -> std::io::Result<(InlineLocation, Strin
 #[cfg(test)]
 mod tests {
     use test_better_core::{OrFail, TestResult};
-    use test_better_matchers::{eq, expect, is_true};
+    use test_better_matchers::{eq, check, is_true};
 
     use super::*;
 
     #[test]
     fn normalize_drops_leading_newline_and_common_indentation() -> TestResult {
         let raw = "\n        first\n        second\n    ";
-        expect!(normalize_inline_literal(raw)).to(eq("first\nsecond".to_string()))
+        check!(normalize_inline_literal(raw)).satisfies(eq("first\nsecond".to_string()))
     }
 
     #[test]
     fn normalize_keeps_relative_indentation() -> TestResult {
         let raw = "\n    outer\n        inner\n";
-        expect!(normalize_inline_literal(raw)).to(eq("outer\n    inner".to_string()))
+        check!(normalize_inline_literal(raw)).satisfies(eq("outer\n    inner".to_string()))
     }
 
     #[test]
     fn normalize_leaves_a_bare_single_line_literal_alone() -> TestResult {
-        expect!(normalize_inline_literal("just this")).to(eq("just this".to_string()))
+        check!(normalize_inline_literal("just this")).satisfies(eq("just this".to_string()))
     }
 
     #[test]
@@ -308,19 +308,19 @@ mod tests {
         )
         .err()
         .or_fail_with("a differing literal must fail in compare mode")?;
-        expect!(failure.expected).to(eq("expected".to_string()))?;
-        expect!(failure.actual).to(eq("actual".to_string()))
+        check!(failure.expected).satisfies(eq("expected".to_string()))?;
+        check!(failure.actual).satisfies(eq("actual".to_string()))
     }
 
     #[test]
     fn parse_pending_patch_round_trips_a_recorded_body() -> TestResult {
         let body = "tests/foo.rs\n42:9\nline one\nline two";
         let (location, value) = parse_pending_patch(body).or_fail()?;
-        expect!(location.file.as_str()).to(eq("tests/foo.rs"))?;
-        expect!(location.line).to(eq(42u32))?;
-        expect!(location.column).to(eq(9u32))?;
-        expect!(value).to(eq("line one\nline two".to_string()))?;
+        check!(location.file.as_str()).satisfies(eq("tests/foo.rs"))?;
+        check!(location.line).satisfies(eq(42u32))?;
+        check!(location.column).satisfies(eq(9u32))?;
+        check!(value).satisfies(eq("line one\nline two".to_string()))?;
         // A malformed body is rejected, not silently accepted.
-        expect!(parse_pending_patch("only-one-line").is_err()).to(is_true())
+        check!(parse_pending_patch("only-one-line").is_err()).satisfies(is_true())
     }
 }

@@ -1,10 +1,11 @@
 //! The `property!` macro: a property test written as a closure.
 //!
-//! [`property!`] is a thin syntactic wrapper over [`check`](crate::check). It
-//! takes a closure with a typed binding, infers a [`Strategy`](crate::Strategy)
-//! from that type (or takes one explicitly via a `using` clause), runs the
-//! property, and turns a [`PropertyFailure`](crate::PropertyFailure) into a
-//! [`TestError`] so the call site is an ordinary `?`-returning expression.
+//! [`property!`] is a thin syntactic wrapper over [`for_all`](crate::for_all).
+//! It takes a closure with a typed binding, infers a
+//! [`Strategy`](crate::Strategy) from that type (or takes one explicitly via a
+//! `using` clause), runs the property, and turns a
+//! [`PropertyFailure`](crate::PropertyFailure) into a [`TestError`] so the call
+//! site is an ordinary `?`-returning expression.
 //!
 //! The shrunk-failure *rendering* lives in [`render_failure`]: the matcher's
 //! own failure is kept whole, and context frames naming the case count, the
@@ -15,13 +16,13 @@ use std::fmt::Debug;
 
 use test_better_core::{ContextFrame, ErrorKind, TestError, TestResult};
 
-use crate::{PropertyFailure, Strategy, check};
+use crate::{PropertyFailure, Strategy, for_all};
 
 /// Runs a property and renders any counterexample as a [`TestError`].
 ///
 /// This is the function [`property!`] expands to; it is the seam between the
-/// macro's syntax and the [`check`] runner. It is `#[doc(hidden)]` plumbing,
-/// not part of the curated surface: write `property!(...)`, or call [`check`]
+/// macro's syntax and the [`for_all`] runner. It is `#[doc(hidden)]` plumbing,
+/// not part of the curated surface: write `property!(...)`, or call [`for_all`]
 /// directly for the structured [`PropertyFailure`].
 #[doc(hidden)]
 pub fn run_property<T, S, F>(strategy: S, property: F) -> TestResult
@@ -30,7 +31,7 @@ where
     T: Clone + Debug,
     F: FnMut(T) -> TestResult,
 {
-    match check(strategy, property) {
+    match for_all(strategy, property) {
         Ok(()) => Ok(()),
         Err(failure) => Err(render_failure(failure)),
     }
@@ -47,7 +48,7 @@ where
 ///
 /// `#[doc(hidden)]` plumbing: [`run_property`] (and so [`property!`]) call it,
 /// and the golden-file test pins its output. Callers wanting the structured
-/// failure use [`check`] and read [`PropertyFailure`] directly.
+/// failure use [`for_all`] and read [`PropertyFailure`] directly.
 #[doc(hidden)]
 pub fn render_failure<T: Debug>(failure: PropertyFailure<T>) -> TestError {
     let PropertyFailure {
@@ -81,13 +82,13 @@ pub fn render_failure<T: Debug>(failure: PropertyFailure<T>) -> TestError {
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{expect, lt};
+/// use test_better_matchers::{check, lt};
 /// use test_better_property::property;
 ///
 /// // In a real test this is `#[test] fn doubling_stays_in_range()`.
 /// # fn main() -> TestResult {
 /// property!(|n: u8| {
-///     expect!(u16::from(n) * 2).to(lt(512u16))
+///     check!(u16::from(n) * 2).satisfies(lt(512u16))
 /// })
 /// # }
 /// ```
@@ -100,13 +101,13 @@ pub fn render_failure<T: Debug>(failure: PropertyFailure<T>) -> TestError {
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{expect, lt};
+/// use test_better_matchers::{check, lt};
 /// use test_better_property::property;
 ///
 /// # fn main() -> TestResult {
 /// // `using` names the strategy explicitly; the binding need not be annotated.
 /// property!(|n| {
-///     expect!(n).to(lt(100u32))
+///     check!(n).satisfies(lt(100u32))
 /// } using 0u32..100)
 /// # }
 /// ```
@@ -129,19 +130,19 @@ macro_rules! property {
 #[cfg(test)]
 mod tests {
     use test_better_core::{OrFail, TestResult};
-    use test_better_matchers::{eq, expect, ge, is_true, lt};
+    use test_better_matchers::{eq, check, ge, is_true, lt};
 
     #[test]
     fn an_inferred_strategy_property_that_holds_passes() -> TestResult {
         // `u8` is `Arbitrary`, so the strategy is inferred from the binding.
-        property!(|n: u8| { expect!(u16::from(n) + 1).to(ge(1u16)) })
+        property!(|n: u8| { check!(u16::from(n) + 1).satisfies(ge(1u16)) })
     }
 
     #[test]
     fn a_using_clause_names_the_strategy_explicitly() -> TestResult {
         // The binding is bare; the type comes from the `using` strategy.
         property!(|n| {
-            expect!(n).to(lt(50u64))
+            check!(n).satisfies(lt(50u64))
         } using 0u64..50)
     }
 
@@ -151,18 +152,18 @@ mod tests {
         // `Property`-kind failure that names the original and shrunk
         // counterexamples and still carries the matcher's own description.
         let error = property!(|n: u32| {
-            expect!(n).to(lt(100u32))
+            check!(n).satisfies(lt(100u32))
         } using proptest::num::u32::ANY)
         .err()
         .or_fail_with("a property false for most u32 must fail")?;
         let rendered = error.to_string();
         // The shrunk counterexample (proptest shrinks to exactly 100) is named.
-        expect!(rendered.contains("the shrunk (minimal) input is 100")).to(is_true())?;
+        check!(rendered.contains("the shrunk (minimal) input is 100")).satisfies(is_true())?;
         // The original failing input is named too.
-        expect!(rendered.contains("the original failing input was")).to(is_true())?;
+        check!(rendered.contains("the original failing input was")).satisfies(is_true())?;
         // The matcher's full description survives.
-        expect!(rendered.contains("less than 100")).to(is_true())?;
+        check!(rendered.contains("less than 100")).satisfies(is_true())?;
         // And the failure reads as a property failure.
-        expect!(error.kind).to(eq(test_better_core::ErrorKind::Property))
+        check!(error.kind).satisfies(eq(test_better_core::ErrorKind::Property))
     }
 }

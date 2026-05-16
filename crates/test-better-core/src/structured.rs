@@ -153,7 +153,7 @@ mod tests {
     use super::*;
     use crate::error::ContextFrame;
     use crate::{OrFail, TestResult, Trace};
-    use test_better_matchers::{eq, expect, is_true};
+    use test_better_matchers::{eq, check, is_true};
 
     fn all_kinds() -> [ErrorKind; 6] {
         [
@@ -171,9 +171,9 @@ mod tests {
         for kind in all_kinds() {
             let error = TestError::new(kind).with_message("boom");
             let structured = error.to_structured();
-            expect!(structured.kind).to(eq(kind)).or_fail()?;
-            expect!(structured.message.as_deref())
-                .to(eq(Some("boom")))
+            check!(structured.kind).satisfies(eq(kind)).or_fail()?;
+            check!(structured.message.as_deref())
+                .satisfies(eq(Some("boom")))
                 .or_fail()?;
         }
         Ok(())
@@ -184,15 +184,15 @@ mod tests {
         let error =
             TestError::new(ErrorKind::Assertion).with_context_frame(ContextFrame::new("step one"));
         let structured = error.to_structured();
-        expect!(structured.context.len()).to(eq(1)).or_fail()?;
-        expect!(structured.context[0].message.as_str())
-            .to(eq("step one"))
+        check!(structured.context.len()).satisfies(eq(1)).or_fail()?;
+        check!(structured.context[0].message.as_str())
+            .satisfies(eq("step one"))
             .or_fail()?;
-        expect!(structured.location.file.ends_with("structured.rs"))
-            .to(is_true())
+        check!(structured.location.file.ends_with("structured.rs"))
+            .satisfies(is_true())
             .or_fail()?;
-        expect!(structured.location.line > 0)
-            .to(is_true())
+        check!(structured.location.line > 0)
+            .satisfies(is_true())
             .or_fail()?;
         Ok(())
     }
@@ -206,9 +206,9 @@ mod tests {
         drop(trace);
 
         let structured = error.to_structured();
-        expect!(structured.trace.len()).to(eq(2)).or_fail()?;
-        expect!(structured.trace[0].clone())
-            .to(eq(TraceEntry::Step("step one".into())))
+        check!(structured.trace.len()).satisfies(eq(2)).or_fail()?;
+        check!(structured.trace[0].clone())
+            .satisfies(eq(TraceEntry::Step("step one".into())))
             .or_fail()?;
         Ok(())
     }
@@ -226,10 +226,10 @@ mod tests {
                 actual,
                 diff,
             }) => {
-                expect!(expected).to(eq("1".to_string())).or_fail()?;
-                expect!(actual).to(eq("2".to_string())).or_fail()?;
-                expect!(diff.as_deref())
-                    .to(eq(Some("- 1\n+ 2")))
+                check!(expected).satisfies(eq("1".to_string())).or_fail()?;
+                check!(actual).satisfies(eq("2".to_string())).or_fail()?;
+                check!(diff.as_deref())
+                    .satisfies(eq(Some("- 1\n+ 2")))
                     .or_fail()?;
             }
             other => panic!("expected ExpectedActual, got {other:?}"),
@@ -245,11 +245,11 @@ mod tests {
         ]));
         match error.to_structured().payload {
             Some(StructuredPayload::Multiple(subs)) => {
-                expect!(subs.len()).to(eq(2)).or_fail()?;
-                expect!(subs[0].message.as_deref())
-                    .to(eq(Some("a")))
+                check!(subs.len()).satisfies(eq(2)).or_fail()?;
+                check!(subs[0].message.as_deref())
+                    .satisfies(eq(Some("a")))
                     .or_fail()?;
-                expect!(subs[1].kind).to(eq(ErrorKind::Setup)).or_fail()?;
+                check!(subs[1].kind).satisfies(eq(ErrorKind::Setup)).or_fail()?;
             }
             other => panic!("expected Multiple, got {other:?}"),
         }
@@ -262,8 +262,8 @@ mod tests {
         let error = TestError::new(ErrorKind::Custom).with_payload(Payload::Other(Box::new(io)));
         match error.to_structured().payload {
             Some(StructuredPayload::Other { message, chain }) => {
-                expect!(message).to(eq("missing".to_string())).or_fail()?;
-                expect!(chain.is_empty()).to(is_true()).or_fail()?;
+                check!(message).satisfies(eq("missing".to_string())).or_fail()?;
+                check!(chain.is_empty()).satisfies(is_true()).or_fail()?;
             }
             other => panic!("expected Other, got {other:?}"),
         }
@@ -284,7 +284,7 @@ mod tests {
         let structured = error.to_structured();
         let json = serde_json::to_string(&structured).or_fail_with("serialize")?;
         let back: StructuredError = serde_json::from_str(&json).or_fail_with("deserialize")?;
-        expect!(structured).to(eq(back)).or_fail()?;
+        check!(structured).satisfies(eq(back)).or_fail()?;
         Ok(())
     }
 }

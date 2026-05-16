@@ -1,4 +1,4 @@
-//! Benchmark: the cost of `expect!` versus the stock `assert_eq!` on a hot
+//! Benchmark: the cost of `check!` versus the stock `assert_eq!` on a hot
 //! loop.
 //!
 //! This is a `harness = false` benchmark: it is an ordinary `fn main` that
@@ -7,7 +7,7 @@
 //! dependency to the tree. `cargo test` runs it (the iteration count is kept
 //! small enough for that); `cargo bench` runs it too.
 //!
-//! What it establishes: for a passing primitive matcher, `expect!` stays
+//! What it establishes: for a passing primitive matcher, `check!` stays
 //! within an order of magnitude of `assert_eq!`. Both are far below the cost
 //! of anything a test actually does (I/O, allocation, spawning a runtime), so
 //! the difference never shows up in a real suite. The numbers behind that
@@ -41,48 +41,48 @@ fn per_iter_ns(elapsed: Duration) -> f64 {
 }
 
 fn main() {
-    // A passing equality check: `assert_eq!` versus `expect!(..).to(eq(..))`.
+    // A passing equality check: `assert_eq!` versus `check!(..).satisfies(eq(..))`.
     let baseline_eq = measure(|| {
         let a = black_box(8080_u32);
         let b = black_box(8080_u32);
         assert_eq!(a, b);
     });
-    let expect_eq = measure(|| {
+    let check_eq = measure(|| {
         let a = black_box(8080_u32);
         let b = black_box(8080_u32);
         // The `?`-free form: the `TestResult` is consumed by `black_box` so the
         // optimizer cannot drop the call.
-        let _ = black_box(expect!(a).to(eq(b)));
+        let _ = black_box(check!(a).satisfies(eq(b)));
     });
 
-    // A passing ordering check: `assert!(a < b)` versus `expect!(a).to(lt(b))`.
+    // A passing ordering check: `assert!(a < b)` versus `check!(a).satisfies(lt(b))`.
     let baseline_lt = measure(|| {
         let a = black_box(1023_u32);
         let b = black_box(1024_u32);
         assert!(a < b);
     });
-    let expect_lt = measure(|| {
+    let check_lt = measure(|| {
         let a = black_box(1023_u32);
         let b = black_box(1024_u32);
-        let _ = black_box(expect!(a).to(lt(b)));
+        let _ = black_box(check!(a).satisfies(lt(b)));
     });
 
     let rows = [
-        ("eq", per_iter_ns(baseline_eq), per_iter_ns(expect_eq)),
-        ("lt", per_iter_ns(baseline_lt), per_iter_ns(expect_lt)),
+        ("eq", per_iter_ns(baseline_eq), per_iter_ns(check_eq)),
+        ("lt", per_iter_ns(baseline_lt), per_iter_ns(check_lt)),
     ];
 
-    println!("expect! overhead vs the stock assert macros ({ITERS} iters/loop)");
+    println!("check! overhead vs the stock assert macros ({ITERS} iters/loop)");
     println!(
         "{:<8} {:>14} {:>14} {:>10}",
-        "matcher", "assert (ns)", "expect (ns)", "ratio"
+        "matcher", "assert (ns)", "check (ns)", "ratio"
     );
-    for (name, baseline, expect) in rows {
+    for (name, baseline, check_ns) in rows {
         let ratio = if baseline > 0.0 {
-            expect / baseline
+            check_ns / baseline
         } else {
             0.0
         };
-        println!("{name:<8} {baseline:>14.2} {expect:>14.2} {ratio:>9.1}x");
+        println!("{name:<8} {baseline:>14.2} {check_ns:>14.2} {ratio:>9.1}x");
     }
 }

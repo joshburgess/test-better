@@ -647,7 +647,7 @@ fn gen_variant(pattern: &VariantPattern) -> syn::Result<TokenStream2> {
 /// }
 ///
 /// fn check(user: User) -> TestResult {
-///     expect!(user).to(matches_struct!(User {
+///     check!(user).satisfies(matches_struct!(User {
 ///         name: eq(String::from("alice")),
 ///         age: gt(0u32),
 ///         email: contains_str("@"),
@@ -678,7 +678,7 @@ pub fn matches_struct(input: TokenStream) -> TokenStream {
 /// struct Point(i32, i32);
 ///
 /// fn check(point: Point) -> TestResult {
-///     expect!(point).to(matches_tuple!(Point(gt(0), lt(100))))?;
+///     check!(point).satisfies(matches_tuple!(Point(gt(0), lt(100))))?;
 ///     Ok(())
 /// }
 /// ```
@@ -709,7 +709,7 @@ pub fn matches_tuple(input: TokenStream) -> TokenStream {
 /// }
 ///
 /// fn check(shape: Shape) -> TestResult {
-///     expect!(shape).to(matches_variant!(Shape::Circle { radius: gt(0.0) }))?;
+///     check!(shape).satisfies(matches_variant!(Shape::Circle { radius: gt(0.0) }))?;
 ///     Ok(())
 /// }
 /// ```
@@ -924,7 +924,7 @@ fn test_case_impl(first: TestCase, mut func: ItemFn) -> syn::Result<TokenStream2
 /// #[test_case("alice", 30 ; "common case")]
 /// #[test_case("",      0  ; "empty name")]
 /// fn validates_user(name: &str, age: u32) -> TestResult {
-///     expect!(name.len()).to(ge(age as usize))
+///     check!(name.len()).satisfies(ge(age as usize))
 /// }
 /// ```
 ///
@@ -1110,7 +1110,7 @@ fn fixture_impl(args: FixtureArgs, mut func: ItemFn) -> syn::Result<TokenStream2
 ///
 /// #[test_with_fixtures]
 /// fn uses_the_answer(answer: i32) -> TestResult {
-///     expect!(answer).to(eq(42))
+///     check!(answer).satisfies(eq(42))
 /// }
 /// ```
 #[proc_macro_attribute]
@@ -1198,7 +1198,7 @@ fn test_with_fixtures_impl(mut func: ItemFn) -> syn::Result<TokenStream2> {
 ///
 /// #[test_with_fixtures]
 /// fn greets_by_name(name: String) -> TestResult {
-///     expect!(name.as_str()).to(eq("alice"))
+///     check!(name.as_str()).satisfies(eq("alice"))
 /// }
 /// ```
 #[proc_macro_attribute]

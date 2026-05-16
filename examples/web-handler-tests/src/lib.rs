@@ -2,7 +2,7 @@
 //!
 //! A request handler is a function from a [`Request`] to a [`Response`]. That
 //! shape is a good fit for `test-better`: each test states a request, calls
-//! [`route`], and makes a handful of `expect!` assertions on the response. A
+//! [`route`], and makes a handful of `check!` assertions on the response. A
 //! failure names the field that was wrong (`status`, `body`) instead of
 //! dropping an `assert_eq!` panic on the harness.
 //!
@@ -86,8 +86,8 @@ mod tests {
     #[test]
     fn the_index_route_greets() -> TestResult {
         let response = route(&Request::new("GET", "/"));
-        expect!(response.status).to(eq(200))?;
-        expect!(response.body).to(eq(String::from("welcome")))?;
+        check!(response.status).satisfies(eq(200))?;
+        check!(response.body).satisfies(eq(String::from("welcome")))?;
         Ok(())
     }
 
@@ -96,7 +96,7 @@ mod tests {
         let response = route(&Request::new("GET", "/users/42"));
         // `matches_struct!` checks several fields at once and, on a failure,
         // names the field that did not match.
-        expect!(response).to(matches_struct!(Response {
+        check!(response).satisfies(matches_struct!(Response {
             status: eq(200u16),
             body: contains_str("42"),
         }))?;
@@ -106,22 +106,22 @@ mod tests {
     #[test]
     fn a_non_numeric_user_id_is_a_bad_request() -> TestResult {
         let response = route(&Request::new("GET", "/users/not-a-number"));
-        expect!(response.status).to(eq(400))?;
-        expect!(response.body).to(contains_str("numeric"))?;
+        check!(response.status).satisfies(eq(400))?;
+        check!(response.body).satisfies(contains_str("numeric"))?;
         Ok(())
     }
 
     #[test]
     fn an_unknown_path_is_a_not_found() -> TestResult {
         let response = route(&Request::new("GET", "/nope"));
-        expect!(response.status).to(eq(404))?;
+        check!(response.status).satisfies(eq(404))?;
         Ok(())
     }
 
     #[test]
     fn a_wrong_method_is_a_not_found() -> TestResult {
         let response = route(&Request::new("POST", "/"));
-        expect!(response.status).to(eq(404))?;
+        check!(response.status).satisfies(eq(404))?;
         Ok(())
     }
 
@@ -130,9 +130,9 @@ mod tests {
         // `soft` collects every failure in the closure instead of stopping at
         // the first, so a broken routing table shows all its breakage at once.
         soft(|s| {
-            s.expect(&route(&Request::new("GET", "/")).status, eq(200));
-            s.expect(&route(&Request::new("GET", "/users/7")).status, eq(200));
-            s.expect(&route(&Request::new("GET", "/missing")).status, eq(404));
+            s.check(&route(&Request::new("GET", "/")).status, eq(200));
+            s.check(&route(&Request::new("GET", "/users/7")).status, eq(200));
+            s.check(&route(&Request::new("GET", "/missing")).status, eq(404));
         })
     }
 }

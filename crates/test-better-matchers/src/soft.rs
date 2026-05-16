@@ -39,8 +39,8 @@ use crate::matcher::Matcher;
 ///
 /// fn main() -> TestResult {
 ///     soft(|s| {
-///         s.expect(&2, eq(2));
-///         s.expect(&"alice", eq("alice"));
+///         s.check(&2, eq(2));
+///         s.check(&"alice", eq("alice"));
 ///     })?;
 ///     Ok(())
 /// }
@@ -78,7 +78,7 @@ where
 
 /// The recorder passed to a [`soft`] closure.
 ///
-/// Every `expect`/`check` that fails is pushed onto an internal list instead of
+/// Every `check`/`record` that fails is pushed onto an internal list instead of
 /// returning early; [`soft`] turns that list into one [`TestError`] on scope
 /// exit. Callers rarely construct or name this type directly: it arrives as the
 /// argument of the [`soft`] closure.
@@ -103,15 +103,16 @@ impl SoftAsserter {
     /// propagated, so the closure keeps running.
     ///
     /// The recorded failure captures *this* call site, so each soft failure
-    /// reports the line it came from.
+    /// reports the line it came from. The soft counterpart of
+    /// [`Subject::satisfies`](crate::Subject::satisfies).
     #[track_caller]
-    pub fn expect<T, M>(&mut self, actual: &T, matcher: M)
+    pub fn check<T, M>(&mut self, actual: &T, matcher: M)
     where
         T: ?Sized,
         M: Matcher<T>,
     {
         if let Some(mismatch) = matcher.check(actual).failure {
-            self.record(TestError::new(ErrorKind::Assertion).with_payload(
+            self.collect(TestError::new(ErrorKind::Assertion).with_payload(
                 Payload::ExpectedActual {
                     expected: mismatch.expected.to_string(),
                     actual: mismatch.actual,
@@ -124,9 +125,9 @@ impl SoftAsserter {
     /// Records the result of an arbitrary fallible step. An `Err` is collected
     /// with its original location and context intact; an `Ok` is ignored.
     #[track_caller]
-    pub fn check(&mut self, result: TestResult) {
+    pub fn record(&mut self, result: TestResult) {
         if let Err(error) = result {
-            self.record(error);
+            self.collect(error);
         }
     }
 
@@ -143,7 +144,7 @@ impl SoftAsserter {
     /// Collects a failure, wrapping it in the context frames currently in
     /// effect. The scope frames are the *outer* circumstance, so they precede
     /// the error's own frames, which `TestError` already orders outermost-first.
-    fn record(&mut self, mut error: TestError) {
+    fn collect(&mut self, mut error: TestError) {
         if !self.context.is_empty() {
             let mut frames = self.context.clone();
             frames.append(&mut error.context);
@@ -186,21 +187,21 @@ pub struct SoftScope<'a> {
 
 impl SoftScope<'_> {
     /// Records whether `actual` satisfies `matcher`, attaching this scope's
-    /// context to a miss. See [`SoftAsserter::expect`].
+    /// context to a miss. See [`SoftAsserter::check`].
     #[track_caller]
-    pub fn expect<T, M>(&mut self, actual: &T, matcher: M)
+    pub fn check<T, M>(&mut self, actual: &T, matcher: M)
     where
         T: ?Sized,
         M: Matcher<T>,
     {
-        self.asserter.expect(actual, matcher);
+        self.asserter.check(actual, matcher);
     }
 
     /// Records the result of a fallible step, attaching this scope's context to
-    /// an `Err`. See [`SoftAsserter::check`].
+    /// an `Err`. See [`SoftAsserter::record`].
     #[track_caller]
-    pub fn check(&mut self, result: TestResult) {
-        self.asserter.check(result);
+    pub fn record(&mut self, result: TestResult) {
+        self.asserter.record(result);
     }
 
     /// Opens a nested context sub-scope. Its frame stacks *under* this scope's,
@@ -223,39 +224,39 @@ mod tests {
     use test_better_core::{Payload, TestError, TestResult};
 
     use super::*;
-    use crate::{contains_str, eq, expect, is_true};
+    use crate::{check, contains_str, eq, is_true};
 
     #[test]
     fn soft_with_no_failures_returns_ok() -> TestResult {
         let result = soft(|s| {
-            s.expect(&2, eq(2));
-            s.check(Ok(()));
+            s.check(&2, eq(2));
+            s.record(Ok(()));
         });
-        expect!(result.is_ok()).to(is_true())?;
+        check!(result.is_ok()).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
     fn soft_collects_every_failure_each_with_its_own_location() -> TestResult {
         let result = soft(|s| {
-            s.expect(&1, eq(2));
-            s.expect(&3, eq(4));
-            s.expect(&5, eq(6));
+            s.check(&1, eq(2));
+            s.check(&3, eq(4));
+            s.check(&5, eq(6));
         });
         let error = result.expect_err("three soft assertions failed");
 
         let rendered = error.to_string();
-        expect!(rendered.contains("3 soft assertions failed")).to(is_true())?;
-        expect!(rendered.contains("3 failures")).to(is_true())?;
+        check!(rendered.contains("3 soft assertions failed")).satisfies(is_true())?;
+        check!(rendered.contains("3 failures")).satisfies(is_true())?;
 
         match error.payload.as_deref() {
             Some(Payload::Multiple(errors)) => {
-                expect!(errors.len()).to(eq(3))?;
-                // The three `expect` calls are on consecutive lines, so the
+                check!(errors.len()).satisfies(eq(3))?;
+                // The three `check` calls are on consecutive lines, so the
                 // captured locations are all distinct.
                 let lines: Vec<u32> = errors.iter().map(|e| e.location.line()).collect();
-                expect!(lines[0] != lines[1] && lines[1] != lines[2] && lines[0] != lines[2])
-                    .to(is_true())?;
+                check!(lines[0] != lines[1] && lines[1] != lines[2] && lines[0] != lines[2])
+                    .satisfies(is_true())?;
             }
             _ => return Err(TestError::assertion("expected a Multiple payload")),
         }
@@ -265,11 +266,11 @@ mod tests {
     #[test]
     fn soft_check_records_an_err_and_ignores_ok() -> TestResult {
         let result = soft(|s| {
-            s.check(Ok(()));
-            s.check(Err(TestError::assertion("a recorded failure")));
+            s.record(Ok(()));
+            s.record(Err(TestError::assertion("a recorded failure")));
         });
         let error = result.expect_err("one recorded check failed");
-        expect!(error.to_string().contains("a recorded failure")).to(is_true())?;
+        check!(error.to_string().contains("a recorded failure")).satisfies(is_true())?;
         Ok(())
     }
 
@@ -277,11 +278,11 @@ mod tests {
     fn soft_check_preserves_the_recorded_error_location() -> TestResult {
         let recorded = TestError::assertion("from elsewhere");
         let recorded_line = recorded.location.line();
-        let result = soft(|s| s.check(Err(recorded)));
+        let result = soft(|s| s.record(Err(recorded)));
         let error = result.expect_err("one recorded check failed");
         match error.payload.as_deref() {
             Some(Payload::Multiple(errors)) => {
-                expect!(errors[0].location.line()).to(eq(recorded_line))?;
+                check!(errors[0].location.line()).satisfies(eq(recorded_line))?;
             }
             _ => return Err(TestError::assertion("expected a Multiple payload")),
         }
@@ -292,7 +293,7 @@ mod tests {
     fn context_scope_attaches_a_frame_to_recorded_failures() -> TestResult {
         let result = soft(|s| {
             let mut scope = s.context("while validating the user");
-            scope.expect(&1, eq(2));
+            scope.check(&1, eq(2));
         });
         let error = result.expect_err("one soft assertion failed");
         match error.payload.as_deref() {
@@ -302,7 +303,7 @@ mod tests {
                     .iter()
                     .map(|frame| frame.message.as_ref())
                     .collect();
-                expect!(frames).to(eq(vec!["while validating the user"]))?;
+                check!(frames).satisfies(eq(vec!["while validating the user"]))?;
             }
             _ => return Err(TestError::assertion("expected a Multiple payload")),
         }
@@ -314,16 +315,16 @@ mod tests {
         let result = soft(|s| {
             {
                 let mut scope = s.context("inside the scope");
-                scope.expect(&1, eq(2));
+                scope.check(&1, eq(2));
             }
             // The scope has been dropped; this failure carries no context.
-            s.expect(&3, eq(4));
+            s.check(&3, eq(4));
         });
         let error = result.expect_err("two soft assertions failed");
         match error.payload.as_deref() {
             Some(Payload::Multiple(errors)) => {
-                expect!(errors[0].context.len()).to(eq(1usize))?;
-                expect!(errors[1].context.len()).to(eq(0usize))?;
+                check!(errors[0].context.len()).satisfies(eq(1usize))?;
+                check!(errors[1].context.len()).satisfies(eq(0usize))?;
             }
             _ => return Err(TestError::assertion("expected a Multiple payload")),
         }
@@ -334,14 +335,14 @@ mod tests {
     fn nested_context_scopes_stack_outermost_first() -> TestResult {
         let result = soft(|s| {
             let mut outer = s.context("while validating the user");
-            outer.expect(&1, eq(2));
+            outer.check(&1, eq(2));
             let mut inner = outer.context("while checking the email");
-            inner.expect(&"bad", contains_str("@"));
+            inner.check(&"bad", contains_str("@"));
         });
         let error = result.expect_err("two soft assertions failed");
         let rendered = error.to_string();
-        expect!(rendered.contains("while validating the user")).to(is_true())?;
-        expect!(rendered.contains("while checking the email")).to(is_true())?;
+        check!(rendered.contains("while validating the user")).satisfies(is_true())?;
+        check!(rendered.contains("while checking the email")).satisfies(is_true())?;
 
         match error.payload.as_deref() {
             Some(Payload::Multiple(errors)) => {
@@ -355,8 +356,8 @@ mod tests {
                     .iter()
                     .map(|frame| frame.message.as_ref())
                     .collect();
-                expect!(outer_frames).to(eq(vec!["while validating the user"]))?;
-                expect!(inner_frames).to(eq(vec![
+                check!(outer_frames).satisfies(eq(vec!["while validating the user"]))?;
+                check!(inner_frames).satisfies(eq(vec![
                     "while validating the user",
                     "while checking the email",
                 ]))?;

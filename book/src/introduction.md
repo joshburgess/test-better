@@ -15,7 +15,7 @@ use test_better::prelude::*;
 #[test]
 fn the_answer_is_right() -> TestResult {
     let answer = compute_answer();
-    expect!(answer).to(eq(42))?;
+    check!(answer).satisfies(eq(42))?;
     Ok(())
 }
 ```
@@ -27,7 +27,7 @@ the test harness reports.
 
 ## What you get
 
-- **`expect!` and matchers.** `expect!(value).to(matcher)` is the single
+- **`check!` and matchers.** `check!(value).satisfies(matcher)` is the single
   assertion form. Matchers (`eq`, `lt`, `contains`, `some`, ...) compose with
   combinators (`not`, `all_of`, `any_of`) and you can write your own.
 - **`?`-friendly conversions.** `or_fail` replaces `.unwrap()`; `context`

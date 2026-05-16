@@ -115,12 +115,12 @@ mod tests {
     use crate::color::{ColorChoice, color_choice, set_color_choice};
     use crate::error::{ContextFrame, ErrorKind, Payload, TestError};
     use crate::{OrFail, TestResult, Trace};
-    use test_better_matchers::{expect, is_false, is_true};
+    use test_better_matchers::{check, is_false, is_true};
 
     #[test]
     fn render_has_no_trailing_newline() -> TestResult {
         let rendered = TestError::new(ErrorKind::Assertion).to_string();
-        expect!(rendered.ends_with('\n')).to(is_false()).or_fail()?;
+        check!(rendered.ends_with('\n')).satisfies(is_false()).or_fail()?;
         Ok(())
     }
 
@@ -132,11 +132,11 @@ mod tests {
         let outer =
             TestError::new(ErrorKind::Assertion).with_payload(Payload::Multiple(vec![inner]));
         let rendered = outer.to_string();
-        expect!(rendered.contains("      assertion failed: inner"))
-            .to(is_true())
+        check!(rendered.contains("      assertion failed: inner"))
+            .satisfies(is_true())
             .or_fail()?;
-        expect!(rendered.contains("      while inner context"))
-            .to(is_true())
+        check!(rendered.contains("      while inner context"))
+            .satisfies(is_true())
             .or_fail()?;
         Ok(())
     }
@@ -160,8 +160,8 @@ mod tests {
         let query = rendered
             .find("- running the query")
             .or_fail_with("second step rendered")?;
-        expect!(connect < url).to(is_true()).or_fail()?;
-        expect!(url < query).to(is_true()).or_fail()?;
+        check!(connect < url).satisfies(is_true()).or_fail()?;
+        check!(url < query).satisfies(is_true()).or_fail()?;
         Ok(())
     }
 
@@ -193,14 +193,14 @@ mod tests {
         // Restore before any `?` to avoid skipping the restore on early return.
         set_color_choice(original);
 
-        expect!(colored.contains("\x1b[31m"))
-            .to(is_true())
+        check!(colored.contains("\x1b[31m"))
+            .satisfies(is_true())
             .or_fail()?;
-        expect!(colored.contains("\x1b[32m"))
-            .to(is_true())
+        check!(colored.contains("\x1b[32m"))
+            .satisfies(is_true())
             .or_fail()?;
-        expect!(plain.contains('\x1b')).to(is_false()).or_fail()?;
-        expect!(display.contains('\x1b')).to(is_false()).or_fail()?;
+        check!(plain.contains('\x1b')).satisfies(is_false()).or_fail()?;
+        check!(display.contains('\x1b')).satisfies(is_false()).or_fail()?;
         Ok(())
     }
 }

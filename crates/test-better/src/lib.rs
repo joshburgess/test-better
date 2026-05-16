@@ -19,11 +19,11 @@
 //!
 //! # fn main() -> TestResult {
 //! // `or_fail_with` is the `?`-friendly stand-in for a panicking unwrap;
-//! // `expect!` captures the expression text so a failure names `port`,
+//! // `check!` captures the expression text so a failure names `port`,
 //! // not just its value.
 //! let port = parse_port("8080").or_fail_with("8080 is a valid port")?;
-//! expect!(port).to(eq(8080))?;
-//! expect!(port).to_not(lt(1024))?;
+//! check!(port).satisfies(eq(8080))?;
+//! check!(port).violates(lt(1024))?;
 //! # Ok(())
 //! # }
 //! ```
@@ -55,13 +55,13 @@ pub use test_better_matchers::{
     Mismatch, RuntimeAvailable, Sequence, SoftAsserter, SoftScope, Subject, all_of, always_matches,
     any_of, at_least_one, between, close_to, contains, contains_all, contains_in_order,
     contains_str, define_matcher, ends_with, eq, err, eventually, eventually_blocking,
-    eventually_blocking_with, eventually_with, every, expect, ge, gt, have_len, is_empty, is_false,
+    eventually_blocking_with, eventually_with, every, check, ge, gt, have_len, is_empty, is_false,
     is_finite, is_nan, is_not_empty, is_true, items, le, lt, ne, never_matches, none, not, ok,
-    satisfies, soft, some, starts_with,
+    predicate, soft, some, starts_with,
 };
 pub use test_better_property::{
     Config as PropertyConfig, GenError, PropertyFailure, ProptestTree, Runner, Strategy, ValueTree,
-    any, check, check_with, property,
+    any, for_all, for_all_with, property,
 };
 // The best-effort `quickcheck` bridge, behind the facade's `quickcheck`
 // feature: `arbitrary::<T>()` turns a `quickcheck::Arbitrary` type into a
@@ -69,7 +69,7 @@ pub use test_better_property::{
 #[cfg(feature = "quickcheck")]
 pub use test_better_property::{ArbitraryStrategy, QuickcheckTree, arbitrary};
 // The snapshot store. The everyday entry points are the
-// `expect!(value).to_match_snapshot("name")` and `.to_match_inline_snapshot(..)`
+// `check!(value).matches_snapshot("name")` and `.matches_inline_snapshot(..)`
 // methods (on the re-exported `Subject`); these are the lower-level pieces they
 // are built on, for callers that need an explicit directory or mode, or that
 // drive the `test-better-accept` companion binary.
@@ -86,7 +86,7 @@ pub mod cookbook;
 ///
 /// The prelude is deliberately small. It brings in the result type, the error
 /// type, the extension traits whose methods (`context`, `or_fail`, ...) are
-/// meant to be called without qualification, the `expect!` macro, and the
+/// meant to be called without qualification, the `check!` macro, and the
 /// matcher constructors (`eq`, `lt`, ...). The structured-failure types and the
 /// custom-matcher machinery (`Matcher`, `Description`, ...) stay out of it:
 /// they are imported by name when needed, not in the body of every test.
@@ -95,7 +95,7 @@ pub mod cookbook;
 ///
 /// `#[macro_export]` places a macro at the crate root, not inside the module it
 /// is written in, so a glob import of this module would *not* pick it up unless
-/// the macro is named here explicitly. That is why `expect` and
+/// the macro is named here explicitly. That is why `check` and
 /// `define_matcher` appear below with `pub use crate::...;`; later phases add
 /// their `#[macro_export]` macros the same way.
 ///
@@ -118,7 +118,7 @@ pub mod prelude {
         all_of, always_matches, any_of, at_least_one, between, close_to, contains, contains_all,
         contains_in_order, contains_str, ends_with, eq, err, eventually, eventually_blocking,
         every, ge, gt, have_len, is_empty, is_false, is_finite, is_nan, is_not_empty, is_true,
-        items, le, lt, ne, never_matches, none, not, ok, satisfies, soft, some, starts_with,
+        items, le, lt, ne, never_matches, none, not, ok, predicate, soft, some, starts_with,
     };
 
     // `test_case` is deliberately *not* re-exported here. `std`'s own prelude
@@ -130,5 +130,5 @@ pub mod prelude {
         fixture, matches_struct, matches_tuple, matches_variant, test_with_fixtures,
     };
 
-    pub use crate::{define_matcher, expect, property};
+    pub use crate::{define_matcher, check, property};
 }

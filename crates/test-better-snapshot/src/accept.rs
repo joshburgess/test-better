@@ -3,7 +3,7 @@
 //! since this is the only part of the crate that needs `syn`.
 //!
 //! A pending patch (see [`crate::inline`]) names a source file, the call-site
-//! line and column of a `to_match_inline_snapshot` call, and the new snapshot
+//! line and column of a `matches_inline_snapshot` call, and the new snapshot
 //! value. Applying it means finding that call's string-literal argument and
 //! splicing a literal for the new value in its place, leaving the rest of the
 //! file byte-for-byte untouched. The literal's exact extent comes from `syn`'s
@@ -51,14 +51,14 @@ pub enum AcceptError {
         /// The parser's message.
         message: String,
     },
-    /// No `to_match_inline_snapshot` call was found covering the patched line.
+    /// No `matches_inline_snapshot` call was found covering the patched line.
     NoCall {
         /// The source file.
         path: PathBuf,
         /// The 1-based line the patch pointed at.
         line: u32,
     },
-    /// The `to_match_inline_snapshot` call's argument was not a string literal,
+    /// The `matches_inline_snapshot` call's argument was not a string literal,
     /// so there is nothing to rewrite.
     NotAStringLiteral {
         /// The source file.
@@ -82,12 +82,12 @@ impl fmt::Display for AcceptError {
             }
             AcceptError::NoCall { path, line } => write!(
                 f,
-                "no `to_match_inline_snapshot` call at {}:{line}",
+                "no `matches_inline_snapshot` call at {}:{line}",
                 path.display()
             ),
             AcceptError::NotAStringLiteral { path, line } => write!(
                 f,
-                "the `to_match_inline_snapshot` call at {}:{line} has a non-literal argument",
+                "the `matches_inline_snapshot` call at {}:{line} has a non-literal argument",
                 path.display()
             ),
         }
@@ -107,7 +107,7 @@ impl std::error::Error for AcceptError {
 /// literal standing for `new_value`, returning the new source text.
 ///
 /// `path` is used only for error messages. The call is located by finding the
-/// `to_match_inline_snapshot` method call whose span covers `line`; its
+/// `matches_inline_snapshot` method call whose span covers `line`; its
 /// string-literal argument is replaced, and nothing else in the file moves.
 ///
 /// # Errors
@@ -321,7 +321,7 @@ struct LiteralSpan {
     end_column: usize,
 }
 
-/// The best `to_match_inline_snapshot` call found so far for a target line.
+/// The best `matches_inline_snapshot` call found so far for a target line.
 struct FoundCall {
     /// `None` if the call's argument was not a string literal.
     literal: Option<LiteralSpan>,
@@ -330,7 +330,7 @@ struct FoundCall {
     column_distance: usize,
 }
 
-/// Visits a parsed file looking for the `to_match_inline_snapshot` call that
+/// Visits a parsed file looking for the `matches_inline_snapshot` call that
 /// covers `target_line`, keeping the one closest to `target_column`.
 struct CallFinder {
     target_line: u32,
@@ -340,7 +340,7 @@ struct CallFinder {
 
 impl<'ast> syn::visit::Visit<'ast> for CallFinder {
     fn visit_expr_method_call(&mut self, node: &'ast syn::ExprMethodCall) {
-        if node.method == "to_match_inline_snapshot" {
+        if node.method == "matches_inline_snapshot" {
             let span = node.span();
             let start = span.start();
             let end = span.end();
@@ -474,20 +474,20 @@ fn hash_count(value: &str) -> usize {
 #[cfg(test)]
 mod tests {
     use test_better_core::{OrFail, TestResult};
-    use test_better_matchers::{eq, expect, is_true};
+    use test_better_matchers::{eq, check, is_true};
 
     use super::*;
 
     #[test]
     fn hash_count_outgrows_embedded_quote_hash_runs() -> TestResult {
-        expect!(hash_count("plain")).to(eq(1usize))?;
-        expect!(hash_count("has \"# inside")).to(eq(2usize))?;
-        expect!(hash_count("has \"## inside")).to(eq(3usize))
+        check!(hash_count("plain")).satisfies(eq(1usize))?;
+        check!(hash_count("has \"# inside")).satisfies(eq(2usize))?;
+        check!(hash_count("has \"## inside")).satisfies(eq(3usize))
     }
 
     #[test]
     fn format_inline_literal_writes_a_single_line_value_inline() -> TestResult {
-        expect!(format_inline_literal("hello", "    ")).to(eq("r#\"hello\"#".to_string()))
+        check!(format_inline_literal("hello", "    ")).satisfies(eq("r#\"hello\"#".to_string()))
     }
 
     #[test]
@@ -500,18 +500,18 @@ mod tests {
             .strip_prefix("r#\"")
             .and_then(|rest| rest.strip_suffix("\"#"))
             .or_fail_with("formatted literal should be `r#\"...\"#`")?;
-        expect!(crate::normalize_inline_literal(inner)).to(eq(value.to_string()))
+        check!(crate::normalize_inline_literal(inner)).satisfies(eq(value.to_string()))
     }
 
     #[test]
     fn apply_inline_patch_rewrites_the_literal_in_place() -> TestResult {
-        let source = "fn t() {\n    expect!(x).to_match_inline_snapshot(r#\"old\"#)?;\n}\n";
+        let source = "fn t() {\n    check!(x).matches_inline_snapshot(r#\"old\"#)?;\n}\n";
         let rewritten = apply_inline_patch(Path::new("t.rs"), source, 2, 4, "new").or_fail()?;
-        expect!(rewritten.contains("r#\"new\"#")).to(is_true())?;
-        expect!(rewritten.contains("old")).to(eq(false))?;
+        check!(rewritten.contains("r#\"new\"#")).satisfies(is_true())?;
+        check!(rewritten.contains("old")).satisfies(eq(false))?;
         // Everything outside the literal is untouched.
-        expect!(rewritten.starts_with("fn t() {\n")).to(is_true())?;
-        expect!(rewritten.ends_with("?;\n}\n")).to(is_true())
+        check!(rewritten.starts_with("fn t() {\n")).satisfies(is_true())?;
+        check!(rewritten.ends_with("?;\n}\n")).satisfies(is_true())
     }
 
     #[test]
@@ -519,6 +519,6 @@ mod tests {
         let source = "fn t() {\n    let y = 1;\n}\n";
         let outcome = apply_inline_patch(Path::new("t.rs"), source, 2, 4, "new");
         let error = outcome.err().or_fail_with("there is no call to rewrite")?;
-        expect!(matches!(error, AcceptError::NoCall { .. })).to(is_true())
+        check!(matches!(error, AcceptError::NoCall { .. })).satisfies(is_true())
     }
 }

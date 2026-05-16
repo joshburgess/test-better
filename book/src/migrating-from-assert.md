@@ -28,7 +28,7 @@ use test_better::prelude::*;
 #[test]
 fn after() -> TestResult {
     let user = load_user(1);
-    expect!(user.name).to(eq("alice"))
+    check!(user.name).satisfies(eq("alice"))
 }
 ```
 
@@ -36,19 +36,19 @@ fn after() -> TestResult {
 
 | Panicking                              | `test-better`                                  |
 |-----------------------------------------|------------------------------------------------|
-| `assert!(x)`                            | `expect!(x).to(is_true())?`                    |
-| `assert!(!x)`                           | `expect!(x).to(is_false())?`                   |
-| `assert_eq!(a, b)`                      | `expect!(a).to(eq(b))?`                        |
-| `assert_ne!(a, b)`                      | `expect!(a).to(ne(b))?`                        |
-| `assert!(a < b)`                        | `expect!(a).to(lt(b))?`                        |
-| `assert!(a >= b)`                       | `expect!(a).to(ge(b))?`                        |
-| `assert!(v.contains(&x))`               | `expect!(&v).to(contains(eq(x)))?`             |
-| `assert!(v.is_empty())`                 | `expect!(&v).to(is_empty())?`                  |
-| `assert!(s.contains("foo"))`            | `expect!(s).to(contains_str("foo"))?`          |
-| `assert!(opt.is_some())`                | `expect!(opt).to(some(always_matches()))?` *   |
-| `assert_eq!(opt, Some(x))`              | `expect!(opt).to(some(eq(x)))?`                |
-| `assert!(res.is_ok())`                  | `expect!(res).to(ok(always_matches()))?` *     |
-| `assert_eq!(res, Ok(x))`                | `expect!(res).to(ok(eq(x)))?`                  |
+| `assert!(x)`                            | `check!(x).satisfies(is_true())?`                    |
+| `assert!(!x)`                           | `check!(x).satisfies(is_false())?`                   |
+| `assert_eq!(a, b)`                      | `check!(a).satisfies(eq(b))?`                        |
+| `assert_ne!(a, b)`                      | `check!(a).satisfies(ne(b))?`                        |
+| `assert!(a < b)`                        | `check!(a).satisfies(lt(b))?`                        |
+| `assert!(a >= b)`                       | `check!(a).satisfies(ge(b))?`                        |
+| `assert!(v.contains(&x))`               | `check!(&v).satisfies(contains(eq(x)))?`             |
+| `assert!(v.is_empty())`                 | `check!(&v).satisfies(is_empty())?`                  |
+| `assert!(s.contains("foo"))`            | `check!(s).satisfies(contains_str("foo"))?`          |
+| `assert!(opt.is_some())`                | `check!(opt).satisfies(some(always_matches()))?` *   |
+| `assert_eq!(opt, Some(x))`              | `check!(opt).satisfies(some(eq(x)))?`                |
+| `assert!(res.is_ok())`                  | `check!(res).satisfies(ok(always_matches()))?` *     |
+| `assert_eq!(res, Ok(x))`                | `check!(res).satisfies(ok(eq(x)))?`                  |
 
 \* `some` and `ok` take an *inner* matcher for the contained value. To assert
 only that the option or result is the right variant, pass `always_matches()`;
@@ -72,7 +72,7 @@ fn loads_the_config() -> TestResult {
     // Before: let body = read(&path).expect("config is readable");
     let body = read(&path).or_fail_with("the config file is readable")?;
 
-    expect!(body.is_empty()).to(is_true())
+    check!(body.is_empty()).satisfies(is_true())
 }
 ```
 
@@ -108,7 +108,7 @@ you do not have to reconstruct what step you were on from a line number.
 ## A pragmatic order of operations
 
 1. Change the signature to `-> TestResult` and add `Ok(())` at the end.
-2. Replace each `assert*!` with the `expect!` form from the table, `?` on each.
+2. Replace each `assert*!` with the `check!` form from the table, `?` on each.
 3. Replace `.unwrap()` / `.expect()` in the test's setup with `or_fail*`.
 4. Add `.context(..)` where a bare failure would be ambiguous.
 

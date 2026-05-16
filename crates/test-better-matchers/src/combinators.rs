@@ -40,16 +40,16 @@ where
 /// Matches when `matcher` does *not* match.
 ///
 /// Negating a matcher is the composable alternative to
-/// [`to_not`](crate::Subject::to_not): `not` is itself a matcher, so it nests
+/// [`violates`](crate::Subject::violates): `not` is itself a matcher, so it nests
 /// inside other combinators (`all_of((not(eq(0)), lt(100)))`).
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{eq, expect, not};
+/// use test_better_matchers::{eq, check, not};
 ///
 /// fn main() -> TestResult {
-///     expect!(5).to(not(eq(4)))?;
-///     expect!(4).to_not(not(eq(4)))?;
+///     check!(5).satisfies(not(eq(4)))?;
+///     check!(4).violates(not(eq(4)))?;
 ///     Ok(())
 /// }
 /// ```
@@ -173,10 +173,10 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{all_of, expect, gt, lt};
+/// use test_better_matchers::{all_of, check, gt, lt};
 ///
 /// fn main() -> TestResult {
-///     expect!(50).to(all_of((gt(0), lt(100))))?;
+///     check!(50).satisfies(all_of((gt(0), lt(100))))?;
 ///     Ok(())
 /// }
 /// ```
@@ -215,10 +215,10 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{any_of, eq, expect};
+/// use test_better_matchers::{any_of, eq, check};
 ///
 /// fn main() -> TestResult {
-///     expect!(7).to(any_of((eq(7), eq(8), eq(9))))?;
+///     check!(7).satisfies(any_of((eq(7), eq(8), eq(9))))?;
 ///     Ok(())
 /// }
 /// ```
@@ -236,12 +236,12 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, expect, gt, is_false, is_true, lt};
+    use crate::{eq, check, gt, is_false, is_true, lt};
 
     #[test]
     fn not_inverts_the_inner_matcher() -> TestResult {
-        expect!(not(eq(4)).check(&5).matched).to(is_true())?;
-        expect!(not(eq(4)).check(&4).matched).to(is_false())?;
+        check!(not(eq(4)).check(&5).matched).satisfies(is_true())?;
+        check!(not(eq(4)).check(&4).matched).satisfies(is_false())?;
         Ok(())
     }
 
@@ -251,14 +251,14 @@ mod tests {
             .check(&4)
             .failure
             .or_fail_with("4 does match eq(4), so not(eq(4)) fails")?;
-        expect!(failure.expected.to_string()).to(eq("not equal to 4".to_string()))?;
-        expect!(failure.actual).to(eq("4".to_string()))?;
+        check!(failure.expected.to_string()).satisfies(eq("not equal to 4".to_string()))?;
+        check!(failure.actual).satisfies(eq("4".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn all_of_passes_when_every_matcher_matches() -> TestResult {
-        expect!(all_of((gt(0), lt(100))).check(&50).matched).to(is_true())?;
+        check!(all_of((gt(0), lt(100))).check(&50).matched).satisfies(is_true())?;
         Ok(())
     }
 
@@ -268,21 +268,21 @@ mod tests {
             .check(&150)
             .failure
             .or_fail_with("150 is not less than 100")?;
-        expect!(failure.expected.to_string()).to(eq("less than 100".to_string()))?;
-        expect!(failure.actual).to(eq("150".to_string()))?;
+        check!(failure.expected.to_string()).satisfies(eq("less than 100".to_string()))?;
+        check!(failure.actual).satisfies(eq("150".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn all_of_describes_itself_as_a_conjunction() -> TestResult {
         let description = all_of((gt(0), lt(100))).description();
-        expect!(description.to_string()).to(eq("greater than 0 and less than 100".to_string()))?;
+        check!(description.to_string()).satisfies(eq("greater than 0 and less than 100".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn any_of_passes_when_at_least_one_matcher_matches() -> TestResult {
-        expect!(any_of((eq(7), eq(8), eq(9))).check(&8).matched).to(is_true())?;
+        check!(any_of((eq(7), eq(8), eq(9))).check(&8).matched).satisfies(is_true())?;
         Ok(())
     }
 
@@ -292,24 +292,24 @@ mod tests {
             .check(&1)
             .failure
             .or_fail_with("1 is none of 7, 8, 9")?;
-        expect!(failure.expected.to_string())
-            .to(eq("equal to 7 or equal to 8 or equal to 9".to_string()))?;
-        expect!(failure.actual).to(eq("1".to_string()))?;
+        check!(failure.expected.to_string())
+            .satisfies(eq("equal to 7 or equal to 8 or equal to 9".to_string()))?;
+        check!(failure.actual).satisfies(eq("1".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn combinators_nest() -> TestResult {
         // `not` is itself a matcher, so it composes inside `all_of`.
-        expect!(all_of((not(eq(0)), lt(100))).check(&50).matched).to(is_true())?;
-        expect!(all_of((not(eq(0)), lt(100))).check(&0).matched).to(is_false())?;
+        check!(all_of((not(eq(0)), lt(100))).check(&50).matched).satisfies(is_true())?;
+        check!(all_of((not(eq(0)), lt(100))).check(&0).matched).satisfies(is_false())?;
         Ok(())
     }
 
     #[test]
     fn all_of_supports_arity_eight() -> TestResult {
         let matcher = all_of((gt(0), lt(100), gt(1), lt(99), gt(2), lt(98), gt(3), lt(97)));
-        expect!(matcher.check(&50).matched).to(is_true())?;
+        check!(matcher.check(&50).matched).satisfies(is_true())?;
         Ok(())
     }
 }

@@ -18,7 +18,7 @@ use test_better::prelude::*;
 #[test]
 fn incrementing_changes_the_value() -> TestResult {
     property!(|n: u32| {
-        expect!(n.wrapping_add(1)).to(ne(n))
+        check!(n.wrapping_add(1)).satisfies(ne(n))
     })
 }
 ```
@@ -36,7 +36,7 @@ use test_better::prelude::*;
 #[test]
 fn values_in_range_stay_in_range() -> TestResult {
     property!(|n| {
-        expect!(n).to(lt(10u64))
+        check!(n).satisfies(lt(10u64))
     } using 0u64..10)
 }
 ```
@@ -55,54 +55,55 @@ fn this_property_is_false() -> TestResult {
     // "every value in 0..1000 is below 500" is false; the run shrinks the
     // counterexample down to exactly 500.
     let error = property!(|n: u32| {
-        expect!(n).to(lt(500u32))
+        check!(n).satisfies(lt(500u32))
     } using 0u32..1_000)
     .err()
     .or_fail_with("values at or above 500 exist in 0..1000")?;
 
     let rendered = error.to_string();
-    expect!(rendered.contains("the shrunk (minimal) input is 500")).to(is_true())?;
-    expect!(rendered.contains("less than 500")).to(is_true())
+    check!(rendered.contains("the shrunk (minimal) input is 500")).satisfies(is_true())?;
+    check!(rendered.contains("less than 500")).satisfies(is_true())
 }
 ```
 
 The point of carrying the matcher failure through shrinking is that the report
-is not just "500 failed": it is the full `expect!` failure for the minimal
+is not just "500 failed": it is the full `check!` failure for the minimal
 input, so you see *what* about `500` broke the property.
 
-## The function form: `check` and `check_with`
+## The function form: `for_all` and `for_all_with`
 
-`property!` expands to a call to `check`. You can call it directly when you
+`property!` expands to a call to `for_all`. You can call it directly when you
 want the `Result<(), PropertyFailure<T>>` as a value rather than as the test's
 return:
 
 ```rust
 use test_better::prelude::*;
+use test_better::for_all;
 
 #[test]
 fn doubling_stays_in_bounds() -> TestResult {
-    let outcome = check(0u32..1_000, |n| expect!(n * 2).to(lt(2_000u32)));
-    expect!(outcome.is_ok()).to(is_true())
+    let outcome = for_all(0u32..1_000, |n| check!(n * 2).satisfies(lt(2_000u32)));
+    check!(outcome.is_ok()).satisfies(is_true())
 }
 ```
 
 `PropertyFailure<T>` exposes the `shrunk` and `original` inputs and the carried
 `failure: TestError`, so a test can assert on the counterexample itself.
 
-`check_with` takes a `PropertyConfig` (the case count) and a `Runner` (seeded
+`for_all_with` takes a `PropertyConfig` (the case count) and a `Runner` (seeded
 deterministically or randomized), for when the defaults are not what you want:
 
 ```rust
 use test_better::prelude::*;
-use test_better::{PropertyConfig, Runner, check_with};
+use test_better::{PropertyConfig, Runner, for_all_with};
 
 #[test]
 fn run_more_cases() -> TestResult {
     let mut runner = Runner::randomized();
-    let outcome = check_with(PropertyConfig { cases: 32 }, &mut runner, 0u64..10, |n| {
-        expect!(n).to(lt(10u64))
+    let outcome = for_all_with(PropertyConfig { cases: 32 }, &mut runner, 0u64..10, |n| {
+        check!(n).satisfies(lt(10u64))
     });
-    expect!(outcome.is_ok()).to(is_true())
+    check!(outcome.is_ok()).satisfies(is_true())
 }
 ```
 

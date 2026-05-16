@@ -3,7 +3,7 @@
 # inheritance is unavailable here, so the manifest is spelled out in full.
 [package]
 name = "timeout-smol"
-description = "Integration coverage for `to_complete_within` on the smol runtime."
+description = "Integration coverage for `completes_within` on the smol runtime."
 version = "0.0.0"
 edition = "2024"
 rust-version = "1.95.0"

@@ -15,8 +15,8 @@ use test_better::test_case;
 #[test_case("alice", 30 ; "common case")]
 #[test_case("bob", 25 ; "another user")]
 fn validates_user(name: &str, age: u32) -> TestResult {
-    expect!(name.len()).to(gt(0usize))?;
-    expect!(age).to(gt(0u32))
+    check!(name.len()).satisfies(gt(0usize))?;
+    check!(age).satisfies(gt(0u32))
 }
 
 // An unlabeled case becomes `addition_works::case_0`; a labeled one keeps its
@@ -24,13 +24,13 @@ fn validates_user(name: &str, age: u32) -> TestResult {
 #[test_case(2, 2, 4)]
 #[test_case(10, 5, 15 ; "bigger numbers")]
 fn addition_works(a: i32, b: i32, sum: i32) -> TestResult {
-    expect!(a + b).to(eq(sum))
+    check!(a + b).satisfies(eq(sum))
 }
 
 // A zero-argument case: the attribute carries only a label.
 #[test_case(; "no parameters at all")]
 fn the_truth_holds() -> TestResult {
-    expect!(true).to(is_true())
+    check!(true).satisfies(is_true())
 }
 
 // This case fails on purpose. `#[ignore]` is forwarded onto the generated
@@ -39,7 +39,7 @@ fn the_truth_holds() -> TestResult {
 #[test_case(3 ; "not three")]
 #[ignore]
 fn expects_three(n: i32) -> TestResult {
-    expect!(n).to(eq(99))
+    check!(n).satisfies(eq(99))
 }
 
 #[test]
@@ -49,6 +49,6 @@ fn a_failing_case_names_itself_in_the_context() -> TestResult {
     let rendered = format!("{error}");
     // The forwarded failure context carries both the case label and the
     // rendered call, so the failure points back at the case that produced it.
-    expect!(rendered.as_str()).to(contains_str("not three"))?;
-    expect!(rendered.as_str()).to(contains_str("expects_three(3)"))
+    check!(rendered.as_str()).satisfies(contains_str("not three"))?;
+    check!(rendered.as_str()).satisfies(contains_str("expects_three(3)"))
 }

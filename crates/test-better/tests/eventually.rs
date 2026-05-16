@@ -20,7 +20,7 @@ fn eventually_blocking_returns_the_moment_the_probe_passes() -> TestResult {
     })?;
     // A generous 5s budget, but the probe passes on its fourth call, so polling
     // stops there rather than running to the deadline.
-    expect!(polls.get()).to(eq(4u32))?;
+    check!(polls.get()).satisfies(eq(4u32))?;
     Ok(())
 }
 
@@ -34,10 +34,10 @@ fn eventually_blocking_failure_names_the_elapsed_time_and_probe_count() -> TestR
     })
     .expect_err("a probe that never passes must time out");
     // It did not give up early: the whole budget was spent.
-    expect!(started.elapsed() >= Duration::from_millis(50)).to(is_true())?;
+    check!(started.elapsed() >= Duration::from_millis(50)).satisfies(is_true())?;
     let rendered = error.to_string();
     // The failure reports both how long it waited and how many times it probed.
-    expect!(rendered.contains("was not met within")).to(is_true())?;
-    expect!(rendered.contains(&format!("{} probe", polls.get()))).to(is_true())?;
+    check!(rendered.contains("was not met within")).satisfies(is_true())?;
+    check!(rendered.contains(&format!("{} probe", polls.get()))).satisfies(is_true())?;
     Ok(())
 }

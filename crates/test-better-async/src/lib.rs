@@ -1,7 +1,7 @@
 //! `test-better-async`: async and timing helpers.
 //!
 //! Home of the runtime-agnostic timeout abstraction that backs
-//! `expect!(fut).to_complete_within(..)`.
+//! `check!(fut).completes_within(..)`.
 //!
 //! # The runtime gate
 //!
@@ -16,7 +16,7 @@
 //! [`run_within`] is bounded `where F: RuntimeAvailable` on its *generic*
 //! future type, that bound is deferred to the call site (a bound on a concrete
 //! type would be rejected at the definition instead). The user who calls
-//! `to_complete_within` without a runtime feature is the one who sees the
+//! `completes_within` without a runtime feature is the one who sees the
 //! error, and the `#[diagnostic::on_unimplemented]` message on
 //! `RuntimeAvailable` points them at the feature flags.
 //!
@@ -61,7 +61,7 @@ impl std::error::Error for Elapsed {}
 /// feature is enabled.
 ///
 /// It carries no methods. Its only job is to be a *deferred* bound on
-/// [`run_within`] and `Subject::to_complete_within`, so that "no runtime
+/// [`run_within`] and `Subject::completes_within`, so that "no runtime
 /// feature" becomes an error at the user's call site rather than at the
 /// library's definition.
 #[diagnostic::on_unimplemented(
@@ -352,27 +352,27 @@ mod tests {
     use std::cell::Cell;
     use std::future::{pending, ready};
 
-    use test_better_matchers::{eq, expect, ge, is_true};
+    use test_better_matchers::{eq, check, ge, is_true};
 
     #[test]
     fn race_returns_the_future_output_when_it_is_ready_first() -> TestResult {
         // `pending` never resolves, so the only way `race` returns `Ok` is by
         // polling `fut` to completion.
         let outcome = pollster::block_on(race(ready(7), pending::<()>()));
-        expect!(outcome).to(eq(Ok(7)))
+        check!(outcome).satisfies(eq(Ok(7)))
     }
 
     #[test]
     fn race_reports_the_timer_when_the_future_is_not_ready() -> TestResult {
         let outcome = pollster::block_on(race(pending::<i32>(), ready(())));
-        expect!(outcome).to(eq(Err(())))
+        check!(outcome).satisfies(eq(Err(())))
     }
 
     #[test]
     fn race_prefers_the_future_when_both_are_ready() -> TestResult {
         // Both arms are ready immediately; `fut` is polled first, so it wins.
         let outcome = pollster::block_on(race(ready("done"), ready(())));
-        expect!(outcome).to(eq(Ok("done")))
+        check!(outcome).satisfies(eq(Ok("done")))
     }
 
     #[test]
@@ -382,9 +382,9 @@ mod tests {
             ceiling: Duration::from_millis(25),
             factor: 2,
         };
-        expect!(backoff.next_nap(Duration::from_millis(10))).to(eq(Duration::from_millis(20)))?;
+        check!(backoff.next_nap(Duration::from_millis(10))).satisfies(eq(Duration::from_millis(20)))?;
         // 20 * 2 = 40, clamped down to the 25ms ceiling.
-        expect!(backoff.next_nap(Duration::from_millis(20))).to(eq(Duration::from_millis(25)))
+        check!(backoff.next_nap(Duration::from_millis(20))).satisfies(eq(Duration::from_millis(25)))
     }
 
     #[test]
@@ -395,7 +395,7 @@ mod tests {
             calls.get() >= 3
         })?;
         // The probe passed on its third call; polling must not continue past it.
-        expect!(calls.get()).to(eq(3))
+        check!(calls.get()).satisfies(eq(3))
     }
 
     #[test]
@@ -405,7 +405,7 @@ mod tests {
             calls.set(calls.get() + 1);
             true
         })?;
-        expect!(calls.get()).to(eq(1))
+        check!(calls.get()).satisfies(eq(1))
     }
 
     #[test]
@@ -425,17 +425,17 @@ mod tests {
         )
         .expect_err("a probe that is never true must time out");
         let rendered = error.to_string();
-        expect!(rendered.contains("was not met within")).to(is_true())?;
+        check!(rendered.contains("was not met within")).satisfies(is_true())?;
         // The message names how many times it probed; with a 5ms nap inside a
         // 40ms budget that is at least a couple of attempts.
-        expect!(calls.get()).to(ge(2))?;
-        expect!(rendered.contains(&format!("{} probe", calls.get()))).to(is_true())
+        check!(calls.get()).satisfies(ge(2))?;
+        check!(rendered.contains(&format!("{} probe", calls.get()))).satisfies(is_true())
     }
 
     #[test]
     fn eventually_blocking_failure_kind_is_timeout() -> TestResult {
         let error = eventually_blocking(Duration::from_millis(1), || false)
             .expect_err("an always-false probe times out");
-        expect!(error.kind).to(eq(ErrorKind::Timeout))
+        check!(error.kind).satisfies(eq(ErrorKind::Timeout))
     }
 }

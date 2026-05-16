@@ -66,7 +66,7 @@ mod tests {
         // generated vectors; a failure would be shrunk to a minimal one.
         property!(|values: Vec<i64>| {
             let encoded = encode(&values);
-            expect!(decode(&encoded)).to(eq(Ok(values)))
+            check!(decode(&encoded)).satisfies(eq(Ok(values)))
         })
     }
 
@@ -76,7 +76,7 @@ mod tests {
         // inferred one: an ordinary numeric range.
         property!(|n| {
             let encoded = encode(&[n]);
-            expect!(decode(&encoded)).to(eq(Ok(vec![n])))
+            check!(decode(&encoded)).satisfies(eq(Ok(vec![n])))
         } using -1_000_000i64..1_000_000)
     }
 
@@ -84,14 +84,14 @@ mod tests {
     fn the_empty_vector_roundtrips() -> TestResult {
         // The edge case the property generator will also reach, pinned down on
         // its own so it is obvious it is covered.
-        expect!(encode(&[])).to(eq(String::new()))?;
-        expect!(decode("")).to(eq(Ok(Vec::<i64>::new())))?;
+        check!(encode(&[])).satisfies(eq(String::new()))?;
+        check!(decode("")).satisfies(eq(Ok(Vec::<i64>::new())))?;
         Ok(())
     }
 
     #[test]
     fn a_known_encoding_has_the_expected_shape() -> TestResult {
-        expect!(encode(&[1, -2, 3])).to(eq(String::from("1\n-2\n3")))
+        check!(encode(&[1, -2, 3])).satisfies(eq(String::from("1\n-2\n3")))
     }
 
     #[test]
@@ -99,8 +99,8 @@ mod tests {
         let error = decode("1\noops\n3")
             .err()
             .or_fail_with("\"oops\" is not an i64")?;
-        expect!(error.line).to(eq(1))?;
-        expect!(error.text).to(eq(String::from("oops")))?;
+        check!(error.line).satisfies(eq(1))?;
+        check!(error.text).satisfies(eq(String::from("oops")))?;
         Ok(())
     }
 }

@@ -31,7 +31,7 @@ fn groups_failures_by_feature_area_and_keeps_unstructured_ones() -> TestResult {
 
     // The fixture has failing tests, so the wrapped `cargo test` exits non-zero
     // and the runner propagates that.
-    expect!(output.status.success()).to(is_false())?;
+    check!(output.status.success()).satisfies(is_false())?;
 
     // Inspect the grouped report the runner appends after the wrapped build,
     // not the wrapped build's own replayed failure text (which also mentions
@@ -43,13 +43,13 @@ fn groups_failures_by_feature_area_and_keeps_unstructured_ones() -> TestResult {
 
     // One bucket per feature area, each header appearing exactly once even
     // though `the user store` has two failures under it.
-    expect!(report.contains("the user store")).to(is_true())?;
-    expect!(report.contains("the http layer")).to(is_true())?;
-    expect!(report.matches("the user store").count()).to(eq(1))?;
-    expect!(report.contains("user_count_matches")).to(is_true())?;
-    expect!(report.contains("user_store_connects")).to(is_true())?;
+    check!(report.contains("the user store")).satisfies(is_true())?;
+    check!(report.contains("the http layer")).satisfies(is_true())?;
+    check!(report.matches("the user store").count()).satisfies(eq(1))?;
+    check!(report.contains("user_count_matches")).satisfies(is_true())?;
+    check!(report.contains("user_store_connects")).satisfies(is_true())?;
 
     // The plain `panic!` carried no structure, so it is listed ungrouped.
-    expect!(report.contains("unstructured (no test-better failure data)")).to(is_true())?;
-    expect!(report.contains("arithmetic_is_hard")).to(is_true())
+    check!(report.contains("unstructured (no test-better failure data)")).satisfies(is_true())?;
+    check!(report.contains("arithmetic_is_hard")).satisfies(is_true())
 }

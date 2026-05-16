@@ -1,13 +1,13 @@
 //! End-to-end snapshot wiring through the `test-better` facade.
 //!
-//! `expect!(value).to_match_snapshot("name")` has to capture the call site's
+//! `check!(value).matches_snapshot("name")` has to capture the call site's
 //! `module_path!()`, resolve `tests/snapshots/` relative to the package root
 //! (where `cargo test` puts the working directory), read the committed `.snap`
 //! file, and compare. These tests verify that whole path against snapshot
 //! files committed next to them.
 //!
 //! They deliberately assert only the *matching* case. A test that asserted a
-//! *mismatch* through `to_match_snapshot` would behave differently under
+//! *mismatch* through `matches_snapshot` would behave differently under
 //! `UPDATE_SNAPSHOTS=1` (it would rewrite the committed file, or record a
 //! pending inline patch), so the mismatch path and the create/update lifecycle
 //! are covered where they can be driven explicitly instead:
@@ -21,24 +21,24 @@ use test_better::prelude::*;
 #[test]
 fn a_value_matches_its_committed_snapshot() -> TestResult {
     let rendered = "<!doctype html>\n<title>Home</title>\n<h1>Welcome</h1>";
-    expect!(rendered).to_match_snapshot("rendered_page")
+    check!(rendered).matches_snapshot("rendered_page")
 }
 
 #[test]
 fn a_multi_line_value_matches_its_committed_snapshot() -> TestResult {
     let report = ["name: alice", "score: 42", "status: active"].join("\n");
-    expect!(report).to_match_snapshot("report")
+    check!(report).matches_snapshot("report")
 }
 
 #[test]
 fn a_value_matches_its_inline_snapshot() -> TestResult {
-    expect!(2 + 2).to_match_inline_snapshot("4")
+    check!(2 + 2).matches_inline_snapshot("4")
 }
 
 #[test]
 fn a_multi_line_value_matches_its_inline_snapshot() -> TestResult {
     let report = ["name: alice", "score: 42", "status: active"].join("\n");
-    expect!(report).to_match_inline_snapshot(
+    check!(report).matches_inline_snapshot(
         r#"
         name: alice
         score: 42
@@ -53,9 +53,9 @@ fn a_redacted_value_matches_its_committed_snapshot() -> TestResult {
     // Two "runs", two different UUIDs: redaction stabilizes both onto the same
     // committed snapshot, which is the whole point of the feature.
     let first = format!("session {} opened", "550e8400-e29b-41d4-a716-446655440000");
-    expect!(first).to_match_snapshot_with("redacted_session", &redactions)?;
+    check!(first).matches_snapshot_with("redacted_session", &redactions)?;
     let second = format!("session {} opened", "11111111-2222-3333-4444-555555555555");
-    expect!(second).to_match_snapshot_with("redacted_session", &redactions)?;
+    check!(second).matches_snapshot_with("redacted_session", &redactions)?;
     Ok(())
 }
 
@@ -63,5 +63,5 @@ fn a_redacted_value_matches_its_committed_snapshot() -> TestResult {
 fn a_redacted_value_matches_its_inline_snapshot() -> TestResult {
     let redactions = Redactions::new().redact_rfc3339_timestamps();
     let rendered = format!("event at {}", "2026-05-14T12:34:56Z");
-    expect!(rendered).to_match_inline_snapshot_with("event at [timestamp]", &redactions)
+    check!(rendered).matches_inline_snapshot_with("event at [timestamp]", &redactions)
 }

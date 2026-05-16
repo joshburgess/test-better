@@ -57,11 +57,11 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{eq, expect, some};
+/// use test_better_matchers::{eq, check, some};
 ///
 /// fn main() -> TestResult {
-///     expect!(Some(42)).to(some(eq(42)))?;
-///     expect!(None::<i32>).to_not(some(eq(42)))?;
+///     check!(Some(42)).satisfies(some(eq(42)))?;
+///     check!(None::<i32>).violates(some(eq(42)))?;
 ///     Ok(())
 /// }
 /// ```
@@ -99,11 +99,11 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{expect, none};
+/// use test_better_matchers::{check, none};
 ///
 /// fn main() -> TestResult {
-///     expect!(None::<i32>).to(none())?;
-///     expect!(Some(0)).to_not(none())?;
+///     check!(None::<i32>).satisfies(none())?;
+///     check!(Some(0)).violates(none())?;
 ///     Ok(())
 /// }
 /// ```
@@ -147,11 +147,11 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{eq, expect, ok};
+/// use test_better_matchers::{eq, check, ok};
 ///
 /// fn main() -> TestResult {
-///     expect!(Ok::<i32, &str>(42)).to(ok(eq(42)))?;
-///     expect!(Err::<i32, &str>("boom")).to_not(ok(eq(42)))?;
+///     check!(Ok::<i32, &str>(42)).satisfies(ok(eq(42)))?;
+///     check!(Err::<i32, &str>("boom")).violates(ok(eq(42)))?;
 ///     Ok(())
 /// }
 /// ```
@@ -196,11 +196,11 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{eq, err, expect};
+/// use test_better_matchers::{eq, err, check};
 ///
 /// fn main() -> TestResult {
-///     expect!(Err::<i32, &str>("boom")).to(err(eq("boom")))?;
-///     expect!(Ok::<i32, &str>(0)).to_not(err(eq("boom")))?;
+///     check!(Err::<i32, &str>("boom")).satisfies(err(eq("boom")))?;
+///     check!(Ok::<i32, &str>(0)).violates(err(eq("boom")))?;
 ///     Ok(())
 /// }
 /// ```
@@ -218,13 +218,13 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, expect, is_false, is_true};
+    use crate::{eq, check, is_false, is_true};
 
     #[test]
     fn some_matches_a_some_whose_value_satisfies_the_inner_matcher() -> TestResult {
-        expect!(some(eq(42)).check(&Some(42)).matched).to(is_true())?;
-        expect!(some(eq(42)).check(&Some(7)).matched).to(is_false())?;
-        expect!(some(eq(42)).check(&None).matched).to(is_false())?;
+        check!(some(eq(42)).check(&Some(42)).matched).satisfies(is_true())?;
+        check!(some(eq(42)).check(&Some(7)).matched).satisfies(is_false())?;
+        check!(some(eq(42)).check(&None).matched).satisfies(is_false())?;
         Ok(())
     }
 
@@ -234,59 +234,59 @@ mod tests {
             .check(&None)
             .failure
             .or_fail_with("None is not Some")?;
-        expect!(failure.expected.to_string()).to(eq("some:\n  equal to 42".to_string()))?;
-        expect!(failure.actual).to(eq("None".to_string()))?;
+        check!(failure.expected.to_string()).satisfies(eq("some:\n  equal to 42".to_string()))?;
+        check!(failure.actual).satisfies(eq("None".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn none_matches_only_none() -> TestResult {
-        expect!(none::<i32>().check(&None).matched).to(is_true())?;
+        check!(none::<i32>().check(&None).matched).satisfies(is_true())?;
         let failure = none()
             .check(&Some(7))
             .failure
             .or_fail_with("Some(7) is not None")?;
-        expect!(failure.expected.to_string()).to(eq("none".to_string()))?;
-        expect!(failure.actual).to(eq("Some(7)".to_string()))?;
+        check!(failure.expected.to_string()).satisfies(eq("none".to_string()))?;
+        check!(failure.actual).satisfies(eq("Some(7)".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn ok_matches_an_ok_whose_value_satisfies_the_inner_matcher() -> TestResult {
-        expect!(ok::<i32, &str, _>(eq(42)).check(&Ok(42)).matched).to(is_true())?;
+        check!(ok::<i32, &str, _>(eq(42)).check(&Ok(42)).matched).satisfies(is_true())?;
         let failure = ok::<i32, &str, _>(eq(42))
             .check(&Err("boom"))
             .failure
             .or_fail_with("Err is not Ok")?;
-        expect!(failure.expected.to_string()).to(eq("ok:\n  equal to 42".to_string()))?;
-        expect!(failure.actual).to(eq("Err(\"boom\")".to_string()))?;
+        check!(failure.expected.to_string()).satisfies(eq("ok:\n  equal to 42".to_string()))?;
+        check!(failure.actual).satisfies(eq("Err(\"boom\")".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn err_matches_an_err_whose_value_satisfies_the_inner_matcher() -> TestResult {
-        expect!(err::<i32, &str, _>(eq("boom")).check(&Err("boom")).matched).to(is_true())?;
+        check!(err::<i32, &str, _>(eq("boom")).check(&Err("boom")).matched).satisfies(is_true())?;
         let failure = err::<i32, &str, _>(eq("boom"))
             .check(&Ok(0))
             .failure
             .or_fail_with("Ok is not Err")?;
-        expect!(failure.expected.to_string()).to(eq("err:\n  equal to \"boom\"".to_string()))?;
-        expect!(failure.actual).to(eq("Ok(0)".to_string()))?;
+        check!(failure.expected.to_string()).satisfies(eq("err:\n  equal to \"boom\"".to_string()))?;
+        check!(failure.actual).satisfies(eq("Ok(0)".to_string()))?;
         Ok(())
     }
 
     #[test]
     fn nested_matchers_render_aligned_indented_expected_blocks() -> TestResult {
         let matcher = some(ok::<i32, &str, _>(eq(42)));
-        expect!(matcher.check(&Some(Ok(42))).matched).to(is_true())?;
+        check!(matcher.check(&Some(Ok(42))).matched).satisfies(is_true())?;
 
         let failure = matcher
             .check(&Some(Ok(43)))
             .failure
             .or_fail_with("Some(Ok(43)) does not satisfy some(ok(eq(42)))")?;
-        expect!(failure.expected.to_string())
-            .to(eq("some:\n  ok:\n    equal to 42".to_string()))?;
-        expect!(failure.actual).to(eq("43".to_string()))?;
+        check!(failure.expected.to_string())
+            .satisfies(eq("some:\n  ok:\n    equal to 42".to_string()))?;
+        check!(failure.actual).satisfies(eq("43".to_string()))?;
         Ok(())
     }
 }

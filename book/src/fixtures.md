@@ -39,7 +39,7 @@ use test_better::prelude::*;
 
 #[test_with_fixtures]
 fn the_answer_reaches_the_test(answer: i32) -> TestResult {
-    expect!(answer).to(eq(42))
+    check!(answer).satisfies(eq(42))
 }
 ```
 
@@ -61,7 +61,7 @@ fn age() -> TestResult<u32> {
 
 #[test_with_fixtures]
 fn both_fixtures_are_available(name: String, age: u32) -> TestResult {
-    expect!(name.len() as u32).to(le(age))
+    check!(name.len() as u32).satisfies(le(age))
 }
 ```
 
@@ -81,12 +81,12 @@ fn shared_config() -> TestResult<String> {
 
 #[test_with_fixtures]
 fn one_test_sees_the_config(shared_config: String) -> TestResult {
-    expect!(shared_config.as_str()).to(eq("loaded-once"))
+    check!(shared_config.as_str()).satisfies(eq("loaded-once"))
 }
 
 #[test_with_fixtures]
 fn another_test_sees_the_same_config(shared_config: String) -> TestResult {
-    expect!(shared_config.is_empty()).to(is_false())
+    check!(shared_config.is_empty()).satisfies(is_false())
 }
 ```
 

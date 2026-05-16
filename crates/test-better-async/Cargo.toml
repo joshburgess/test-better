@@ -25,7 +25,7 @@ smol = { version = "2", optional = true }
 [features]
 # No default runtime: a runtime is the caller's choice, forwarded from the
 # `test-better` facade. With none enabled the crate still compiles; calling
-# `to_complete_within` is what trips the `RuntimeTimeout` diagnostic.
+# `completes_within` is what trips the `RuntimeTimeout` diagnostic.
 tokio = ["dep:tokio"]
 async-std = ["dep:async-std"]
 smol = ["dep:smol"]

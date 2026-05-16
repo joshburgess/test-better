@@ -31,20 +31,20 @@ type RedactionRule = Box<dyn Fn(&str) -> String + Send + Sync>;
 /// against (or written to) a snapshot.
 ///
 /// Build one with the chained methods, then hand it to
-/// `expect!(value).to_match_snapshot_with(name, &redactions)` (or the inline
+/// `check!(value).matches_snapshot_with(name, &redactions)` (or the inline
 /// variant). Rules run in the order they were added, each on the output of the
 /// last.
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{eq, expect};
+/// use test_better_matchers::{eq, check};
 /// use test_better_snapshot::Redactions;
 ///
 /// # fn main() -> TestResult {
 /// let redactions = Redactions::new().redact_uuids();
 /// let rendered = "user 550e8400-e29b-41d4-a716-446655440000 logged in";
-/// expect!(redactions.apply(rendered))
-///     .to(eq("user [uuid] logged in".to_string()))?;
+/// check!(redactions.apply(rendered))
+///     .satisfies(eq("user [uuid] logged in".to_string()))?;
 /// # Ok(())
 /// # }
 /// ```
@@ -275,15 +275,15 @@ fn take_byte(bytes: &[u8], pos: &mut usize, expected: u8) -> Option<()> {
 #[cfg(test)]
 mod tests {
     use test_better_core::TestResult;
-    use test_better_matchers::{eq, expect, is_true};
+    use test_better_matchers::{eq, check, is_true};
 
     use super::*;
 
     #[test]
     fn an_empty_set_returns_its_input_unchanged() -> TestResult {
         let redactions = Redactions::new();
-        expect!(redactions.is_empty()).to(is_true())?;
-        expect!(redactions.apply("untouched")).to(eq("untouched".to_string()))
+        check!(redactions.is_empty()).satisfies(is_true())?;
+        check!(redactions.apply("untouched")).satisfies(eq("untouched".to_string()))
     }
 
     #[test]
@@ -291,7 +291,7 @@ mod tests {
         let redactions = Redactions::new().redact_uuids();
         let input = "from 550E8400-E29B-41D4-A716-446655440000 to \
                      00000000-0000-0000-0000-000000000000";
-        expect!(redactions.apply(input)).to(eq("from [uuid] to [uuid]".to_string()))
+        check!(redactions.apply(input)).satisfies(eq("from [uuid] to [uuid]".to_string()))
     }
 
     #[test]
@@ -300,14 +300,14 @@ mod tests {
         // One hex digit short in the last group, and a non-hex character: both
         // must pass through verbatim.
         let input = "550e8400-e29b-41d4-a716-44665544000 and zzze8400-e29b";
-        expect!(redactions.apply(input)).to(eq(input.to_string()))
+        check!(redactions.apply(input)).satisfies(eq(input.to_string()))
     }
 
     #[test]
     fn redact_rfc3339_timestamps_handles_z_and_offset_and_fractions() -> TestResult {
         let redactions = Redactions::new().redact_rfc3339_timestamps();
         let input = "at 2026-05-14T12:34:56Z and 2026-01-02T03:04:05.678-05:00 done";
-        expect!(redactions.apply(input)).to(eq("at [timestamp] and [timestamp] done".to_string()))
+        check!(redactions.apply(input)).satisfies(eq("at [timestamp] and [timestamp] done".to_string()))
     }
 
     #[test]
@@ -316,14 +316,14 @@ mod tests {
             .redact_uuids()
             .replace("[uuid]", "<id>")
             .redact_with(|text| text.to_uppercase());
-        expect!(redactions.apply("id 550e8400-e29b-41d4-a716-446655440000"))
-            .to(eq("ID <ID>".to_string()))
+        check!(redactions.apply("id 550e8400-e29b-41d4-a716-446655440000"))
+            .satisfies(eq("ID <ID>".to_string()))
     }
 
     #[test]
     fn replace_ignores_an_empty_needle() -> TestResult {
         let redactions = Redactions::new().replace("", "X");
-        expect!(redactions.apply("abc")).to(eq("abc".to_string()))
+        check!(redactions.apply("abc")).satisfies(eq("abc".to_string()))
     }
 
     #[test]
@@ -332,8 +332,8 @@ mod tests {
         // than emit `[uuid]f`.
         let redactions = Redactions::new().redact_uuids();
         let input = "550e8400-e29b-41d4-a716-446655440000f";
-        expect!(redactions.apply(input)).to(eq(input.to_string()))?;
+        check!(redactions.apply(input)).satisfies(eq(input.to_string()))?;
         // The Debug impl reports the rule count.
-        expect!(format!("{redactions:?}").contains("rules: 1")).to(is_true())
+        check!(format!("{redactions:?}").contains("rules: 1")).satisfies(is_true())
     }
 }

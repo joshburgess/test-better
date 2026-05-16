@@ -18,17 +18,17 @@
 //!   (behind the `regex` feature) `matches_regex`;
 //! - the numeric matchers [`close_to`], [`between`], [`is_nan`], and
 //!   [`is_finite`], generic over the sealed [`Float`] trait;
-//! - the [`satisfies`] escape hatch, a matcher built from an arbitrary
-//!   named predicate;
+//! - the [`predicate`] escape hatch, a matcher built from an arbitrary
+//!   named Boolean-returning closure;
 //! - the [`define_matcher!`](crate::define_matcher) macro, the declarative
 //!   shortcut for the common custom-matcher case;
-//! - the [`expect!`](crate::expect) macro and its [`Subject`] type, the entry point for an
+//! - the [`check!`](crate::check) macro and its [`Subject`] type, the entry point for an
 //!   assertion; when the subject is a [`Future`], the `resolves_to` method
-//!   awaits it and matches its output, and `to_complete_within` awaits it
+//!   awaits it and matches its output, and `completes_within` awaits it
 //!   under a time limit (the latter behind a runtime feature: `tokio`,
-//!   `async-std`, or `smol`); `to_match_snapshot` compares a
+//!   `async-std`, or `smol`); `matches_snapshot` compares a
 //!   [`Display`](std::fmt::Display) value against a file-backed snapshot, and
-//!   `to_match_inline_snapshot` against a snapshot literal in the test source
+//!   `matches_inline_snapshot` against a snapshot literal in the test source
 //!   (`test-better-snapshot`); the `*_with` variants of each run a
 //!   `Redactions` set over the value first, stabilizing non-deterministic
 //!   content (UUIDs, timestamps) before the comparison;
@@ -53,8 +53,8 @@ mod fixtures;
 mod matcher;
 mod numeric;
 mod option_result;
+mod predicate;
 mod primitives;
-mod satisfies;
 mod soft;
 mod strings;
 mod subject;
@@ -71,19 +71,19 @@ pub use fixtures::{always_matches, never_matches};
 pub use matcher::{MatchResult, Matcher, Mismatch};
 pub use numeric::{Float, between, close_to, is_finite, is_nan};
 pub use option_result::{err, none, ok, some};
+pub use predicate::predicate;
 pub use primitives::{eq, ge, gt, is_false, is_true, le, lt, ne};
-pub use satisfies::satisfies;
 pub use soft::{SoftAsserter, SoftScope, soft};
 #[cfg(feature = "regex")]
 pub use strings::matches_regex;
 pub use strings::{contains_str, ends_with, starts_with};
 pub use subject::Subject;
 // Re-exported from `test-better-async`: `Elapsed` and `RuntimeAvailable` appear
-// in `Subject::to_complete_within`'s signature, and the `eventually` family is
+// in `Subject::completes_within`'s signature, and the `eventually` family is
 // the polling counterpart to the timeout assertion.
 pub use test_better_async::{
     Backoff, Elapsed, RuntimeAvailable, eventually, eventually_blocking, eventually_blocking_with,
     eventually_with,
 };
-// `expect!` and `define_matcher!` are `#[macro_export]`, so they already live
+// `check!` and `define_matcher!` are `#[macro_export]`, so they already live
 // at the crate root.

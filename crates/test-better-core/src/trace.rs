@@ -130,7 +130,7 @@ pub(crate) fn snapshot() -> Vec<TraceEntry> {
 mod tests {
     use super::*;
     use crate::{ErrorKind, OrFail, TestError, TestResult};
-    use test_better_matchers::{eq, expect, is_true};
+    use test_better_matchers::{eq, check, is_true};
 
     #[test]
     fn steps_and_kv_are_recorded_in_order() -> TestResult {
@@ -139,18 +139,18 @@ mod tests {
         trace.kv("key", 42);
         trace.step("second");
         let entries = trace.entries();
-        expect!(entries.len()).to(eq(3)).or_fail()?;
-        expect!(entries[0].clone())
-            .to(eq(TraceEntry::Step("first".into())))
+        check!(entries.len()).satisfies(eq(3)).or_fail()?;
+        check!(entries[0].clone())
+            .satisfies(eq(TraceEntry::Step("first".into())))
             .or_fail()?;
-        expect!(entries[1].clone())
-            .to(eq(TraceEntry::Kv {
+        check!(entries[1].clone())
+            .satisfies(eq(TraceEntry::Kv {
                 key: "key".into(),
                 value: "42".to_string(),
             }))
             .or_fail()?;
-        expect!(entries[2].clone())
-            .to(eq(TraceEntry::Step("second".into())))
+        check!(entries[2].clone())
+            .satisfies(eq(TraceEntry::Step("second".into())))
             .or_fail()?;
         Ok(())
     }
@@ -160,9 +160,9 @@ mod tests {
         let mut trace = Trace::new();
         trace.step("doing the thing");
         let error = TestError::new(ErrorKind::Assertion);
-        expect!(error.trace.len()).to(eq(1)).or_fail()?;
-        expect!(error.trace[0].clone())
-            .to(eq(TraceEntry::Step("doing the thing".into())))
+        check!(error.trace.len()).satisfies(eq(1)).or_fail()?;
+        check!(error.trace[0].clone())
+            .satisfies(eq(TraceEntry::Step("doing the thing".into())))
             .or_fail()?;
         Ok(())
     }
@@ -170,7 +170,7 @@ mod tests {
     #[test]
     fn an_error_built_with_no_trace_in_scope_has_an_empty_trace() -> TestResult {
         let error = TestError::new(ErrorKind::Assertion);
-        expect!(error.trace.is_empty()).to(is_true()).or_fail()?;
+        check!(error.trace.is_empty()).satisfies(is_true()).or_fail()?;
         Ok(())
     }
 
@@ -182,7 +182,7 @@ mod tests {
         }
         // The trace is dropped; a later error captures nothing.
         let error = TestError::new(ErrorKind::Assertion);
-        expect!(error.trace.is_empty()).to(is_true()).or_fail()?;
+        check!(error.trace.is_empty()).satisfies(is_true()).or_fail()?;
         Ok(())
     }
 
@@ -193,13 +193,13 @@ mod tests {
         {
             let mut inner = Trace::new();
             inner.step("inner step");
-            expect!(inner.entries().len()).to(eq(1)).or_fail()?;
+            check!(inner.entries().len()).satisfies(eq(1)).or_fail()?;
         }
         // The inner trace is gone; the outer trace's entry is back.
         let entries = outer.entries();
-        expect!(entries.len()).to(eq(1)).or_fail()?;
-        expect!(entries[0].clone())
-            .to(eq(TraceEntry::Step("outer step".into())))
+        check!(entries.len()).satisfies(eq(1)).or_fail()?;
+        check!(entries[0].clone())
+            .satisfies(eq(TraceEntry::Step("outer step".into())))
             .or_fail()?;
         Ok(())
     }

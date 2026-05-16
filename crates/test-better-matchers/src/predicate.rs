@@ -1,7 +1,7 @@
-//! The [`satisfies`] escape hatch: a matcher built from an arbitrary
-//! predicate.
+//! The [`predicate`] escape hatch: a matcher built from an arbitrary
+//! Boolean-returning closure.
 //!
-//! When no standard matcher fits, `satisfies` wraps a `Fn(&T) -> bool`. It
+//! When no standard matcher fits, `predicate` wraps a `Fn(&T) -> bool`. It
 //! takes a `name` so a failure reads `expected: even` rather than the useless
 //! `expected: <closure>`.
 
@@ -11,8 +11,8 @@ use std::marker::PhantomData;
 use crate::description::Description;
 use crate::matcher::{MatchResult, Matcher, Mismatch};
 
-/// The matcher behind [`satisfies`].
-struct SatisfiesMatcher<T, F> {
+/// The matcher behind [`predicate`].
+struct PredicateMatcher<T, F> {
     name: &'static str,
     pred: F,
     // `T` appears only behind `&T` in `F`'s signature, not in a field, so it
@@ -20,7 +20,7 @@ struct SatisfiesMatcher<T, F> {
     _marker: PhantomData<fn(&T)>,
 }
 
-impl<T, F> Matcher<T> for SatisfiesMatcher<T, F>
+impl<T, F> Matcher<T> for PredicateMatcher<T, F>
 where
     T: fmt::Debug,
     F: Fn(&T) -> bool,
@@ -45,29 +45,32 @@ where
 /// no name of its own, and a failure that says `expected: <closure>` helps no
 /// one.
 ///
+/// The matcher pairs naturally with [`Subject::satisfies`](crate::Subject::satisfies),
+/// reading as "x satisfies the predicate `<name>`".
+///
 /// ```
 /// use test_better_core::{OrFail, TestResult};
-/// use test_better_matchers::{Matcher, eq, expect, satisfies};
+/// use test_better_matchers::{Matcher, check, eq, predicate};
 ///
 /// fn main() -> TestResult {
-///     expect!(4).to(satisfies("an even number", |n: &i32| n % 2 == 0))?;
+///     check!(4).satisfies(predicate("an even number", |n: &i32| n % 2 == 0))?;
 ///
 ///     // The `name` is what a failure reports, not `<closure>`.
-///     let failure = satisfies("an even number", |n: &i32| n % 2 == 0)
+///     let failure = predicate("an even number", |n: &i32| n % 2 == 0)
 ///         .check(&3)
 ///         .failure
 ///         .or_fail_with("3 is not even")?;
-///     expect!(failure.expected.to_string()).to(eq("an even number".to_string()))?;
+///     check!(failure.expected.to_string()).satisfies(eq("an even number".to_string()))?;
 ///     Ok(())
 /// }
 /// ```
 #[must_use]
-pub fn satisfies<T, F>(name: &'static str, pred: F) -> impl Matcher<T>
+pub fn predicate<T, F>(name: &'static str, pred: F) -> impl Matcher<T>
 where
     T: fmt::Debug,
     F: Fn(&T) -> bool,
 {
-    SatisfiesMatcher {
+    PredicateMatcher {
         name,
         pred,
         _marker: PhantomData,
@@ -79,23 +82,23 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, expect, is_false, is_true};
+    use crate::{check, eq, is_false, is_true};
 
     #[test]
-    fn satisfies_runs_the_predicate() -> TestResult {
-        expect!(satisfies("even", |n: &i32| n % 2 == 0).check(&4).matched).to(is_true())?;
-        expect!(satisfies("even", |n: &i32| n % 2 == 0).check(&3).matched).to(is_false())?;
+    fn predicate_runs_the_closure() -> TestResult {
+        check!(predicate("even", |n: &i32| n % 2 == 0).check(&4).matched).satisfies(is_true())?;
+        check!(predicate("even", |n: &i32| n % 2 == 0).check(&3).matched).satisfies(is_false())?;
         Ok(())
     }
 
     #[test]
-    fn satisfies_failure_reports_the_name_not_the_closure() -> TestResult {
-        let failure = satisfies("a positive number", |n: &i32| *n > 0)
+    fn predicate_failure_reports_the_name_not_the_closure() -> TestResult {
+        let failure = predicate("a positive number", |n: &i32| *n > 0)
             .check(&-1)
             .failure
             .or_fail_with("-1 is not positive")?;
-        expect!(failure.expected.to_string()).to(eq("a positive number".to_string()))?;
-        expect!(failure.actual).to(eq("-1".to_string()))?;
+        check!(failure.expected.to_string()).satisfies(eq("a positive number".to_string()))?;
+        check!(failure.actual).satisfies(eq("-1".to_string()))?;
         Ok(())
     }
 }

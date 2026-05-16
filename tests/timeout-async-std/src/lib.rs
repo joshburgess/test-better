@@ -1,5 +1,5 @@
 //! Integration coverage for the runtime-gated async assertions on the
-//! async-std runtime: `expect!(fut).to_complete_within(..)` and `eventually`.
+//! async-std runtime: `check!(fut).completes_within(..)` and `eventually`.
 //!
 //! This crate is excluded from the workspace so its `async-std` runtime
 //! feature is never unified with the `tokio`/`smol` crates. It is run on its
@@ -14,20 +14,20 @@ mod tests {
 
     #[async_std::test]
     async fn a_fast_future_completes_within_the_limit() -> TestResult {
-        expect!(async { 1 + 1 })
-            .to_complete_within(Duration::from_secs(5))
+        check!(async { 1 + 1 })
+            .completes_within(Duration::from_secs(5))
             .await?;
         Ok(())
     }
 
     #[async_std::test]
     async fn a_slow_future_trips_the_limit() -> TestResult {
-        let error = expect!(async_std::task::sleep(Duration::from_secs(30)))
-            .to_complete_within(Duration::from_millis(10))
+        let error = check!(async_std::task::sleep(Duration::from_secs(30)))
+            .completes_within(Duration::from_millis(10))
             .await
             .expect_err("a 30s sleep cannot finish in 10ms");
         let rendered = error.to_string();
-        expect!(rendered.contains("did not complete within")).to(is_true())?;
+        check!(rendered.contains("did not complete within")).satisfies(is_true())?;
         Ok(())
     }
 
@@ -40,7 +40,7 @@ mod tests {
             async move { done }
         })
         .await?;
-        expect!(polls.get()).to(eq(3u32))?;
+        check!(polls.get()).satisfies(eq(3u32))?;
         Ok(())
     }
 
@@ -50,8 +50,8 @@ mod tests {
             .await
             .expect_err("a probe that is never true must time out");
         let rendered = error.to_string();
-        expect!(rendered.contains("was not met within")).to(is_true())?;
-        expect!(rendered.contains("probe")).to(is_true())?;
+        check!(rendered.contains("was not met within")).satisfies(is_true())?;
+        check!(rendered.contains("probe")).satisfies(is_true())?;
         Ok(())
     }
 }

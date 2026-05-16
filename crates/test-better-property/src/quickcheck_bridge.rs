@@ -44,13 +44,13 @@ const DEFAULT_GEN_SIZE: usize = 100;
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{expect, lt};
-/// use test_better_property::{arbitrary, check};
+/// use test_better_matchers::{check, lt};
+/// use test_better_property::{arbitrary, for_all};
 ///
 /// # fn main() -> TestResult {
 /// // A `u8` is `quickcheck::Arbitrary`; doubling one in `u16` never overflows.
-/// check(arbitrary::<u8>(), |n: u8| {
-///     expect!(u16::from(n) * 2).to(lt(512u16))
+/// for_all(arbitrary::<u8>(), |n: u8| {
+///     check!(u16::from(n) * 2).satisfies(lt(512u16))
 /// })
 /// .map_err(|f| f.failure)?;
 /// # Ok(())
@@ -164,7 +164,7 @@ mod tests {
     use super::*;
 
     use test_better_core::{OrFail, TestResult};
-    use test_better_matchers::{eq, expect, is_true, le};
+    use test_better_matchers::{eq, check, is_true, le};
 
     #[test]
     fn an_arbitrary_type_is_a_seam_strategy() -> TestResult {
@@ -173,7 +173,7 @@ mod tests {
         let mut runner = Runner::deterministic();
         let tree = arbitrary::<u32>().new_tree(&mut runner).or_fail()?;
         // Every `u32` is `<= u32::MAX`; the point is only that a value came out.
-        expect!(tree.current()).to(le(u32::MAX))
+        check!(tree.current()).satisfies(le(u32::MAX))
     }
 
     #[test]
@@ -183,7 +183,7 @@ mod tests {
         let mut tree = QuickcheckTree::new(500u32);
         let start = tree.current();
         while tree.simplify() {}
-        expect!(tree.current() <= start).to(is_true())
+        check!(tree.current() <= start).satisfies(is_true())
     }
 
     #[test]
@@ -192,14 +192,14 @@ mod tests {
         // `complicate` (the candidate "passed") must move to a different one,
         // not stall on the first.
         let mut tree = QuickcheckTree::new(8u32);
-        expect!(tree.simplify()).to(is_true())?;
+        check!(tree.simplify()).satisfies(is_true())?;
         let first = tree.current();
         // `complicate` either advances to another sibling or reports the
         // iterator is exhausted; if it advanced, the value must have changed.
         if tree.complicate() {
-            expect!(tree.current() != first).to(is_true())?;
+            check!(tree.current() != first).satisfies(is_true())?;
         }
         // The accepted baseline is untouched by an unaccepted candidate.
-        expect!(tree.accepted).to(eq(8u32))
+        check!(tree.accepted).satisfies(eq(8u32))
     }
 }

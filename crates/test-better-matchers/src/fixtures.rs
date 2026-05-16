@@ -1,7 +1,7 @@
 //! Trivial matchers that ignore their input: [`always_matches`] and
 //! [`never_matches`].
 //!
-//! These exist to test the matcher machinery itself: combinators, the `expect!`
+//! These exist to test the matcher machinery itself: combinators, the `check!`
 //! macro, and failure rendering all need a matcher with a known, fixed outcome.
 //! They are not meant for real assertions, where a matcher that ignores its
 //! input says nothing useful.
@@ -42,11 +42,11 @@ impl<T: ?Sized> Matcher<T> for NeverMatches {
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{always_matches, expect};
+/// use test_better_matchers::{always_matches, check};
 ///
 /// fn main() -> TestResult {
-///     expect!(42).to(always_matches())?;
-///     expect!("any string").to(always_matches())?;
+///     check!(42).satisfies(always_matches())?;
+///     check!("any string").satisfies(always_matches())?;
 ///     Ok(())
 /// }
 /// ```
@@ -59,10 +59,10 @@ pub fn always_matches<T: ?Sized>() -> impl Matcher<T> {
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{never_matches, expect};
+/// use test_better_matchers::{never_matches, check};
 ///
 /// fn main() -> TestResult {
-///     expect!(42).to_not(never_matches())?;
+///     check!(42).violates(never_matches())?;
 ///     Ok(())
 /// }
 /// ```
@@ -76,23 +76,23 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, expect, is_false, is_true};
+    use crate::{eq, check, is_false, is_true};
 
     #[test]
     fn always_matches_passes_for_any_type() -> TestResult {
-        expect!(always_matches().check(&42).matched).to(is_true())?;
-        expect!(always_matches().check("a str").matched).to(is_true())?;
-        expect!(always_matches().check(&[1, 2, 3][..]).matched).to(is_true())?;
+        check!(always_matches().check(&42).matched).satisfies(is_true())?;
+        check!(always_matches().check("a str").matched).satisfies(is_true())?;
+        check!(always_matches().check(&[1, 2, 3][..]).matched).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
     fn never_matches_fails_with_a_described_mismatch() -> TestResult {
         let result = never_matches().check(&42);
-        expect!(result.matched).to(is_false())?;
+        check!(result.matched).satisfies(is_false())?;
         let failure = result.failure.or_fail_with("never_matches always fails")?;
-        expect!(failure.expected.to_string()).to(eq("nothing".to_string()))?;
-        expect!(failure.actual).to(eq("<value>".to_string()))?;
+        check!(failure.expected.to_string()).satisfies(eq("nothing".to_string()))?;
+        check!(failure.actual).satisfies(eq("<value>".to_string()))?;
         Ok(())
     }
 }

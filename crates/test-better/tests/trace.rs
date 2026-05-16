@@ -17,7 +17,7 @@ fn a_failure_carries_the_trace_in_chronological_order() -> TestResult {
 
     // Force a failure while the trace is in scope, then capture it instead of
     // propagating, so this test still passes.
-    let failure = expect!(2 + 2).to(eq(5)).err().or_fail()?;
+    let failure = check!(2 + 2).satisfies(eq(5)).err().or_fail()?;
     drop(trace);
 
     let rendered = format!("{failure}");
@@ -31,24 +31,24 @@ fn a_failure_carries_the_trace_in_chronological_order() -> TestResult {
         .find("running the query")
         .or_fail_with("second step present")?;
 
-    expect!(connect < url).to(is_true())?;
-    expect!(url < query).to(is_true())
+    check!(connect < url).satisfies(is_true())?;
+    check!(url < query).satisfies(is_true())
 }
 
 #[test]
 fn a_failure_with_no_trace_in_scope_renders_no_trace_section() -> TestResult {
-    let failure = expect!(1).to(eq(2)).err().or_fail()?;
+    let failure = check!(1).satisfies(eq(2)).err().or_fail()?;
     let rendered = format!("{failure}");
-    expect!(rendered.contains("trace:")).to(is_false())
+    check!(rendered.contains("trace:")).satisfies(is_false())
 }
 
 #[test]
 fn the_structured_form_carries_the_trace() -> TestResult {
     let mut trace = Trace::new();
     trace.step("setting up the fixture");
-    let failure = expect!("a").to(eq("b")).err().or_fail()?;
+    let failure = check!("a").satisfies(eq("b")).err().or_fail()?;
     drop(trace);
 
     let structured = failure.to_structured();
-    expect!(structured.trace.len()).to(eq(1))
+    check!(structured.trace.len()).satisfies(eq(1))
 }

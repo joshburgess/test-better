@@ -4,8 +4,8 @@
 //! lists exactly the named fields, so a missing or unknown field is a hard
 //! error from the destructure. A misplaced `..` is caught by the macro itself.
 //!
-//! The async `expect!` case locks that the sync `to` cannot be pointed at a
-//! future with an output matcher: that path must go through `resolves_to`.
+//! The async `check!` case locks that the sync `satisfies` cannot be pointed
+//! at a future with an output matcher: that path must go through `resolves_to`.
 
 #[test]
 fn structural_matcher_compile_errors() {
@@ -16,9 +16,9 @@ fn structural_matcher_compile_errors() {
 }
 
 #[test]
-fn sync_to_is_not_callable_on_a_future_subject() {
+fn sync_satisfies_is_not_callable_on_a_future_subject() {
     let t = trybuild::TestCases::new();
-    t.compile_fail("tests/ui/sync_to_on_future.rs");
+    t.compile_fail("tests/ui/sync_satisfies_on_future.rs");
 }
 
 #[test]

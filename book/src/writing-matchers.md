@@ -23,7 +23,7 @@ use test_better::prelude::*;
 #[test]
 fn the_id_is_even() -> TestResult {
     let id = 4096_u32;
-    expect!(id).to(satisfies("an even id", |n| n % 2 == 0))
+    check!(id).satisfies(satisfies("an even id", |n| n % 2 == 0))
 }
 ```
 
@@ -63,8 +63,8 @@ define_matcher! {
 }
 ```
 
-Both are used like any built-in matcher: `expect!(reading).to(is_freezing())`,
-`expect!(reading).to(warmer_than(18.0))`. This is the right tool for the large
+Both are used like any built-in matcher: `check!(reading).satisfies(is_freezing())`,
+`check!(reading).satisfies(warmer_than(18.0))`. This is the right tool for the large
 majority of cases.
 
 ## 2. A hand-written `impl Matcher<T>`: full control

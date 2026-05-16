@@ -25,7 +25,7 @@
 //! [`matches_tuple!`](crate::matches_tuple),
 //! [`matches_variant!`](crate::matches_variant)) compose existing matchers and
 //! need no new type. To wrap an ad-hoc closure once, without naming it,
-//! [`satisfies`](crate::satisfies) is lighter still.
+//! [`predicate`](crate::predicate) is lighter still.
 //!
 //! # The `Matcher` trait
 //!
@@ -71,8 +71,8 @@
 //! }
 //!
 //! fn main() -> TestResult {
-//!     expect!(-4.0_f64).to(is_freezing())?;
-//!     expect!(20.0_f64).to_not(is_freezing())?;
+//!     check!(-4.0_f64).satisfies(is_freezing())?;
+//!     check!(20.0_f64).violates(is_freezing())?;
 //!     Ok(())
 //! }
 //! ```
@@ -94,7 +94,7 @@
 //! }
 //!
 //! fn main() -> TestResult {
-//!     expect!(vec![1, 2, 3, 4]).to(len_multiple_of(2))?;
+//!     check!(vec![1, 2, 3, 4]).satisfies(len_multiple_of(2))?;
 //!     Ok(())
 //! }
 //! ```
@@ -142,7 +142,7 @@
 //! }
 //!
 //! fn main() -> TestResult {
-//!     expect!(Temperature(-4.0)).to(is_freezing())?;
+//!     check!(Temperature(-4.0)).satisfies(is_freezing())?;
 //!     Ok(())
 //! }
 //! ```
@@ -197,7 +197,7 @@
 //! }
 //!
 //! fn main() -> TestResult {
-//!     expect!(Celsius(3.5)).to(as_float(gt(0.0)))?;
+//!     check!(Celsius(3.5)).satisfies(as_float(gt(0.0)))?;
 //!     Ok(())
 //! }
 //! ```

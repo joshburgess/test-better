@@ -75,11 +75,11 @@ str_predicate_matcher!(EndsWithMatcher, ends_with, "a string ending with");
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{contains_str, expect};
+/// use test_better_matchers::{contains_str, check};
 ///
 /// fn main() -> TestResult {
-///     expect!("hello, world").to(contains_str("o, w"))?;
-///     expect!(String::from("hello")).to_not(contains_str("bye"))?;
+///     check!("hello, world").satisfies(contains_str("o, w"))?;
+///     check!(String::from("hello")).violates(contains_str("bye"))?;
 ///     Ok(())
 /// }
 /// ```
@@ -97,10 +97,10 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{expect, starts_with};
+/// use test_better_matchers::{check, starts_with};
 ///
 /// fn main() -> TestResult {
-///     expect!("hello, world").to(starts_with("hello"))?;
+///     check!("hello, world").satisfies(starts_with("hello"))?;
 ///     Ok(())
 /// }
 /// ```
@@ -118,10 +118,10 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{ends_with, expect};
+/// use test_better_matchers::{ends_with, check};
 ///
 /// fn main() -> TestResult {
-///     expect!("hello, world").to(ends_with("world"))?;
+///     check!("hello, world").satisfies(ends_with("world"))?;
 ///     Ok(())
 /// }
 /// ```
@@ -190,10 +190,10 @@ where
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{expect, matches_regex};
+/// use test_better_matchers::{check, matches_regex};
 ///
 /// fn main() -> TestResult {
-///     expect!("order #1234").to(matches_regex(r"#\d+"))?;
+///     check!("order #1234").satisfies(matches_regex(r"#\d+"))?;
 ///     Ok(())
 /// }
 /// ```
@@ -213,23 +213,23 @@ mod tests {
     use test_better_core::{OrFail, TestResult};
 
     use super::*;
-    use crate::{eq, expect, is_false, is_true};
+    use crate::{eq, check, is_false, is_true};
 
     #[test]
     fn contains_str_matches_a_substring() -> TestResult {
-        expect!(contains_str("ell").check("hello").matched).to(is_true())?;
-        expect!(contains_str("xyz").check("hello").matched).to(is_false())?;
+        check!(contains_str("ell").check("hello").matched).satisfies(is_true())?;
+        check!(contains_str("xyz").check("hello").matched).satisfies(is_false())?;
         // Works for `String` as well as `&str`.
-        expect!(contains_str("ell").check(&String::from("hello")).matched).to(is_true())?;
+        check!(contains_str("ell").check(&String::from("hello")).matched).satisfies(is_true())?;
         Ok(())
     }
 
     #[test]
     fn starts_with_and_ends_with_check_the_ends() -> TestResult {
-        expect!(starts_with("he").check("hello").matched).to(is_true())?;
-        expect!(starts_with("lo").check("hello").matched).to(is_false())?;
-        expect!(ends_with("lo").check("hello").matched).to(is_true())?;
-        expect!(ends_with("he").check("hello").matched).to(is_false())?;
+        check!(starts_with("he").check("hello").matched).satisfies(is_true())?;
+        check!(starts_with("lo").check("hello").matched).satisfies(is_false())?;
+        check!(ends_with("lo").check("hello").matched).satisfies(is_true())?;
+        check!(ends_with("he").check("hello").matched).satisfies(is_false())?;
         Ok(())
     }
 
@@ -239,8 +239,8 @@ mod tests {
             .check("hello")
             .failure
             .or_fail_with("hello does not contain xyz")?;
-        expect!(failure.expected.to_string()).to(eq("a string containing \"xyz\"".to_string()))?;
-        expect!(failure.actual).to(eq("\"hello\"".to_string()))?;
+        check!(failure.expected.to_string()).satisfies(eq("a string containing \"xyz\"".to_string()))?;
+        check!(failure.actual).satisfies(eq("\"hello\"".to_string()))?;
         Ok(())
     }
 
@@ -255,16 +255,16 @@ mod tests {
         let diff = failure
             .diff
             .or_fail_with("a multi-line string mismatch should carry a diff")?;
-        expect!(diff.contains("line 2")).to(is_true())?;
-        expect!(diff.contains("line two")).to(is_true())?;
+        check!(diff.contains("line 2")).satisfies(is_true())?;
+        check!(diff.contains("line two")).satisfies(is_true())?;
         Ok(())
     }
 
     #[cfg(feature = "regex")]
     #[test]
     fn matches_regex_matches_and_reports() -> TestResult {
-        expect!(matches_regex(r"\d+").check("abc123").matched).to(is_true())?;
-        expect!(matches_regex(r"^\d+$").check("abc123").matched).to(is_false())?;
+        check!(matches_regex(r"\d+").check("abc123").matched).satisfies(is_true())?;
+        check!(matches_regex(r"^\d+$").check("abc123").matched).satisfies(is_false())?;
         Ok(())
     }
 
@@ -275,7 +275,7 @@ mod tests {
             .check("anything")
             .failure
             .or_fail_with("an invalid pattern fails the match")?;
-        expect!(failure.actual.contains("invalid regex")).to(is_true())?;
+        check!(failure.actual.contains("invalid regex")).satisfies(is_true())?;
         Ok(())
     }
 }

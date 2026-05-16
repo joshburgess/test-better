@@ -56,17 +56,17 @@ mod tests {
 
     #[test]
     fn a_coin_unlocks_a_locked_turnstile() -> TestResult {
-        expect!(next(State::Locked, Event::Coin)).to(eq(State::Unlocked))
+        check!(next(State::Locked, Event::Coin)).satisfies(eq(State::Unlocked))
     }
 
     #[test]
     fn a_push_on_a_locked_turnstile_keeps_it_locked() -> TestResult {
-        expect!(next(State::Locked, Event::Push)).to(eq(State::Locked))
+        check!(next(State::Locked, Event::Push)).satisfies(eq(State::Locked))
     }
 
     #[test]
     fn a_push_on_an_unlocked_turnstile_relocks_it() -> TestResult {
-        expect!(next(State::Unlocked, Event::Push)).to(eq(State::Locked))
+        check!(next(State::Unlocked, Event::Push)).satisfies(eq(State::Locked))
     }
 
     #[test]
@@ -75,24 +75,24 @@ mod tests {
         let end = run(State::Locked, &[Event::Coin, Event::Push]);
         // `matches_variant!` asserts on the variant; here it carries no fields,
         // so the match is the whole assertion.
-        expect!(end).to(matches_variant!(State::Locked))
+        check!(end).satisfies(matches_variant!(State::Locked))
     }
 
     #[test]
     fn a_second_push_without_paying_does_not_get_through() -> TestResult {
         // One coin, two pushes: the second push finds the arm already locked.
         let end = run(State::Locked, &[Event::Coin, Event::Push, Event::Push]);
-        expect!(end).to(eq(State::Locked))
+        check!(end).satisfies(eq(State::Locked))
     }
 
     #[test]
     fn a_second_coin_before_pushing_is_harmless() -> TestResult {
         let end = run(State::Locked, &[Event::Coin, Event::Coin]);
-        expect!(end).to(eq(State::Unlocked))
+        check!(end).satisfies(eq(State::Unlocked))
     }
 
     #[test]
     fn an_empty_event_sequence_leaves_the_state_untouched() -> TestResult {
-        expect!(run(State::Unlocked, &[])).to(eq(State::Unlocked))
+        check!(run(State::Unlocked, &[])).satisfies(eq(State::Unlocked))
     }
 }

@@ -14,10 +14,10 @@ readme = "../../README.md"
 
 [dependencies]
 test-better-core = { workspace = true }
-# Backs `Subject::to_complete_within`: the runtime-agnostic timeout primitive
+# Backs `Subject::completes_within`: the runtime-agnostic timeout primitive
 # and the `RuntimeAvailable` gate. The runtime features below forward to it.
 test-better-async = { workspace = true }
-# Backs `Subject::to_match_snapshot`: the file-backed snapshot store and its
+# Backs `Subject::matches_snapshot`: the file-backed snapshot store and its
 # compare/update logic. This crate renders the resulting `SnapshotFailure` into
 # a `TestError`, with a diff when the `diff` feature is on.
 test-better-snapshot = { workspace = true }
@@ -35,9 +35,9 @@ diff = ["dep:similar"]
 # `regex` is off by default: `matches_regex` is the one matcher that pulls in
 # the `regex` crate, so it is opt-in.
 regex = ["dep:regex"]
-# Runtime selectors for `Subject::to_complete_within`, forwarded to
+# Runtime selectors for `Subject::completes_within`, forwarded to
 # `test-better-async`. Exactly one is meant to be enabled; with none, calling
-# `to_complete_within` is a compile error pointing at these flags.
+# `completes_within` is a compile error pointing at these flags.
 tokio = ["test-better-async/tokio"]
 async-std = ["test-better-async/async-std"]
 smol = ["test-better-async/smol"]

@@ -13,14 +13,14 @@ use test_better::prelude::*;
 #[test]
 fn the_score_is_in_a_sensible_range() -> TestResult {
     let score = 73_u32;
-    expect!(score).to(all_of((ge(0), le(100), ne(50))))?;
+    check!(score).satisfies(all_of((ge(0), le(100), ne(50))))?;
     Ok(())
 }
 ```
 
 ## Keep going after the first failure: `soft`
 
-A `?` on a failed `expect!` returns immediately, so a test stops at its first
+A `?` on a failed `check!` returns immediately, so a test stops at its first
 failure. When you want to see *every* failure in one run (checking each field
 of a response, say), `soft` collects them:
 
@@ -30,16 +30,16 @@ use test_better::prelude::*;
 #[test]
 fn every_field_is_checked() -> TestResult {
     soft(|s| {
-        s.expect(&1, eq(1));
-        s.expect(&"alice", eq("alice"));
-        s.expect(&true, is_true());
+        s.check(&1, eq(1));
+        s.check(&"alice", eq("alice"));
+        s.check(&true, is_true());
     })
 }
 ```
 
 `soft` returns `Ok(())` if every soft assertion passed, or a single `TestError`
 that renders all of them, each with its own source location. Inside the
-closure, `s.expect(&value, matcher)` is the soft form of `expect!`, and
+closure, `s.check(&value, matcher)` is the soft form of `check!`, and
 `s.context("...")` opens a labeled scope for the assertions that follow.
 
 ## Match the shape of a struct, tuple, or enum
@@ -60,16 +60,16 @@ use test_better::{matches_struct, matches_tuple, matches_variant};
 #[test]
 fn structural_matchers() -> TestResult {
     let user = User { name: "alice".into(), age: 30, email: "alice@example.com".into() };
-    expect!(user).to(matches_struct!(User {
+    check!(user).satisfies(matches_struct!(User {
         name: eq(String::from("alice")),
         age: gt(18u32),
         ..
     }))?;
 
-    expect!(Point(3, 4)).to(matches_tuple!(Point(gt(0), lt(100))))?;
+    check!(Point(3, 4)).satisfies(matches_tuple!(Point(gt(0), lt(100))))?;
 
-    expect!(Shape::Circle { radius: 2.0 })
-        .to(matches_variant!(Shape::Circle { radius: gt(0.0) }))?;
+    check!(Shape::Circle { radius: 2.0 })
+        .satisfies(matches_variant!(Shape::Circle { radius: gt(0.0) }))?;
     Ok(())
 }
 ```
@@ -89,10 +89,10 @@ use test_better::prelude::*;
 #[test]
 fn collection_matchers() -> TestResult {
     let scores = vec![10, 20, 30, 40];
-    expect!(&scores).to(have_len(4))?;
-    expect!(&scores).to(contains(eq(30)))?;
-    expect!(&scores).to(every(gt(0)))?;
-    expect!(&scores).to(contains_in_order([eq(10), eq(40)]))?;
+    check!(&scores).satisfies(have_len(4))?;
+    check!(&scores).satisfies(contains(eq(30)))?;
+    check!(&scores).satisfies(every(gt(0)))?;
+    check!(&scores).satisfies(contains_in_order([eq(10), eq(40)]))?;
     Ok(())
 }
 ```
@@ -110,7 +110,7 @@ use test_better::test_case;
 #[test_case(2, 2, 4)]
 #[test_case(10, 5, 15 ; "bigger numbers")]
 fn addition_works(a: i32, b: i32, sum: i32) -> TestResult {
-    expect!(a + b).to(eq(sum))
+    check!(a + b).satisfies(eq(sum))
 }
 ```
 
@@ -130,9 +130,9 @@ use test_better::prelude::*;
 #[test]
 fn string_matchers() -> TestResult {
     let greeting = "Hello, alice!";
-    expect!(greeting).to(starts_with("Hello"))?;
-    expect!(greeting).to(contains_str("alice"))?;
-    expect!(greeting).to(ends_with("!"))?;
+    check!(greeting).satisfies(starts_with("Hello"))?;
+    check!(greeting).satisfies(contains_str("alice"))?;
+    check!(greeting).satisfies(ends_with("!"))?;
     Ok(())
 }
 ```

@@ -31,7 +31,7 @@ fn reports_the_run_summary_counts_and_propagates_the_exit_code() -> TestResult {
 
     // Two tests in the fixture fail, so the wrapped `cargo test` exits non-zero
     // and the runner propagates that.
-    expect!(output.status.success()).to(is_false())?;
+    check!(output.status.success()).satisfies(is_false())?;
 
     // The summary table reports the fixture's known mix: three passing, two
     // failing, one ignored. (The lib's six tests; the fixture has no doctests,
@@ -40,6 +40,6 @@ fn reports_the_run_summary_counts_and_propagates_the_exit_code() -> TestResult {
         .split_once("test-better: summary")
         .or_fail_with("the runner printed its summary table")?
         .1;
-    expect!(summary.contains("3 passed, 2 failed, 1 ignored")).to(is_true())?;
-    expect!(summary.contains("finished in")).to(is_true())
+    check!(summary.contains("3 passed, 2 failed, 1 ignored")).satisfies(is_true())?;
+    check!(summary.contains("finished in")).satisfies(is_true())
 }

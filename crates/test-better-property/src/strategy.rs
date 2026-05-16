@@ -44,11 +44,11 @@ impl Runner {
     /// A runner with a fixed, reproducible seed: the same sequence of generated
     /// values on every run.
     ///
-    /// This is the default behind [`check`](crate::check). A property test that
+    /// This is the default behind [`for_all`](crate::for_all). A property test that
     /// is reproducible cannot flake from the RNG: it passes or fails the same
     /// way every time, in CI and on a laptop. A caller who wants a fresh seed
     /// each run constructs one with [`Runner::randomized`] and passes it to
-    /// [`check_with`](crate::check_with).
+    /// [`for_all_with`](crate::for_all_with).
     #[must_use]
     pub fn deterministic() -> Self {
         Self {
@@ -82,7 +82,7 @@ impl Default for Runner {
 /// A source of values of type `T`, with shrinking, for property testing.
 ///
 /// This is the seam between `test-better`'s property runner
-/// ([`check`](crate::check)) and a concrete generation/shrinking backend. The
+/// ([`for_all`](crate::for_all)) and a concrete generation/shrinking backend. The
 /// crate ships exactly one backend, `proptest`: every `proptest::strategy::Strategy`
 /// is a `Strategy` here through a blanket impl.
 ///
@@ -169,17 +169,17 @@ where
 ///
 /// This is what [`property!`](crate::property) uses when the closure binding
 /// has a type annotation and no `using` clause. It is available for direct use
-/// too: `check(any::<u32>(), |n| ...)` is the same as naming the `u32` strategy
-/// inline. The `quickcheck` counterpart is
+/// too: `for_all(any::<u32>(), |n| ...)` is the same as naming the `u32`
+/// strategy inline. The `quickcheck` counterpart is
 /// [`arbitrary`](crate::quickcheck_bridge::arbitrary).
 ///
 /// ```
 /// use test_better_core::TestResult;
-/// use test_better_matchers::{expect, ge};
-/// use test_better_property::{any, check};
+/// use test_better_matchers::{check, ge};
+/// use test_better_property::{any, for_all};
 ///
 /// # fn main() -> TestResult {
-/// check(any::<u8>(), |n: u8| expect!(u16::from(n)).to(ge(0u16)))
+/// for_all(any::<u8>(), |n: u8| check!(u16::from(n)).satisfies(ge(0u16)))
 ///     .map_err(|f| f.failure)?;
 /// # Ok(())
 /// # }
@@ -197,7 +197,7 @@ mod tests {
     use super::*;
 
     use test_better_core::{OrFail, TestResult};
-    use test_better_matchers::{expect, ge, is_true};
+    use test_better_matchers::{check, ge, is_true};
 
     #[test]
     fn a_proptest_strategy_is_a_seam_strategy() -> TestResult {
@@ -205,7 +205,7 @@ mod tests {
         // no wrapping at the call site.
         let mut runner = Runner::deterministic();
         let tree = (0u32..10).new_tree(&mut runner).or_fail()?;
-        expect!(tree.current() < 10).to(is_true())
+        check!(tree.current() < 10).satisfies(is_true())
     }
 
     #[test]
@@ -216,6 +216,6 @@ mod tests {
         let mut tree = (5u32..1_000).new_tree(&mut runner).or_fail()?;
         let start = tree.current();
         while tree.simplify() {}
-        expect!(start).to(ge(tree.current()))
+        check!(start).satisfies(ge(tree.current()))
     }
 }

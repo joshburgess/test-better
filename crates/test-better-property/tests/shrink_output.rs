@@ -5,8 +5,8 @@
 //! shrunk-failure message: the original input, the shrunk input, and the
 //! matcher's own structured description.
 //!
-//! The `PropertyFailure` is hand-built rather than produced by `check`, so the
-//! golden file is fully deterministic and not coupled to the backend's RNG.
+//! The `PropertyFailure` is hand-built rather than produced by `for_all`, so
+//! the golden file is fully deterministic and not coupled to the backend's RNG.
 //! Run with `BLESS_GOLDEN=1` to regenerate the golden file after an
 //! intentional rendering change.
 
@@ -14,15 +14,15 @@ use std::fs;
 use std::path::PathBuf;
 
 use test_better_core::{ErrorKind, OrFail, Payload, TestError, TestResult};
-use test_better_matchers::{eq, expect};
+use test_better_matchers::{eq, check};
 use test_better_property::{PropertyFailure, render_failure};
 
 #[test]
 fn a_shrunk_property_failure_renders_to_the_golden_file() -> TestResult {
-    // A failure shaped like a real one: `expect!(n).to(lt(100))` against the
+    // A failure shaped like a real one: `check!(n).satisfies(lt(100))` against the
     // shrunk input 100, after the search walked down from a large original.
     let matcher_failure = TestError::new(ErrorKind::Assertion)
-        .with_message("expect!(n)")
+        .with_message("check!(n)")
         .with_payload(Payload::ExpectedActual {
             expected: "less than 100".to_string(),
             actual: "100".to_string(),
@@ -47,7 +47,7 @@ fn a_shrunk_property_failure_renders_to_the_golden_file() -> TestResult {
         return Ok(());
     }
     let golden = fs::read_to_string(&golden_path).or_fail()?;
-    expect!(normalized.as_str()).to(eq(golden.trim_end_matches('\n')))
+    check!(normalized.as_str()).satisfies(eq(golden.trim_end_matches('\n')))
 }
 
 /// Replaces the final `  at ...` line with a stable placeholder so the golden

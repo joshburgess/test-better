@@ -32,7 +32,7 @@ fn matches_struct_checks_named_fields() -> TestResult {
         age: 30,
         email: String::from("alice@example.com"),
     };
-    expect!(user).to(matches_struct!(User {
+    check!(user).satisfies(matches_struct!(User {
         name: eq(String::from("alice")),
         age: gt(0u32),
         email: contains_str("@"),
@@ -47,7 +47,7 @@ fn matches_struct_rest_ignores_unlisted_fields() -> TestResult {
         age: 41,
         email: String::from("bob@example.com"),
     };
-    expect!(user).to(matches_struct!(User {
+    check!(user).satisfies(matches_struct!(User {
         name: eq(String::from("bob")),
         ..
     }))?;
@@ -61,56 +61,56 @@ fn matches_struct_failure_labels_the_field() -> TestResult {
         age: 0,
         email: String::from("carol@example.com"),
     };
-    let error = expect!(user)
-        .to(matches_struct!(User {
+    let error = check!(user)
+        .satisfies(matches_struct!(User {
             name: eq(String::from("carol")),
             age: gt(18u32),
             ..
         }))
         .expect_err("age 0 is not greater than 18");
     let rendered = error.to_string();
-    expect!(rendered.contains("age")).to(is_true())?;
+    check!(rendered.contains("age")).satisfies(is_true())?;
     Ok(())
 }
 
 #[test]
 fn matches_tuple_checks_positional_fields() -> TestResult {
-    expect!(Point(3, 4)).to(matches_tuple!(Point(gt(0), lt(100))))?;
+    check!(Point(3, 4)).satisfies(matches_tuple!(Point(gt(0), lt(100))))?;
     Ok(())
 }
 
 #[test]
 fn matches_tuple_rest_ignores_trailing_elements() -> TestResult {
-    expect!(Point(7, 999)).to(matches_tuple!(Point(eq(7), ..)))?;
+    check!(Point(7, 999)).satisfies(matches_tuple!(Point(eq(7), ..)))?;
     Ok(())
 }
 
 #[test]
 fn matches_variant_checks_struct_like_variants() -> TestResult {
-    expect!(Shape::Circle { radius: 2.0 })
-        .to(matches_variant!(Shape::Circle { radius: gt(0.0) }))?;
+    check!(Shape::Circle { radius: 2.0 })
+        .satisfies(matches_variant!(Shape::Circle { radius: gt(0.0) }))?;
     Ok(())
 }
 
 #[test]
 fn matches_variant_checks_tuple_like_variants() -> TestResult {
-    expect!(Shape::Rectangle(3.0, 4.0)).to(matches_variant!(Shape::Rectangle(gt(0.0), gt(0.0))))?;
+    check!(Shape::Rectangle(3.0, 4.0)).satisfies(matches_variant!(Shape::Rectangle(gt(0.0), gt(0.0))))?;
     Ok(())
 }
 
 #[test]
 fn matches_variant_checks_unit_variants() -> TestResult {
-    expect!(Shape::Unit).to(matches_variant!(Shape::Unit))?;
+    check!(Shape::Unit).satisfies(matches_variant!(Shape::Unit))?;
     Ok(())
 }
 
 #[test]
 fn matches_variant_rejects_a_different_variant() -> TestResult {
-    let error = expect!(Shape::Unit)
-        .to(matches_variant!(Shape::Circle { radius: gt(0.0) }))
+    let error = check!(Shape::Unit)
+        .satisfies(matches_variant!(Shape::Circle { radius: gt(0.0) }))
         .expect_err("the Unit value is not a Circle");
     let rendered = error.to_string();
-    expect!(rendered.contains("Circle")).to(is_true())?;
+    check!(rendered.contains("Circle")).satisfies(is_true())?;
     Ok(())
 }
 
@@ -122,8 +122,8 @@ fn structural_matchers_nest() -> TestResult {
         age: 25,
         email: String::from("dave@example.com"),
     };
-    expect!(Shape::Unit).to(matches_variant!(Shape::Unit))?;
-    expect!(user).to(matches_struct!(User {
+    check!(Shape::Unit).satisfies(matches_variant!(Shape::Unit))?;
+    check!(user).satisfies(matches_struct!(User {
         name: starts_with("da"),
         age: gt(18u32),
         ..

@@ -12,7 +12,7 @@ itself.
 
 ## File snapshots
 
-`expect!(value).to_match_snapshot("name")` compares the value's `Display`
+`check!(value).matches_snapshot("name")` compares the value's `Display`
 output against `tests/snapshots/<module_path>__<name>.snap`:
 
 ```rust
@@ -21,7 +21,7 @@ use test_better::prelude::*;
 #[test]
 fn the_home_page_renders() -> TestResult {
     let rendered = render_home_page();
-    expect!(rendered).to_match_snapshot("home_page")
+    check!(rendered).matches_snapshot("home_page")
 }
 ```
 
@@ -46,7 +46,7 @@ use test_better::prelude::*;
 
 #[test]
 fn arithmetic_still_works() -> TestResult {
-    expect!(2 + 2).to_match_inline_snapshot("4")
+    check!(2 + 2).matches_inline_snapshot("4")
 }
 ```
 
@@ -59,7 +59,7 @@ use test_better::prelude::*;
 #[test]
 fn the_report_renders() -> TestResult {
     let report = ["name: alice", "score: 42", "status: active"].join("\n");
-    expect!(report).to_match_inline_snapshot(
+    check!(report).matches_inline_snapshot(
         r#"
         name: alice
         score: 42
@@ -90,19 +90,19 @@ fn the_audit_line_renders() -> TestResult {
     let redactions = Redactions::new()
         .redact_rfc3339_timestamps()
         .redact_uuids();
-    expect!(line).to_match_snapshot_with("audit_line", &redactions)
+    check!(line).matches_snapshot_with("audit_line", &redactions)
 }
 ```
 
 `Redactions` is a builder: `redact_rfc3339_timestamps` and `redact_uuids` are
 built in; `replace(needle, placeholder)` swaps a fixed string; `redact_with`
-takes an arbitrary rewrite rule. `to_match_snapshot_with` and
-`to_match_inline_snapshot_with` take the configured `Redactions`.
+takes an arbitrary rewrite rule. `matches_snapshot_with` and
+`matches_inline_snapshot_with` take the configured `Redactions`.
 
 ## When to snapshot, and when not
 
 Snapshots are powerful but blunt: a snapshot test asserts on the *whole*
 output, so it fails on any change, intended or not. Use one when the output is
 genuinely too large or too structured to assert piece by piece. When you care
-about one field, a targeted `expect!` with `matches_struct!` or `contains_str`
+about one field, a targeted `check!` with `matches_struct!` or `contains_str`
 says more about *what* matters and fails more precisely.

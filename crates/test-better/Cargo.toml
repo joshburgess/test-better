@@ -23,7 +23,7 @@ test-better-macros = { workspace = true }
 # The property-testing bridge: the `Strategy<T>` seam and the `check` runner.
 # Re-exported so a property test needs only the facade dependency.
 test-better-property = { workspace = true }
-# The snapshot store behind `expect!(value).to_match_snapshot("name")`.
+# The snapshot store behind `check!(value).matches_snapshot("name")`.
 # The method itself lives on `Subject` in `test-better-matchers`; this dependency
 # is for re-exporting the lower-level snapshot API through the facade.
 test-better-snapshot = { workspace = true }
@@ -31,19 +31,19 @@ test-better-snapshot = { workspace = true }
 [dev-dependencies]
 # Drives the compile-fail tests for the structural matcher macros: a missing
 # field without `..`, an unknown field, a misplaced `..`. Also locks that the
-# sync `to` is not usable on a future-typed subject.
+# sync `satisfies` is not usable on a future-typed subject.
 trybuild = "1.0"
-# Two runtimes for the async `expect!` integration tests, demonstrating that
+# Two runtimes for the async `check!` integration tests, demonstrating that
 # `resolves_to` is runtime-agnostic: `pollster` is a dependency-free
 # `block_on`, `tokio` drives the `#[tokio::test]` path.
 pollster = "0.4"
 tokio = { version = "1", features = ["rt", "macros", "time"] }
 
-# `expect!` overhead versus the stock assert macros. A `harness = false`
+# `check!` overhead versus the stock assert macros. A `harness = false`
 # benchmark: an ordinary `fn main` timed with `Instant`, so it needs no
 # benchmark framework and adds nothing to the dependency tree.
 [[bench]]
-name = "expect_overhead"
+name = "check_overhead"
 harness = false
 
 [features]
@@ -61,9 +61,9 @@ quickcheck = ["test-better-property/quickcheck"]
 # Forwards `test-better-core`'s `serde` feature: derives serde on the
 # structured-failure types (see that crate for details).
 serde = ["test-better-core/serde"]
-# Runtime selectors for `expect!(fut).to_complete_within(..)`, forwarded down
+# Runtime selectors for `check!(fut).completes_within(..)`, forwarded down
 # through `test-better-matchers` to `test-better-async`. Enable exactly one;
-# with none, calling `to_complete_within` is a compile error naming these
+# with none, calling `completes_within` is a compile error naming these
 # flags.
 tokio = ["test-better-matchers/tokio"]
 async-std = ["test-better-matchers/async-std"]
