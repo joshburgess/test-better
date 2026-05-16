@@ -31,11 +31,6 @@ compiled output of every crate is identical to 0.2.0.
   columns once `expect!` became `check!`). The 0.2.0 release on crates.io is
   unaffected; this is a source-tree-only cleanup.
 
-### CI
-
-- `actions/checkout@v4` is bumped to `@v5` to clear the Node.js 20
-  deprecation warnings.
-
 ## [0.2.0] - 2026-05-15
 
 A naming pass on the assertion surface. Every Subject method now reads as a
